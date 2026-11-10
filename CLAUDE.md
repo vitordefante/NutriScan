@@ -23,7 +23,7 @@ Objetivo: incentivar consumo mais consciente, com base em fontes reconhecidas e 
 2. Escanear cosmético (ou fotografar a lista de ingredientes) → análise de ingredientes com alertas.
 3. Abrir mapa → filtrar produtores por categoria → detalhe → contato (WhatsApp).
 
-Extras: histórico de escaneamentos (salvo no aparelho), OCR do rótulo como fallback quando o produto não está na base.
+Extras: histórico de escaneamentos e log de exposição (sincronizados com a conta do usuário), OCR do rótulo como fallback quando o produto não está na base.
 
 ## Stack
 
