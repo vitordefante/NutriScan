@@ -1,12 +1,13 @@
 import Fastify, { type FastifyServerOptions } from 'fastify';
 
 import { type HealthDeps, healthRoutes } from './modules/health/health.routes.js';
+import { type ProdutosDeps, produtosRoutes } from './modules/produtos/produtos.routes.js';
 
 /**
  * Dependências externas da API, injetadas para que os testes possam usar versões falsas.
  * Cada módulo declara as suas (ex.: HealthDeps) e elas são combinadas aqui com `&`.
  */
-export type AppDeps = HealthDeps;
+export type AppDeps = HealthDeps & ProdutosDeps;
 
 /**
  * Monta a aplicação sem abrir porta.
@@ -16,6 +17,7 @@ export function buildApp(deps: AppDeps, options: FastifyServerOptions = {}) {
   const app = Fastify(options);
 
   app.register(healthRoutes, deps);
+  app.register(produtosRoutes, deps);
 
   return app;
 }

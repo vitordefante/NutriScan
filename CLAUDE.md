@@ -56,7 +56,8 @@ docker-compose.yml → Postgres 17 para desenvolvimento
 ```bash
 npm install          # instala tudo (app, api, shared)
 npm run db:up        # sobe o Postgres (Docker Desktop precisa estar aberto)
-npm run dev:api      # API em http://localhost:3333 (GET /health)
+npm run db:migrate   # cria/atualiza as tabelas (rodar após db:up e após mudar api/src/db/schema.ts + db:generate)
+npm run dev:api      # API em http://localhost:3333 (GET /health, GET /produtos/:barcode)
 npm run dev:app      # Expo (Metro)
 npm test             # testes da API (Vitest)
 npm run typecheck    # tsc em todos os pacotes
@@ -80,7 +81,7 @@ npm run format       # Prettier
 ## Roadmap
 
 0. Fundação (monorepo, API com /health, app com abas) — feito
-1. Produtos + motor de nota de alimentos (Open Food Facts, cache, testes)
+1. Produtos + motor de nota de alimentos (Open Food Facts, cache, testes) — feito (branch `fase-1`)
 2. Scanner + tela de resultado + design pixel art (primeiro build no iPhone)
 3. Cosméticos (Open Beauty Facts + lista curada)
 4. Alternativas
@@ -99,7 +100,7 @@ npm run format       # Prettier
 
 ## Metodologia da nota (diretrizes)
 
-Ainda a detalhar (pesos e faixas). Princípios:
+**Alimentos: metodologia v1 aprovada e implementada — ver `docs/metodologia-nota.md`** (fonte de verdade dos pesos; o teste `api/src/modules/analise/calibracao.test.ts` trava as notas de produtos reais, então mudança de regra = atualizar o doc e esse teste juntos). Princípios:
 
 - **Alimentos:** compor a partir de Nutri-Score, classificação NOVA (ultraprocessados — alinhada ao Guia Alimentar para a População Brasileira), rotulagem nutricional frontal da ANVISA (alto em açúcar adicionado, gordura saturada, sódio) e aditivos com alerta (referências EFSA/IARC).
 - **Cosméticos:** lista curada própria de ingredientes de atenção (ex.: parabenos, liberadores de formaldeído, certos filtros UV, fragrâncias alergênicas), cada um com nível de risco e referência.
@@ -126,7 +127,6 @@ Ainda a detalhar (pesos e faixas). Princípios:
 
 ## Decisões pendentes
 
-- Pesos e faixas da nota de alimentos.
 - Lista curada de ingredientes de cosméticos.
 - Provedor de nuvem para a API e o banco.
 - OCR/foto: serviço a usar (somente se houver tempo).

@@ -83,6 +83,23 @@ export type Product = {
   ingredientes?: string;
 };
 
+/** Resposta de GET /produtos/:barcode. */
+export type ProductResult = {
+  produto: Product;
+  analise: Analysis;
+  /**
+   * true quando a fonte (Open Food Facts) estava fora do ar e a resposta veio de uma cópia
+   * antiga do cache. A análise continua válida, mas os dados do produto podem estar desatualizados.
+   */
+  desatualizado: boolean;
+};
+
+/** Corpo das respostas de erro da API. */
+export type ApiError = {
+  erro: 'codigo_invalido' | 'produto_nao_encontrado' | 'fonte_indisponivel';
+  mensagem: string;
+};
+
 export type ProducerCategory =
   'laticinios' | 'carnes' | 'ovos' | 'aves' | 'hortifruti' | 'mel' | 'graos' | 'outros';
 
