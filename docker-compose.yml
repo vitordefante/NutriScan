@@ -1,0 +1,25 @@
+# Banco de dados para desenvolvimento local.
+# Subir:  docker compose up -d
+# Parar:  docker compose down        (os dados ficam no volume)
+# Zerar:  docker compose down -v     (apaga os dados)
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: nutriscan-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nutriscan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nutriscan}
+      POSTGRES_DB: ${POSTGRES_DB:-nutriscan}
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:

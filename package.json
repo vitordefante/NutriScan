@@ -1,0 +1,21 @@
+{
+  "name": "nutriscan",
+  "private": true,
+  "workspaces": [
+    "app",
+    "api",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w @nutriscan/api",
+    "dev:app": "npm run start -w @nutriscan/app",
+    "test": "npm run test -w @nutriscan/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "format": "prettier --write .",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}
