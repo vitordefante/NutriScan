@@ -12,7 +12,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nutriscan}
       POSTGRES_DB: ${POSTGRES_DB:-nutriscan}
     ports:
-      - '5432:5432'
+      # Só este Mac acessa o banco (a API conecta via localhost). Sem isso, qualquer
+      # aparelho na mesma rede Wi-Fi conseguiria entrar com a senha padrão.
+      - '127.0.0.1:5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:

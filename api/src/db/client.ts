@@ -10,7 +10,13 @@ type CreateDbOptions = {
 };
 
 export function createDb(databaseUrl: string, { onConnectionError }: CreateDbOptions) {
-  const pool = new pg.Pool({ connectionString: databaseUrl });
+  const pool = new pg.Pool({
+    connectionString: databaseUrl,
+    // Limites de tempo: sem eles, um banco travado (sem recusar a conexão) prende
+    // as requisições por minutos — até o timeout do sistema operacional.
+    connectionTimeoutMillis: 5_000,
+    query_timeout: 10_000,
+  });
   // Sem este listener, o Node encerra a API inteira quando o banco derruba uma conexão ociosa.
   // O pool descarta a conexão quebrada sozinho e abre outra no próximo uso.
   pool.on('error', onConnectionError);

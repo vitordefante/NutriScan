@@ -14,6 +14,8 @@ app.addHook('onClose', () => database.close());
 // Encerra com elegância (Ctrl+C ou parada do servidor na nuvem).
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
+    // Se algo travar no encerramento, força a saída em 10s para não depender de SIGKILL.
+    setTimeout(() => process.exit(1), 10_000).unref();
     void app.close().then(() => process.exit(0));
   });
 }

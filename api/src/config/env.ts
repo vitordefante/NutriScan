@@ -4,7 +4,11 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3333),
   HOST: z.string().default('0.0.0.0'),
-  DATABASE_URL: z.url(),
+  // Não usa z.url(): ela recusa o formato com socket Unix usado por provedores de nuvem
+  // (ex.: postgres://u:p@/db?host=/cloudsql/...). Basta exigir o protocolo do Postgres.
+  DATABASE_URL: z
+    .string()
+    .regex(/^postgres(ql)?:\/\//, 'deve começar com postgres:// ou postgresql://'),
 });
 
 export type Env = z.infer<typeof envSchema>;
