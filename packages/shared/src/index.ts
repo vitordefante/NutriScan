@@ -22,7 +22,12 @@ export type ScoreItem = {
   motivo: string;
   /** Referência que justifica o item (ex.: "ANVISA RDC 429/2020"). */
   fonte: string;
+  /** true quando o item foi inferido (ex.: NOVA estimada pela categoria), não lido do rótulo. */
+  estimado?: boolean;
 };
+
+/** Rótulo da faixa da nota: 80–100, 60–79, 40–59, 20–39, 0–19. */
+export type ScoreBand = 'excelente' | 'bom' | 'regular' | 'ruim' | 'pessimo';
 
 export type AlertSeverity = 'baixo' | 'moderado' | 'alto';
 
@@ -36,13 +41,30 @@ export type Alert = {
   estimado: boolean;
 };
 
+/**
+ * Resultado da análise. A nota é `100 + soma dos pontos dos itens`, limitada a 0–100
+ * (ver docs/metodologia-nota.md).
+ */
 export type Analysis =
   | {
-      status: 'ok';
+      status: 'completa';
       /** Nota de 0 a 100. */
       nota: number;
+      faixa: ScoreBand;
       itens: ScoreItem[];
       alertas: Alert[];
+    }
+  | {
+      /**
+       * Faltou parte dos dados. Como quase todos os itens são descontos, a nota é um TETO:
+       * com os dados completos ela só poderia ficar igual ou menor.
+       */
+      status: 'parcial';
+      nota: number;
+      faixa: ScoreBand;
+      itens: ScoreItem[];
+      alertas: Alert[];
+      faltando: string[];
     }
   | {
       status: 'dados_insuficientes';
@@ -59,6 +81,23 @@ export type Product = {
   imagemUrl?: string;
   categorias: string[];
   ingredientes?: string;
+};
+
+/** Resposta de GET /produtos/:barcode. */
+export type ProductResult = {
+  produto: Product;
+  analise: Analysis;
+  /**
+   * true quando a fonte (Open Food Facts) estava fora do ar e a resposta veio de uma cópia
+   * antiga do cache. A análise continua válida, mas os dados do produto podem estar desatualizados.
+   */
+  desatualizado: boolean;
+};
+
+/** Corpo das respostas de erro da API. */
+export type ApiError = {
+  erro: 'codigo_invalido' | 'produto_nao_encontrado' | 'fonte_indisponivel';
+  mensagem: string;
 };
 
 export type ProducerCategory =

@@ -13,7 +13,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "format": "prettier --write .",
     "db:up": "docker compose up -d --wait",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "db:migrate": "npm run db:migrate -w @nutriscan/api"
   },
   "devDependencies": {
     "prettier": "^3.9.10"

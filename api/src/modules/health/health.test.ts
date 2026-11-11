@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { buildApp } from '../../app.js';
 
+const produtos = { consultar: async () => null };
+
 describe('GET /health', () => {
   it('responde 200 quando o banco está acessível', async () => {
-    const app = buildApp({ pingDb: async () => {} });
+    const app = buildApp({ pingDb: async () => {}, produtos });
 
     const response = await app.inject({ method: 'GET', url: '/health' });
 
@@ -17,6 +19,7 @@ describe('GET /health', () => {
       pingDb: async () => {
         throw new Error('conexão recusada');
       },
+      produtos,
     });
 
     const response = await app.inject({ method: 'GET', url: '/health' });

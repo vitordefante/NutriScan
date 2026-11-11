@@ -1,6 +1,9 @@
 import { buildApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { createDb } from './db/client.js';
+import { criarClienteOff } from './modules/produtos/open-food-facts.client.js';
+import { criarCacheProdutosPg } from './modules/produtos/produtos.repository.js';
+import { criarServicoProdutos } from './modules/produtos/produtos.service.js';
 
 const env = loadEnv();
 const database = createDb(env.DATABASE_URL, {
@@ -8,7 +11,13 @@ const database = createDb(env.DATABASE_URL, {
   onConnectionError: (err) => app.log.error({ err }, 'Conexão com o banco perdida'),
 });
 
-const app = buildApp({ pingDb: database.ping }, { logger: true });
+const produtos = criarServicoProdutos({
+  off: criarClienteOff(),
+  cache: criarCacheProdutosPg(database.db),
+  log: { warn: (obj, msg) => app.log.warn(obj, msg) },
+});
+
+const app = buildApp({ pingDb: database.ping, produtos }, { logger: true });
 app.addHook('onClose', () => database.close());
 
 // Encerra com elegância (Ctrl+C ou parada do servidor na nuvem).
