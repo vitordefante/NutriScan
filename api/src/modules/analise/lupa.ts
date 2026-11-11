@@ -1,6 +1,6 @@
-import type { DadosAlimento } from './dados-alimento.js';
+import type { Alimento } from './alimento.js';
 import type { ClassificacaoNova } from './nova.js';
-import { ehBebida, INGREDIENTES_ACUCAR, limparIngredientes, temIngredientes } from './texto.js';
+import { INGREDIENTES_ACUCAR, itensPrincipais } from './texto.js';
 
 export type NutrienteLupa = 'acucar_adicionado' | 'gordura_saturada' | 'sodio';
 
@@ -55,17 +55,17 @@ const CATEGORIAS_ACUCAR_ADICIONADO = [
   'en:chocolates',
 ];
 
-export function avaliarLupa(dados: DadosAlimento, nova: ClassificacaoNova | null): ResultadoLupa {
-  if (isento(dados, nova)) return { isento: true, altos: [], faltando: [] };
+export function avaliarLupa(alimento: Alimento, nova: ClassificacaoNova | null): ResultadoLupa {
+  if (isento(alimento, nova)) return { isento: true, altos: [], faltando: [] };
 
-  const liquido = ehBebida(dados);
+  const liquido = alimento.bebida;
   const limites = liquido ? LIMITES.liquido : LIMITES.solido;
   const porcao = liquido ? '100 ml' : '100 g';
-  const n = dados.nutrientes;
+  const n = alimento.nutrientes;
   const altos: AltoEm[] = [];
   const faltando: NutrienteLupa[] = [];
 
-  const acucar = acucarAdicionado(dados);
+  const acucar = acucarAdicionado(alimento);
   if (acucar === 'desconhecido') {
     // Só falta o dado se ele pudesse mudar o resultado: com açúcares totais abaixo do limite,
     // o adicionado (que é parte deles) também está abaixo.
@@ -109,18 +109,18 @@ export function avaliarLupa(dados: DadosAlimento, nova: ClassificacaoNova | null
   return { isento: false, altos, faltando };
 }
 
-function isento(dados: DadosAlimento, nova: ClassificacaoNova | null): boolean {
+function isento(alimento: Alimento, nova: ClassificacaoNova | null): boolean {
   // Itens 1–6 do Anexo XVI exigem "sem adição de ingredientes que agreguem açúcar, gordura
   // saturada ou sódio" — aproximado por NOVA 1 (in natura ou minimamente processado).
   if (nova?.grupo === 1) return true;
-  if (dados.categorias.some((c) => CATEGORIAS_ISENTAS.includes(c))) return true;
-  const queijoOuFermentado = dados.categorias.some((c) => QUEIJOS_E_FERMENTADOS.includes(c));
+  if (alimento.categorias.some((c) => CATEGORIAS_ISENTAS.includes(c))) return true;
+  const queijoOuFermentado = alimento.categorias.some((c) => QUEIJOS_E_FERMENTADOS.includes(c));
   return (
     queijoOuFermentado &&
     nova !== null &&
     nova.grupo <= 3 &&
-    temIngredientes(dados) &&
-    !INGREDIENTES_ACUCAR.test(limparIngredientes(dados.ingredientes))
+    alimento.temIngredientes &&
+    !INGREDIENTES_ACUCAR.test(alimento.textoIngredientes)
   );
 }
 
@@ -131,22 +131,21 @@ function isento(dados: DadosAlimento, nova: ClassificacaoNova | null): boolean {
  * sem lista de ingredientes, em categorias de açúcar sempre adicionado (estimado); 5. desconhecido.
  */
 function acucarAdicionado(
-  dados: DadosAlimento,
+  alimento: Alimento,
 ): { valor: number; estimado: boolean } | 'desconhecido' {
-  const { acucaresAdicionados, acucares } = dados.nutrientes;
-  if (acucaresAdicionados !== undefined && !adicionadoInconsistente(dados)) {
+  const { acucaresAdicionados, acucares } = alimento.nutrientes;
+  if (acucaresAdicionados !== undefined && !adicionadoInconsistente(alimento)) {
     return { valor: acucaresAdicionados, estimado: false };
   }
 
-  if (temIngredientes(dados)) {
-    if (!INGREDIENTES_ACUCAR.test(limparIngredientes(dados.ingredientes)))
-      return { valor: 0, estimado: false };
+  if (alimento.temIngredientes) {
+    if (!INGREDIENTES_ACUCAR.test(alimento.textoIngredientes)) return { valor: 0, estimado: false };
     return acucares === undefined ? 'desconhecido' : { valor: acucares, estimado: true };
   }
 
   if (
     acucares !== undefined &&
-    dados.categorias.some((c) => CATEGORIAS_ACUCAR_ADICIONADO.includes(c))
+    alimento.categorias.some((c) => CATEGORIAS_ACUCAR_ADICIONADO.includes(c))
   ) {
     return { valor: acucares, estimado: true };
   }
@@ -158,27 +157,10 @@ function acucarAdicionado(
  * ingredientes segue a ordem decrescente de quantidade; se um açúcar está entre os 3 primeiros
  * ingredientes, ele não pode ser menos de 1/4 dos açúcares totais.
  */
-function adicionadoInconsistente(dados: DadosAlimento): boolean {
-  const { acucaresAdicionados, acucares } = dados.nutrientes;
+function adicionadoInconsistente(alimento: Alimento): boolean {
+  const { acucaresAdicionados, acucares } = alimento.nutrientes;
   if (acucaresAdicionados === undefined || acucares === undefined) return false;
   if (acucaresAdicionados >= acucares / 4) return false;
-  const primeiros = itensPrincipais(limparIngredientes(dados.ingredientes)).slice(0, 3);
+  const primeiros = itensPrincipais(alimento.textoIngredientes).slice(0, 3);
   return primeiros.some((item) => INGREDIENTES_ACUCAR.test(item));
-}
-
-/** Divide a lista nas vírgulas de primeiro nível: "a, b (c, d), e" → ["a", "b (c, d)", "e"]. */
-export function itensPrincipais(texto: string): string[] {
-  const itens: string[] = [];
-  let nivel = 0;
-  let atual = '';
-  for (const ch of texto) {
-    if (ch === '(' || ch === '[') nivel++;
-    if (ch === ')' || ch === ']') nivel = Math.max(0, nivel - 1);
-    if (ch === ',' && nivel === 0) {
-      itens.push(atual.trim());
-      atual = '';
-    } else atual += ch;
-  }
-  if (atual.trim()) itens.push(atual.trim());
-  return itens.filter(Boolean);
 }

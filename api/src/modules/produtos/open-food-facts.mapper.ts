@@ -10,23 +10,35 @@ import type {
 
 /**
  * Formato (parcial) de um produto da API v2 do Open Food Facts.
- * Os dados são colaborativos: qualquer campo pode faltar ou vir com tipo inesperado,
- * por isso o schema é tolerante e a conversão abaixo descarta o que não fizer sentido.
+ * Os dados são colaborativos: qualquer campo pode faltar, vir nulo ou com tipo inesperado
+ * (ex.: "brands": null, "quantity": 500). Por isso cada campo é tolerante: valor inválido vira
+ * `undefined` em vez de rejeitar o produto inteiro. Só o código de barras é obrigatório.
  */
+const texto = z
+  .union([z.string(), z.number().transform(String)])
+  .optional()
+  .catch(undefined);
+/** Lista de textos; itens que não são texto são descartados. */
+const listaDeTextos = z
+  .array(z.unknown())
+  .transform((itens) => itens.filter((i): i is string => typeof i === 'string'))
+  .optional()
+  .catch(undefined);
+
 export const produtoOffSchema = z.object({
-  code: z.string(),
-  product_name: z.string().optional(),
-  product_name_pt: z.string().optional(),
-  brands: z.string().optional(),
-  quantity: z.string().optional(),
-  image_front_url: z.string().optional(),
-  categories_tags: z.array(z.string()).optional(),
-  labels_tags: z.array(z.string()).optional(),
-  additives_tags: z.array(z.string()).optional(),
-  ingredients_text_pt: z.string().optional(),
-  nova_group: z.union([z.number(), z.string()]).optional(),
-  nutriscore_grade: z.string().optional(),
-  nutriments: z.record(z.string(), z.unknown()).optional(),
+  code: z.union([z.string().min(1), z.number().transform(String)]),
+  product_name: texto,
+  product_name_pt: texto,
+  brands: texto,
+  quantity: texto,
+  image_front_url: texto,
+  categories_tags: listaDeTextos,
+  labels_tags: listaDeTextos,
+  additives_tags: listaDeTextos,
+  ingredients_text_pt: texto,
+  nova_group: z.union([z.number(), z.string()]).optional().catch(undefined),
+  nutriscore_grade: texto,
+  nutriments: z.record(z.string(), z.unknown()).optional().catch(undefined),
 });
 
 export type ProdutoOff = z.infer<typeof produtoOffSchema>;

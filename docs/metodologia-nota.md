@@ -60,7 +60,9 @@ Ordem de preferência:
    (ex.: "contém aromatizante e emulsificante").
 2. Campo `nova_group` do OFF, se não houver lista de ingredientes em português.
 3. **Estimativa pela categoria do OFF** (ex.: refrigerantes, embutidos, margarinas → NOVA 4;
-   queijos, pães → NOVA 3; leguminosas, arroz, ovos → NOVA 1).
+   queijos, pães → NOVA 3; leguminosas, arroz, ovos, água → NOVA 1). As categorias do OFF vão da
+   mais geral à mais específica; vale a **mais específica** que tiver estimativa (aveia em flocos é
+   marcada também como "cereal matinal", mas a estimativa usada é a de "aveia em flocos").
 4. **Estimativa pelo nome do produto**, porque muitos cadastros brasileiros não têm nem categoria
    (ex.: "salsicha", "mortadela", "sorvete", "lasanha" → NOVA 4).
 5. Sem nada disso: componente ausente (ver seção 4).
@@ -76,8 +78,9 @@ Regras da classificação própria:
     maltodextrina, dextrose, lactose, soro de leite, caseinato, proteína isolada/hidrolisada/texturizada,
     glúten adicionado, amido modificado, gordura vegetal (hidrogenada, interesterificada ou sem
     especificação — no Brasil, o termo designa gorduras industriais).
-- **NOVA 2** para ingredientes culinários vendidos isoladamente (óleo, azeite, açúcar, sal, mel,
-  manteiga, vinagre, amido).
+- **NOVA 2** para ingredientes culinários (óleo, azeite, açúcar, sal, mel, manteiga, vinagre,
+  amido), identificados pela categoria, mesmo com adições simples como iodo e antiumectante no sal
+  ou sal e fermento na manteiga.
 - **NOVA 3** se não houver marcador e houver sal, açúcar, óleo, vinagre ou conservante adicionados a um alimento.
 - **NOVA 1** nos demais casos (alimento in natura ou minimamente processado).
 
@@ -97,7 +100,12 @@ Detalhes da implementação:
   para bebidas com adoçante). Para categorias com regra própria (gorduras, óleos, oleaginosas,
   queijos) usa-se a letra informada pelo OFF.
 - O produto é tratado como bebida quando a embalagem está em ml/L ou a categoria é de bebidas
-  (exceto pós para preparo, como achocolatado em pó).
+  (exceto pós para preparo, como achocolatado em pó). Sorvetes e similares são sempre sólidos,
+  mesmo vendidos em litros, porque a tabela nutricional deles vem por 100 g.
+- Água pura (sem sabor, açúcar ou adoçante) recebe A, como no algoritmo oficial; as demais
+  bebidas começam em B.
+- Antes de buscar marcadores e açúcar, a lista de ingredientes é limpa de frases que não são
+  ingredientes ("sem glúten", "sem adição de açúcares", "zero açúcar", avisos de alérgicos).
 - Fibras, proteínas e percentual de frutas ausentes contam como zero: a falta de dado nunca melhora a nota.
 
 ### 3.3 Lupa ANVISA
@@ -157,6 +165,8 @@ Regras de soma:
 Aditivos fora da lista (ex.: lecitina, pectina,
 ácido cítrico, vitamina C) não descontam. Aromatizantes e emulsificantes em geral já pesam na NOVA
 e não descontam de novo aqui; os emulsificantes listados abaixo são exceções com evidência própria.
+Formas de vitamina com nome parecido não são confundidas com aditivos: mononitrato/nitrato de
+tiamina (B1), riboflavina 5'-fosfato (B2) e fosfato de piridoxal (B6).
 
 | Nível    | Grupo                                   | Códigos                      | Motivo resumido                                                       | Fonte                                                          |
 | -------- | --------------------------------------- | ---------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------- |

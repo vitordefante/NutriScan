@@ -1,6 +1,7 @@
 import type { Alert, Analysis, ScoreBand, ScoreItem } from '@nutriscan/shared';
 
 import { detectarAditivos, type GrupoAditivo, type NivelAditivo, temAdocante } from './aditivos.js';
+import { type Alimento, prepararAlimento } from './alimento.js';
 import type { DadosAlimento, GrupoNova, LetraNutriScore } from './dados-alimento.js';
 import { avaliarLupa, type AltoEm, type NutrienteLupa } from './lupa.js';
 import { type ClassificacaoNova, classificarNova } from './nova.js';
@@ -42,10 +43,11 @@ const SELOS_ORGANICOS =
 
 /** Analisa um alimento e calcula a nota de 0 a 100 com os itens que a explicam. */
 export function analisarAlimento(dados: DadosAlimento): Analysis {
-  const aditivos = detectarAditivos(dados);
-  const nova = classificarNova(dados);
-  const nutriScore = avaliarNutriScore(dados, temAdocante(dados, aditivos));
-  const lupa = avaliarLupa(dados, nova);
+  const alimento = prepararAlimento(dados);
+  const aditivos = detectarAditivos(alimento);
+  const nova = classificarNova(alimento);
+  const nutriScore = avaliarNutriScore(alimento, temAdocante(alimento));
+  const lupa = avaliarLupa(alimento, nova);
   const alertas = aditivos.map(alertaDeAditivo);
 
   const faltando: string[] = [];
@@ -61,7 +63,7 @@ export function analisarAlimento(dados: DadosAlimento): Analysis {
     ...(nutriScore ? [itemNutriScore(nutriScore)] : []),
     ...lupa.altos.map(itemLupa),
     ...itensAditivos(aditivos),
-    ...(ehOrganico(dados) ? [itemOrganico()] : []),
+    ...(ehOrganico(alimento) ? [itemOrganico()] : []),
   ];
 
   const soma = itens.reduce((total, item) => total + item.pontos, 0);
@@ -156,8 +158,8 @@ function itensAditivos(grupos: GrupoAditivo[]): ScoreItem[] {
   return itens;
 }
 
-function ehOrganico(dados: DadosAlimento): boolean {
-  return dados.selos.some((s) => SELOS_ORGANICOS.test(s));
+function ehOrganico(alimento: Alimento): boolean {
+  return alimento.selos.some((s) => SELOS_ORGANICOS.test(s));
 }
 
 function itemOrganico(): ScoreItem {

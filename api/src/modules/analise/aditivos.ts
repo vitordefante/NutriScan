@@ -1,5 +1,5 @@
-import type { DadosAlimento } from './dados-alimento.js';
-import { limparIngredientes } from './texto.js';
+import type { Alimento } from './alimento.js';
+import { ADOCANTES, CODIGOS_ADOCANTES } from './texto.js';
 
 export type NivelAditivo = 'alto' | 'moderado' | 'baixo';
 
@@ -25,8 +25,8 @@ export const GRUPOS_ADITIVOS: GrupoAditivo[] = [
     nome: 'Nitritos e nitratos',
     nivel: 'alto',
     codigos: faixa(249, 252),
-    // "mononitrato de tiamina" é a vitamina B1, não um conservante.
-    nomesNoRotulo: /nitrito|(?<!mono)nitrato/,
+    // Formas de vitamina como "nitrato de tiamina" são removidas antes (ver FORMAS_DE_VITAMINA).
+    nomesNoRotulo: /nitrito|nitrato/,
     motivo: 'Formam nitrosaminas; a carne processada é classificada como cancerígena (Grupo 1).',
     fonte: 'IARC, Monografia 114 (2018); EFSA (2017)',
   },
@@ -180,20 +180,28 @@ export const GRUPOS_ADITIVOS: GrupoAditivo[] = [
 const ehVariante = (tag: string, codigo: string) =>
   tag.startsWith(codigo) && !/\d/.test(tag[codigo.length] ?? '');
 
+/**
+ * Vitaminas cujo nome químico contém "nitrato" ou "fosfato" mas que não são os aditivos da lista:
+ * vitamina B1 (mononitrato/nitrato de tiamina), B2 (riboflavina 5'-fosfato) e B6 (fosfato de
+ * piridoxal). São removidas do texto antes da busca por nomes.
+ */
+const FORMAS_DE_VITAMINA =
+  /(?:mono)?nitrato de tiamina|tiamina[\s-]*(?:mono)?nitrato|riboflavina[\s-]*5?'?[\s-]*fosfato(?: sodic[oa])?|fosfato de riboflavina|fosfato de piridoxal|piridoxal[\s-]*5?'?[\s-]*fosfato/g;
+
 /** Grupos encontrados pelos códigos informados pela fonte ou pelos nomes na lista de ingredientes. */
-export function detectarAditivos(dados: DadosAlimento): GrupoAditivo[] {
-  const texto = limparIngredientes(dados.ingredientes);
+export function detectarAditivos(alimento: Alimento): GrupoAditivo[] {
+  const texto = alimento.textoIngredientes.replace(FORMAS_DE_VITAMINA, '');
   return GRUPOS_ADITIVOS.filter(
     (g) =>
-      dados.aditivos.some((tag) => g.codigos.some((c) => ehVariante(tag, c))) ||
+      alimento.aditivos.some((tag) => g.codigos.some((c) => ehVariante(tag, c))) ||
       g.nomesNoRotulo.test(texto),
   );
 }
 
 /** Edulcorante presente? (o Nutri-Score de bebidas penaliza adoçantes). */
-export function temAdocante(dados: DadosAlimento, grupos: GrupoAditivo[]): boolean {
+export function temAdocante(alimento: Alimento): boolean {
   return (
-    grupos.some((g) => g.id === 'aspartame' || g.id === 'adocantes-artificiais') ||
-    /edulcorante|adocante|stevia|esteviosideo/.test(limparIngredientes(dados.ingredientes))
+    alimento.aditivos.some((tag) => CODIGOS_ADOCANTES.some((c) => ehVariante(tag, c))) ||
+    ADOCANTES.test(alimento.textoIngredientes)
   );
 }

@@ -1,5 +1,5 @@
-import type { DadosAlimento, LetraNutriScore } from './dados-alimento.js';
-import { ehBebida } from './texto.js';
+import type { Alimento } from './alimento.js';
+import type { LetraNutriScore } from './dados-alimento.js';
 
 export type ResultadoNutriScore = {
   letra: LetraNutriScore;
@@ -10,8 +10,32 @@ export type ResultadoNutriScore = {
 /**
  * Categorias com regras próprias no Nutri-Score (gorduras, óleos, oleaginosas, queijos).
  * Não implementamos essas regras: para elas usamos a letra informada pela fonte.
+ * Lista exata de tags: comparar por trecho ("nuts") pegaria "doughnuts" e "coconuts".
  */
-const CATEGORIAS_ESPECIAIS = /fats|oils|nuts|cheeses|butters|margarines/;
+const CATEGORIAS_ESPECIAIS = [
+  'en:fats',
+  'en:vegetable-fats',
+  'en:animal-fats',
+  'en:vegetable-oils',
+  'en:olive-oils',
+  'en:butters',
+  'en:margarines',
+  'en:cheeses',
+  'en:nuts',
+  'en:peanuts',
+  'en:nut-butters',
+  'en:peanut-butters',
+  'en:oilseed-purees',
+];
+
+const AGUAS = [
+  'en:waters',
+  'en:mineral-waters',
+  'en:natural-mineral-waters',
+  'en:spring-waters',
+  'en:unsweetened-waters',
+];
+const AGUAS_COM_ADICAO = /flavou?red|sweetened|tonic|sodas/;
 
 /** Quantos limites o valor ultrapassa (estritamente maior) = pontos da tabela. */
 const pontos = (valor: number, limites: readonly number[]) =>
@@ -36,18 +60,34 @@ const PONTOS_ADOCANTE_BEBIDA = 4;
  * (a escolha conservadora: nunca melhora a nota por falta de dado).
  */
 export function avaliarNutriScore(
-  dados: DadosAlimento,
+  alimento: Alimento,
   temAdocante: boolean,
 ): ResultadoNutriScore | null {
-  const especial = dados.categorias.some((c) => CATEGORIAS_ESPECIAIS.test(c));
-  const calculado = especial ? null : calcular(dados, temAdocante);
+  // No algoritmo, a letra A entre as bebidas é exclusiva da água pura.
+  if (ehAguaPura(alimento, temAdocante)) return { letra: 'A', origem: 'calculado' };
+
+  const especial = alimento.categorias.some((c) => CATEGORIAS_ESPECIAIS.includes(c));
+  const calculado = especial ? null : calcular(alimento, temAdocante);
   if (calculado) return { letra: calculado, origem: 'calculado' };
-  if (dados.nutriScoreInformado) return { letra: dados.nutriScoreInformado, origem: 'fonte' };
+  if (alimento.nutriScoreInformado) {
+    return { letra: alimento.nutriScoreInformado, origem: 'fonte' };
+  }
   return null;
 }
 
-function calcular(dados: DadosAlimento, temAdocante: boolean): LetraNutriScore | null {
-  const n = dados.nutrientes;
+function ehAguaPura(alimento: Alimento, temAdocante: boolean): boolean {
+  const { categorias, nutrientes } = alimento;
+  return (
+    categorias.some((c) => AGUAS.includes(c)) &&
+    !categorias.some((c) => AGUAS_COM_ADICAO.test(c)) &&
+    !temAdocante &&
+    (nutrientes.acucares ?? 0) === 0 &&
+    (nutrientes.energiaKcal ?? 0) < 1
+  );
+}
+
+function calcular(alimento: Alimento, temAdocante: boolean): LetraNutriScore | null {
+  const n = alimento.nutrientes;
   const { energiaKcal, acucares, gorduraSaturada, sodioMg } = n;
   if (
     energiaKcal === undefined ||
@@ -64,7 +104,7 @@ function calcular(dados: DadosAlimento, temAdocante: boolean): LetraNutriScore |
   const frutas = n.frutasLegumesPct ?? 0;
   const gordSal = pontos(gorduraSaturada, GORDURA_SATURADA) + pontos(salG, SAL);
 
-  if (ehBebida(dados)) {
+  if (alimento.bebida) {
     const negativos =
       pontos(kj, BEBIDA_ENERGIA_KJ) +
       pontos(acucares, BEBIDA_ACUCARES) +
@@ -75,7 +115,7 @@ function calcular(dados: DadosAlimento, temAdocante: boolean): LetraNutriScore |
       fibras +
       (frutas > 80 ? 6 : frutas > 60 ? 4 : frutas > 40 ? 2 : 0);
     const s = negativos - positivos;
-    // A letra A é reservada para água; bebidas começam em B.
+    // Fora a água pura (tratada acima), bebidas começam em B.
     return s <= 2 ? 'B' : s <= 6 ? 'C' : s <= 9 ? 'D' : 'E';
   }
 

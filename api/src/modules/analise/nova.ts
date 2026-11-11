@@ -1,5 +1,6 @@
-import type { DadosAlimento, GrupoNova } from './dados-alimento.js';
-import { limparIngredientes, normalizar, temIngredientes } from './texto.js';
+import type { Alimento } from './alimento.js';
+import type { GrupoNova } from './dados-alimento.js';
+import { ADOCANTES, normalizar } from './texto.js';
 
 export type ClassificacaoNova = {
   grupo: GrupoNova;
@@ -21,10 +22,7 @@ const MARCADORES: [nome: string, padrao: RegExp][] = [
   ['estabilizante', /estabilizante/],
   ['gelificante', /gelificante/],
   ['realçador de sabor', /realcador/],
-  [
-    'edulcorante',
-    /edulcorante|adocante|sucralose|aspartame|acessulfame|ciclamato|sacarina|esteviosideo|\bstevia\b/,
-  ],
+  ['edulcorante', ADOCANTES],
   ['glaceante', /glaceante/],
   ['espumante', /\bespumante/],
   ['xarope de glicose/milho/frutose', /xarope de (glicose|glucose|milho|frutose|acucar)/],
@@ -45,7 +43,10 @@ const MARCADORES: [nome: string, padrao: RegExp][] = [
   ['gordura vegetal', /gordura vegetal/],
 ];
 
-/** Ingredientes culinários (NOVA 2) quando vendidos sozinhos. */
+/**
+ * Ingredientes culinários (NOVA 2). Podem levar sal ou aditivos simples — sal iodado com
+ * antiumectante, manteiga com sal — e continuam sendo NOVA 2.
+ */
 const CATEGORIAS_CULINARIAS = [
   'en:vegetable-oils',
   'en:olive-oils',
@@ -62,46 +63,41 @@ const ADICOES_CULINARIAS =
   /\bsal\b|acucar|oleo|azeite|manteiga|vinagre|conserva(nte|dor)|\bmel\b|cloreto de sodio/;
 
 /** Estimativa por categoria, para cadastros sem lista de ingredientes. */
-const NOVA_POR_CATEGORIA: [categorias: string[], grupo: GrupoNova][] = [
-  [
-    [
-      'en:sausages',
-      'en:frankfurter-sausages',
-      'en:mortadella',
-      'en:hams',
-      'en:cold-cuts',
-      'en:prepared-meats',
-    ],
-    4,
-  ],
-  [['en:sodas', 'en:soft-drinks', 'en:energy-drinks', 'en:artificially-sweetened-beverages'], 4],
-  [
-    [
-      'en:ice-creams',
-      'en:frozen-desserts',
-      'en:filled-biscuits',
-      'en:sandwich-biscuits',
-      'en:candies',
-      'en:chocolate-candies',
-    ],
-    4,
-  ],
-  [
-    [
-      'en:instant-noodles',
-      'en:meals',
-      'en:frozen-ready-made-meals',
-      'en:lasagnas',
-      'en:breakfast-cereals',
-      'en:margarines',
-      'en:mayonnaises',
-      'en:plant-based-milk-alternatives',
-    ],
-    4,
-  ],
-  [['en:cheeses', 'en:breads', 'en:canned-vegetables'], 3],
-  [['en:pulses', 'en:legumes', 'en:rolled-oats', 'en:rices', 'en:eggs'], 1],
-];
+const NOVA_POR_CATEGORIA: Record<string, GrupoNova> = {
+  'en:sausages': 4,
+  'en:frankfurter-sausages': 4,
+  'en:mortadella': 4,
+  'en:hams': 4,
+  'en:cold-cuts': 4,
+  'en:prepared-meats': 4,
+  'en:sodas': 4,
+  'en:soft-drinks': 4,
+  'en:energy-drinks': 4,
+  'en:artificially-sweetened-beverages': 4,
+  'en:ice-creams': 4,
+  'en:frozen-desserts': 4,
+  'en:filled-biscuits': 4,
+  'en:sandwich-biscuits': 4,
+  'en:candies': 4,
+  'en:chocolate-candies': 4,
+  'en:instant-noodles': 4,
+  'en:meals': 4,
+  'en:frozen-ready-made-meals': 4,
+  'en:lasagnas': 4,
+  'en:breakfast-cereals': 4,
+  'en:margarines': 4,
+  'en:mayonnaises': 4,
+  'en:plant-based-milk-alternatives': 4,
+  'en:cheeses': 3,
+  'en:breads': 3,
+  'en:canned-vegetables': 3,
+  'en:pulses': 1,
+  'en:legumes': 1,
+  'en:rolled-oats': 1,
+  'en:rices': 1,
+  'en:eggs': 1,
+  'en:waters': 1,
+};
 
 /** Estimativa pelo nome, para cadastros sem ingredientes e sem categoria (comum no Brasil). */
 const NOVA_POR_NOME: [padrao: RegExp, grupo: GrupoNova][] = [
@@ -119,32 +115,36 @@ const NOVA_POR_NOME: [padrao: RegExp, grupo: GrupoNova][] = [
  * Classifica o grau de processamento. Ordem de preferência (docs/metodologia-nota.md, 3.1):
  * ingredientes → NOVA informada → categoria → nome. Retorna null se nada permitir classificar.
  */
-export function classificarNova(dados: DadosAlimento): ClassificacaoNova | null {
-  if (temIngredientes(dados)) return classificarPorIngredientes(dados);
+export function classificarNova(alimento: Alimento): ClassificacaoNova | null {
+  if (alimento.temIngredientes) return classificarPorIngredientes(alimento);
 
-  if (dados.novaInformada) return { grupo: dados.novaInformada, origem: 'fonte', marcadores: [] };
+  if (alimento.novaInformada) {
+    return { grupo: alimento.novaInformada, origem: 'fonte', marcadores: [] };
+  }
 
-  const porCategoria = NOVA_POR_CATEGORIA.find(([cats]) =>
-    cats.some((c) => dados.categorias.includes(c)),
-  );
-  if (porCategoria) return { grupo: porCategoria[1], origem: 'categoria', marcadores: [] };
+  // As tags do OFF vão da mais geral à mais específica ("cereais matinais" → "aveia em flocos"):
+  // vale a mais específica que tiver estimativa.
+  for (const categoria of [...alimento.categorias].reverse()) {
+    const grupo = NOVA_POR_CATEGORIA[categoria];
+    if (grupo) return { grupo, origem: 'categoria', marcadores: [] };
+  }
 
-  const nome = normalizar(dados.nome);
+  const nome = normalizar(alimento.nome);
   const porNome = NOVA_POR_NOME.find(([padrao]) => padrao.test(nome));
   if (porNome) return { grupo: porNome[1], origem: 'nome', marcadores: [] };
 
   return null;
 }
 
-function classificarPorIngredientes(dados: DadosAlimento): ClassificacaoNova {
-  const texto = limparIngredientes(dados.ingredientes);
+function classificarPorIngredientes(alimento: Alimento): ClassificacaoNova {
+  const texto = alimento.textoIngredientes;
 
   const marcadores = MARCADORES.filter(([, padrao]) => padrao.test(texto)).map(([nome]) => nome);
   if (marcadores.length > 0) return { grupo: 4, origem: 'ingredientes', marcadores };
 
-  const itens = texto.split(/,|\be\b/).filter((item) => item.trim() !== '');
-  const culinario = dados.categorias.some((c) => CATEGORIAS_CULINARIAS.includes(c));
-  if (culinario && itens.length <= 2) return { grupo: 2, origem: 'ingredientes', marcadores: [] };
+  if (alimento.categorias.some((c) => CATEGORIAS_CULINARIAS.includes(c))) {
+    return { grupo: 2, origem: 'ingredientes', marcadores: [] };
+  }
 
   if (ADICOES_CULINARIAS.test(texto)) return { grupo: 3, origem: 'ingredientes', marcadores: [] };
 

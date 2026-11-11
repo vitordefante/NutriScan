@@ -64,3 +64,33 @@ describe('paraProduto', () => {
     });
   });
 });
+
+describe('produtoOffSchema — campos nulos ou com tipo inesperado (achado da revisão)', () => {
+  it('aceita o produto e descarta só os campos inválidos', () => {
+    const p = produtoOffSchema.parse({
+      code: '7891000100103',
+      product_name: null,
+      product_name_pt: 'Leite condensado',
+      brands: null,
+      quantity: 500,
+      categories_tags: ['en:dairies', null, 3],
+      labels_tags: 'en:organic',
+      nova_group: null,
+      nutriments: null,
+    });
+    expect(p).toEqual({
+      code: '7891000100103',
+      product_name_pt: 'Leite condensado',
+      quantity: '500',
+      categories_tags: ['en:dairies'],
+    });
+  });
+
+  it('aceita código numérico', () => {
+    expect(produtoOffSchema.parse({ code: 7891000100103 }).code).toBe('7891000100103');
+  });
+
+  it('só recusa quando falta o código', () => {
+    expect(produtoOffSchema.safeParse({ product_name: 'X' }).success).toBe(false);
+  });
+});

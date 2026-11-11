@@ -43,3 +43,22 @@ describe('detectarAditivos', () => {
     }
   });
 });
+
+describe('detectarAditivos — formas de vitamina (achado da revisão)', () => {
+  it.each([
+    'vitaminas (nitrato de tiamina, riboflavina)',
+    "vitaminas (tiamina mononitrato, riboflavina 5'-fosfato sódica)",
+    'vitamina B6 (fosfato de piridoxal)',
+  ])('não confunde vitamina com aditivo: %s', (vitaminas) => {
+    expect(ids({ ingredientes: `Farinha de trigo, ${vitaminas}` })).toEqual([]);
+  });
+
+  it('continua detectando fosfato adicionado na mesma lista', () => {
+    expect(
+      ids({
+        ingredientes:
+          'Presunto, vitaminas (nitrato de tiamina), estabilizante tripolifosfato de sódio',
+      }),
+    ).toEqual(['fosfatos']);
+  });
+});

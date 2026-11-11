@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { alimento } from './__fixtures__/alimentos.js';
-import { avaliarLupa, itensPrincipais } from './lupa.js';
+import { avaliarLupa } from './lupa.js';
 import { classificarNova } from './nova.js';
+import { itensPrincipais } from './texto.js';
 
 /** Avalia a lupa já com a NOVA calculada, como o motor faz. */
 const lupa = (campos: Parameters<typeof alimento>[0]) => {
@@ -115,5 +116,29 @@ describe('avaliarLupa', () => {
 describe('itensPrincipais', () => {
   it('divide só nas vírgulas fora de parênteses', () => {
     expect(itensPrincipais('a, b (c, d), e [f, g]')).toEqual(['a', 'b (c, d)', 'e [f, g]']);
+  });
+});
+
+describe('avaliarLupa — achados da revisão', () => {
+  it('"sem adição de açúcares" não faz o açúcar natural do suco contar como adicionado', () => {
+    const r = lupa({
+      ingredientes: 'Suco integral de uva. Sem adição de açúcares.',
+      quantidade: '1 L',
+      nutrientes: { acucares: 15, gorduraSaturada: 0, sodioMg: 5 },
+    });
+    expect(r.isento).toBe(true);
+    expect(r.altos).toEqual([]);
+  });
+
+  it('sorvete vendido em litros usa os limites de sólidos (por 100 g)', () => {
+    const r = lupa({
+      nome: 'Sorvete de creme',
+      ingredientes: 'Leite, açúcar, gordura vegetal, emulsificantes',
+      quantidade: '1,5 L',
+      categorias: ['en:ice-creams'],
+      nutrientes: { acucares: 12, gorduraSaturada: 5, sodioMg: 80 },
+    });
+    // Com os limites de líquidos (7,5 g e 3 g), daria "alto em" açúcar e gordura saturada.
+    expect(r.altos).toEqual([]);
   });
 });

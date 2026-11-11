@@ -77,3 +77,40 @@ describe('avaliarNutriScore', () => {
     expect(avaliarNutriScore(alimento(), false)).toBeNull();
   });
 });
+
+describe('avaliarNutriScore — achados da revisão', () => {
+  const agua = { energiaKcal: 0, acucares: 0, gorduraSaturada: 0, sodioMg: 2 };
+
+  it('água mineral recebe A', () => {
+    const r = avaliarNutriScore(
+      alimento({
+        nutrientes: agua,
+        quantidade: '500 ml',
+        categorias: ['en:beverages', 'en:waters', 'en:mineral-waters'],
+      }),
+      false,
+    );
+    expect(r).toEqual({ letra: 'A', origem: 'calculado' });
+  });
+
+  it('água saborizada não recebe A', () => {
+    const r = avaliarNutriScore(
+      alimento({
+        nutrientes: agua,
+        quantidade: '500 ml',
+        categorias: ['en:waters', 'en:flavoured-waters'],
+      }),
+      true,
+    );
+    expect(r?.letra).not.toBe('A');
+  });
+
+  it('"doughnuts" e "coconuts" não são tratados como oleaginosas: a nota é calculada', () => {
+    const donut = { energiaKcal: 420, acucares: 25, gorduraSaturada: 9, sodioMg: 300 };
+    const r = avaliarNutriScore(
+      alimento({ nutrientes: donut, categorias: ['en:doughnuts'] }),
+      false,
+    );
+    expect(r?.origem).toBe('calculado');
+  });
+});

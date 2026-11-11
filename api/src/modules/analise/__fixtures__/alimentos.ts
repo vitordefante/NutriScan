@@ -1,17 +1,18 @@
+import { type Alimento, prepararAlimento } from '../alimento.js';
 import type { DadosAlimento } from '../dados-alimento.js';
 import { paraDadosAlimento, produtoOffSchema } from '../../produtos/open-food-facts.mapper.js';
 import amostra from './off-amostra.json' with { type: 'json' };
 
-/** Monta um alimento de teste: só os campos informados, o resto vazio. */
-export function alimento(campos: Partial<DadosAlimento> = {}): DadosAlimento {
-  return {
+/** Monta um alimento de teste (já preparado para as regras): só os campos informados. */
+export function alimento(campos: Partial<DadosAlimento> = {}): Alimento {
+  return prepararAlimento({
     nome: 'Produto de teste',
     categorias: [],
     selos: [],
     aditivos: [],
     nutrientes: {},
     ...campos,
-  };
+  });
 }
 
 /** Um produto real da amostra do Open Food Facts, já convertido para a entrada do motor. */

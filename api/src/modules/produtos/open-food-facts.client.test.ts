@@ -42,7 +42,7 @@ describe('criarClienteOff', () => {
     ['limite de requisições', json({}, 429)],
     ['erro do servidor', json({}, 503)],
     ['página HTML de manutenção', new Response('<html>Page temporarily unavailable</html>')],
-    ['produto em formato inesperado', json({ status: 1, product: { code: 123 } })],
+    ['produto sem código de barras', json({ status: 1, product: { product_name: 'X' } })],
     ['falha de rede', new TypeError('fetch failed')],
   ])('lança FonteIndisponivelError: %s', async (_caso, resposta) => {
     const { fn } = fetchFalso(resposta);
