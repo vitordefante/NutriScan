@@ -1,10 +1,17 @@
 import type { ApiError, ProductResult } from '@nutriscan/shared';
+import Constants from 'expo-constants';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? urlDaApiEmDesenvolvimento();
 
 /**
- * Endereço da API. No iPhone, "localhost" é o próprio celular: use o IP do Mac na rede Wi-Fi
- * em app/.env (EXPO_PUBLIC_API_URL=http://192.168.x.x:3333). Ver app/.env.example.
+ * Sem EXPO_PUBLIC_API_URL, usa o mesmo computador que serve o app (o Metro): o celular já
+ * consegue falar com ele, e o IP muda sozinho quando o Mac troca de rede Wi-Fi.
+ * Ex.: hostUri "192.168.0.10:8081" → "http://192.168.0.10:3333".
  */
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3333';
+function urlDaApiEmDesenvolvimento(): string {
+  const host = Constants.expoConfig?.hostUri?.split(':')[0] ?? 'localhost';
+  return `http://${host}:3333`;
+}
 const TEMPO_LIMITE_MS = 15_000;
 
 export type TipoErroProduto = ApiError['erro'] | 'sem_conexao' | 'inesperado';

@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.vitordefante.nutriscan",
+      "appleTeamId": "YXHT8F5Z28",
       "icon": "./assets/expo.icon"
     },
     "android": {
