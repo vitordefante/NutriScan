@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "nutriscan",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.vitordefante.nutriscan",
       "icon": "./assets/expo.icon"
@@ -30,9 +30,17 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#FFFFFF",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O NutriScan usa a câmera para ler o código de barras dos produtos.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ]
     ],
