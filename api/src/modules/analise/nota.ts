@@ -1,4 +1,4 @@
-import type { Alert, Analysis, ScoreBand, ScoreItem } from '@nutriscan/shared';
+import type { Alert, Analysis, AnalysisHighlights, ScoreBand, ScoreItem } from '@nutriscan/shared';
 
 import { detectarAditivos, type GrupoAditivo, type NivelAditivo, temAdocante } from './aditivos.js';
 import { type Alimento, prepararAlimento } from './alimento.js';
@@ -69,10 +69,41 @@ export function analisarAlimento(dados: DadosAlimento): Analysis {
   const soma = itens.reduce((total, item) => total + item.pontos, 0);
   const nota = Math.max(0, Math.min(100, 100 + soma));
   const faixa = faixaDaNota(nota);
+  const destaques = montarDestaques(nova, nutriScore, lupa.altos);
 
   return faltando.length > 0
-    ? { status: 'parcial', nota, faixa, itens, alertas, faltando }
-    : { status: 'completa', nota, faixa, itens, alertas };
+    ? { status: 'parcial', nota, faixa, itens, alertas, destaques, faltando }
+    : { status: 'completa', nota, faixa, itens, alertas, destaques };
+}
+
+const NOME_GRUPO_NOVA: Record<GrupoNova, string> = {
+  1: 'In natura',
+  2: 'Ingrediente culinário',
+  3: 'Processado',
+  4: 'Ultraprocessado',
+};
+
+/** Os mesmos dados dos itens, em formato estruturado para as seções da tela de resultado. */
+function montarDestaques(
+  nova: ClassificacaoNova | null,
+  nutriScore: ResultadoNutriScore | null,
+  altos: AltoEm[],
+): AnalysisHighlights {
+  return {
+    nova: nova && {
+      grupo: nova.grupo,
+      nome: NOME_GRUPO_NOVA[nova.grupo],
+      motivo: itemNova(nova).motivo,
+      estimado: nova.origem === 'categoria' || nova.origem === 'nome',
+    },
+    nutriScore: nutriScore && { letra: nutriScore.letra },
+    lupa: altos.map((alto) => ({
+      nutriente: alto.nutriente,
+      titulo: `Alto em ${NOME_NUTRIENTE[alto.nutriente]}`,
+      detalhe: valorLupa(alto),
+      estimado: alto.estimado,
+    })),
+  };
 }
 
 export function faixaDaNota(nota: number): ScoreBand {
@@ -117,15 +148,20 @@ function itemNutriScore(ns: ResultadoNutriScore): ScoreItem {
   };
 }
 
-function itemLupa(alto: AltoEm): ScoreItem {
+/** Ex.: "33 g por 100 g (limite: 15 g)". */
+function valorLupa(alto: AltoEm): string {
   const valor = alto.valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
   const limite = alto.limite.toLocaleString('pt-BR');
+  return `${valor} ${alto.unidade} por ${alto.porcao} (limite: ${limite} ${alto.unidade})`;
+}
+
+function itemLupa(alto: AltoEm): ScoreItem {
   return {
     id: `lupa-${alto.nutriente}`,
     label: `Alto em ${NOME_NUTRIENTE[alto.nutriente]}`,
     pontos: PESOS.lupaPorItem,
     motivo:
-      `${valor} ${alto.unidade} por ${alto.porcao} (limite: ${limite} ${alto.unidade}).` +
+      `${valorLupa(alto)}.` +
       (alto.estimado
         ? ' Estimado pelos açúcares totais, pois o rótulo tem açúcar entre os ingredientes.'
         : ''),

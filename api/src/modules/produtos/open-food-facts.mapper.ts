@@ -7,6 +7,7 @@ import type {
   LetraNutriScore,
   Nutrientes,
 } from '../analise/dados-alimento.js';
+import { subtipoDasCategorias } from './subtipo.js';
 
 /**
  * Formato (parcial) de um produto da API v2 do Open Food Facts.
@@ -53,13 +54,16 @@ export function nomeDoProduto(p: ProdutoOff): string {
 /** Dados do produto para exibição no app. */
 export function paraProduto(p: ProdutoOff): Product {
   const marca = p.brands?.split(',')[0]?.trim();
+  const categorias = p.categories_tags ?? [];
+  const subtipo = subtipoDasCategorias(categorias);
   return {
     barcode: p.code,
     tipo: 'alimento',
     nome: nomeDoProduto(p),
     ...(marca && { marca }),
     ...(p.image_front_url && { imagemUrl: p.image_front_url }),
-    categorias: p.categories_tags ?? [],
+    ...(subtipo && { subtipo }),
+    categorias,
     ...(p.ingredients_text_pt && { ingredientes: p.ingredients_text_pt }),
   };
 }

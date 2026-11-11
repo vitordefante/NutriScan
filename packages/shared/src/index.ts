@@ -41,6 +41,34 @@ export type Alert = {
   estimado: boolean;
 };
 
+export type NovaGroup = 1 | 2 | 3 | 4;
+export type NutriScoreLetter = 'A' | 'B' | 'C' | 'D' | 'E';
+export type FrontLabelNutrient = 'acucar_adicionado' | 'gordura_saturada' | 'sodio';
+
+/**
+ * Os pilares da nota em formato estruturado, para a tela de resultado montar cada seção
+ * (NOVA, Nutri-Score, lupa) sem precisar interpretar o texto dos itens.
+ */
+export type AnalysisHighlights = {
+  nova: {
+    grupo: NovaGroup;
+    /** Ex.: "Ultraprocessado". */
+    nome: string;
+    motivo: string;
+    estimado: boolean;
+  } | null;
+  nutriScore: { letra: NutriScoreLetter } | null;
+  /** Avisos da rotulagem frontal da ANVISA ("lupa"); vazio quando não há nenhum "alto em". */
+  lupa: {
+    nutriente: FrontLabelNutrient;
+    /** Ex.: "Alto em açúcar adicionado". */
+    titulo: string;
+    /** Ex.: "33 g por 100 g (limite: 15 g)". */
+    detalhe: string;
+    estimado: boolean;
+  }[];
+};
+
 /**
  * Resultado da análise. A nota é `100 + soma dos pontos dos itens`, limitada a 0–100
  * (ver docs/metodologia-nota.md).
@@ -53,6 +81,7 @@ export type Analysis =
       faixa: ScoreBand;
       itens: ScoreItem[];
       alertas: Alert[];
+      destaques: AnalysisHighlights;
     }
   | {
       /**
@@ -64,6 +93,7 @@ export type Analysis =
       faixa: ScoreBand;
       itens: ScoreItem[];
       alertas: Alert[];
+      destaques: AnalysisHighlights;
       faltando: string[];
     }
   | {
@@ -79,6 +109,8 @@ export type Product = {
   nome: string;
   marca?: string;
   imagemUrl?: string;
+  /** Categoria curta em português para exibição (ex.: "Biscoitos"); ausente quando não há uma confiável. */
+  subtipo?: string;
   categorias: string[];
   ingredientes?: string;
 };

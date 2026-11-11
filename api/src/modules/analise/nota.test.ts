@@ -108,6 +108,43 @@ describe('analisarAlimento', () => {
   });
 });
 
+describe('destaques', () => {
+  it('traz NOVA, Nutri-Score e lupa estruturados (biscoito recheado real)', () => {
+    const a = completoOuParcial(analisarAlimento(produtoReal('7891000241356')));
+    expect(a.destaques).toEqual({
+      nova: {
+        grupo: 4,
+        nome: 'Ultraprocessado',
+        motivo:
+          'Contém marcadores de ultraprocessamento: aromatizante, emulsificante, gordura vegetal.',
+        estimado: false,
+      },
+      nutriScore: { letra: 'C' },
+      lupa: [
+        {
+          nutriente: 'acucar_adicionado',
+          titulo: 'Alto em açúcar adicionado',
+          detalhe: '33 g por 100 g (limite: 15 g)',
+          estimado: false,
+        },
+      ],
+    });
+  });
+
+  it('batem com os itens da nota em todos os produtos reais', () => {
+    for (const codigo of codigosDaAmostra) {
+      const a = completoOuParcial(analisarAlimento(produtoReal(codigo)));
+      const ids = a.itens.map((i) => i.id);
+      expect(a.destaques.nova !== null, codigo).toBe(ids.includes('nova'));
+      expect(a.destaques.nutriScore !== null, codigo).toBe(ids.includes('nutri-score'));
+      expect(
+        a.destaques.lupa.map((l) => `lupa-${l.nutriente}`),
+        codigo,
+      ).toEqual(ids.filter((id) => id.startsWith('lupa-')));
+    }
+  });
+});
+
 describe('faixaDaNota', () => {
   it.each([
     [100, 'excelente'],
