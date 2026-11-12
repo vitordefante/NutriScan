@@ -12,6 +12,8 @@ Aprovado pelo autor em 11/11/2026 a partir do protótipo no canvas
   sombra sólida deslocada nos botões — a sensação de "peças sobrepostas".
 - **Cor nunca sozinha.** Toda informação codificada por cor também tem número ou texto ao lado
   (acessibilidade e leitura no sol durante a demo).
+- **Fatos primeiro, lacunas depois.** A tela mostra antes o que foi encontrado e ajuda o
+  usuário (nota, rótulo, NOVA, Nutri-Score, alertas); avisos de dados faltantes ficam no fim.
 - **Uma fonte por informação.** Cada bloco mostra de onde vem o dado (título da seção ou linha
   de fonte), coerente com a regra da metodologia: toda penalidade tem fonte.
 
