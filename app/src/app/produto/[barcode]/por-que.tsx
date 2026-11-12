@@ -4,9 +4,7 @@ import { EstadoCarregando, EstadoErro } from '@/components/resultado/estados';
 import { PorQueNota } from '@/components/resultado/por-que-nota';
 import { CabecalhoTela } from '@/components/ui/cabecalho-tela';
 import { Tela } from '@/components/ui/tela';
-import { Texto } from '@/components/ui/texto';
 import { useProduto } from '@/hooks/use-produto';
-import { faixas } from '@/theme/tokens';
 
 /** "Por que essa nota": lista os itens (pontos, motivo e fonte) que formam a nota. */
 export default function TelaPorQue() {
@@ -16,17 +14,7 @@ export default function TelaPorQue() {
   const analise = estado.status === 'pronto' ? estado.dados.analise : null;
   const temNota = analise !== null && analise.status !== 'dados_insuficientes';
 
-  const titulo = temNota ? (
-    <>
-      POR QUE{' '}
-      <Texto variante="pixel" cor={faixas[analise.faixa].texto} style={{ fontSize: 16 }}>
-        {analise.nota}
-      </Texto>
-      ?
-    </>
-  ) : (
-    'POR QUE ESSA NOTA?'
-  );
+  const titulo = temNota ? `POR QUE ${analise.nota}?` : 'POR QUE ESSA NOTA?';
 
   return (
     <Tela>
@@ -40,7 +28,14 @@ export default function TelaPorQue() {
           onEscanearOutro={() => router.dismissTo('/')}
         />
       )}
-      {temNota && <PorQueNota itens={analise.itens} />}
+      {temNota && (
+        <PorQueNota
+          itens={analise.itens}
+          nota={analise.nota}
+          faixa={analise.faixa}
+          teto={analise.status === 'parcial'}
+        />
+      )}
     </Tela>
   );
 }

@@ -9,6 +9,8 @@ export const cores = {
   /** Texto de apoio menos importante (ainda passa 4.5:1 no branco). */
   cinza: '#6B6B6B',
   vazio: '#EBEBEB',
+  /** Blocos vazios da barra de HP sobre fundo tinta (cartão "Nota final"). */
+  vazioEscuro: '#3A3A3A',
   linhaPontilhada: '#BDB8AA',
   destaque: '#ADEBB3',
   coral: '#FF6B4A',

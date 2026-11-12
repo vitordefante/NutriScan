@@ -20,6 +20,18 @@ describe('subtipoDasCategorias', () => {
     ).toBe('Refrigerante');
   });
 
+  it('dá prioridade a categorias precisas mesmo fora de ordem (creme de leite real)', () => {
+    expect(
+      subtipoDasCategorias([
+        'en:dairies',
+        'en:creams',
+        'en:milks-liquid-and-powder',
+        'en:milks',
+        'pt:creme de leite',
+      ]),
+    ).toBe('Creme de leite');
+  });
+
   it('ignora tags em português (texto livre)', () => {
     expect(subtipoDasCategorias(['en:breads', 'pt:Processado'])).toBe('Pão');
   });
