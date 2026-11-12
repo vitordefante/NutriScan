@@ -35,12 +35,6 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
             resumo={resumoDosDestaques(analise.destaques)}
             onPorQue={onPorQue}
           />
-          {analise.status === 'parcial' && (
-            <AvisoFaltando
-              faltando={analise.faltando}
-              texto="Com os dados completos, a nota só poderia ficar igual ou menor."
-            />
-          )}
 
           {analise.destaques.lupa.length > 0 && (
             <Secao titulo="Rótulo frontal · ANVISA">
@@ -68,6 +62,14 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
             ))}
           </View>
         </Secao>
+      )}
+
+      {/* Primeiro os fatos encontrados; o que faltou fica no fim, para quem rolar até aqui. */}
+      {analise.status === 'parcial' && (
+        <AvisoFaltando
+          faltando={analise.faltando}
+          texto="Com os dados completos, a nota só poderia ficar igual ou menor."
+        />
       )}
 
       <Texto variante="legenda" style={estilos.rodape}>
