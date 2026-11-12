@@ -4,13 +4,18 @@ import Constants from 'expo-constants';
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? urlDaApiEmDesenvolvimento();
 
 /**
- * Sem EXPO_PUBLIC_API_URL, usa o mesmo computador que serve o app (o Metro): o celular já
- * consegue falar com ele, e o IP muda sozinho quando o Mac troca de rede Wi-Fi.
- * Ex.: hostUri "192.168.0.10:8081" → "http://192.168.0.10:3333".
+ * Sem EXPO_PUBLIC_API_URL, a API é acessada pelo próprio Metro, que repassa /api/* para a API
+ * local (ver app/metro.config.js). O celular já fala com o Metro — pela rede local ou pelo
+ * túnel —, então funciona em qualquer rede, sem configurar IP.
+ *   rede local: hostUri "192.168.0.10:8081"  → "http://192.168.0.10:8081/api"
+ *   túnel:      hostUri "abc.exp.direct:80"  → "https://abc.exp.direct/api" (o iOS exige HTTPS fora da rede local)
  */
 function urlDaApiEmDesenvolvimento(): string {
-  const host = Constants.expoConfig?.hostUri?.split(':')[0] ?? 'localhost';
-  return `http://${host}:3333`;
+  const hostUri = Constants.expoConfig?.hostUri;
+  if (!hostUri) return 'http://localhost:3333';
+  const host = hostUri.split(':')[0]!;
+  const local = host === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(host);
+  return local ? `http://${hostUri}/api` : `https://${host}/api`;
 }
 const TEMPO_LIMITE_MS = 15_000;
 
