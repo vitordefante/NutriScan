@@ -51,7 +51,8 @@ const ERROS: Record<TipoErroProduto, Conteudo> = {
   produto_nao_encontrado: {
     icone: 'lupa',
     titulo: 'Produto não encontrado',
-    texto: (b) => `O código ${b} ainda não está no Open Food Facts.`,
+    texto: (b) =>
+      `O código ${b} ainda não está no Open Food Facts (alimentos) nem no Open Beauty Facts (cosméticos).`,
     repetir: false,
   },
   codigo_invalido: {
