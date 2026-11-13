@@ -33,7 +33,7 @@ export function EstadoCarregando({ barcode }: { barcode: string }) {
       </View>
       <Texto variante="apoio" style={{ textAlign: 'center' }}>
         Buscando {barcode}
-        {'\n'}no Open Food Facts
+        {'\n'}nas bases abertas de produtos
       </Texto>
     </View>
   );
@@ -64,7 +64,7 @@ const ERROS: Record<TipoErroProduto, Conteudo> = {
   fonte_indisponivel: {
     icone: 'alerta',
     titulo: 'Base de produtos fora do ar',
-    texto: () => 'O Open Food Facts não respondeu agora. Tente de novo em instantes.',
+    texto: () => 'As bases de produtos não responderam agora. Tente de novo em instantes.',
     repetir: true,
   },
   sem_conexao: {

@@ -6,7 +6,10 @@
  * ingredientes.ts) e cobrem o nome INCI e os nomes comuns em português e inglês.
  */
 
-export type NivelCosmetico = 'alto' | 'moderado' | 'baixo';
+import type { Alert } from '@nutriscan/shared';
+
+/** Os níveis da lista são as próprias severidades dos alertas exibidos. */
+export type NivelCosmetico = Alert['severidade'];
 
 export type GrupoCosmetico = {
   id: string;
@@ -184,7 +187,7 @@ export const GRUPOS_COSMETICOS: GrupoCosmetico[] = [
     nome: 'Alérgenos de fragrância',
     nivel: 'baixo',
     padrao:
-      /^(?:limonene|d-limonene|linalool|citral|eugenol|isoeugenol|coumarin|geraniol|citronellol|hexyl cinnamal|benzyl salicylate|benzyl benzoate|benzyl cinnamate|benzyl alcohol|cinnamal|cinnamyl alcohol|amyl cinnamal|amylcinnamyl alcohol|farnesol|hydroxycitronellal|alpha-isomethyl ionone|anise alcohol|evernia prunastri extract|evernia furfuracea extract|methyl 2-octynoate)$/,
+      /^(?:limonene|d-limonene|linalool|citral|eugenol|isoeugenol|coumarin|geraniol|citronellol|hexyl cinnamal|benzyl benzoate|benzyl cinnamate|benzyl alcohol|cinnamal|cinnamyl alcohol|amyl cinnamal|amylcinnamyl alcohol|farnesol|hydroxycitronellal|alpha-isomethyl ionone|anise alcohol|evernia prunastri extract|evernia furfuracea extract|methyl 2-octynoate)$/,
     motivo: 'Alérgenos que a UE obriga a declarar no rótulo.',
     fonte: `Regulamento (UE) 2023/1545; ${AUTOR}`,
   },

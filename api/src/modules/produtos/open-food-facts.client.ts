@@ -46,11 +46,9 @@ export function criarClienteOff({
   timeoutMs = 8_000,
   fetch: fetchFn = fetch,
 }: Opcoes = {}): ClienteOff {
-  class FonteIndisponivel extends FonteIndisponivelError {
-    constructor(motivo: string, options?: ErrorOptions) {
-      super(motivo, { ...options, fonte: nome });
-    }
-  }
+  const indisponivel = (motivo: string, cause?: unknown) =>
+    new FonteIndisponivelError(motivo, { cause, fonte: nome });
+
   return {
     async buscarProduto(barcode) {
       const url = `${baseUrl}/api/v2/product/${encodeURIComponent(barcode)}?fields=${CAMPOS_OFF}`;
@@ -62,20 +60,20 @@ export function criarClienteOff({
           signal: AbortSignal.timeout(timeoutMs),
         });
       } catch (err) {
-        throw new FonteIndisponivel('falha de rede ou tempo esgotado', { cause: err });
+        throw indisponivel('falha de rede ou tempo esgotado', err);
       }
 
       // O OFF responde 404 com um JSON "product not found" para códigos desconhecidos.
       if (resposta.status === 404) return null;
-      if (resposta.status === 429) throw new FonteIndisponivel('limite de requisições (429)');
-      if (!resposta.ok) throw new FonteIndisponivel(`HTTP ${resposta.status}`);
+      if (resposta.status === 429) throw indisponivel('limite de requisições (429)');
+      if (!resposta.ok) throw indisponivel(`HTTP ${resposta.status}`);
 
       // Em manutenção, o OFF responde 200 com uma página HTML em vez de JSON.
       let corpo: unknown;
       try {
         corpo = await resposta.json();
       } catch (err) {
-        throw new FonteIndisponivel('resposta não é JSON', { cause: err });
+        throw indisponivel('resposta não é JSON', err);
       }
 
       const status = (corpo as { status?: unknown }).status;
@@ -83,7 +81,7 @@ export function criarClienteOff({
 
       const produto = produtoOffSchema.safeParse((corpo as { product?: unknown }).product);
       if (!produto.success) {
-        throw new FonteIndisponivel('formato de produto inesperado', { cause: produto.error });
+        throw indisponivel('formato de produto inesperado', produto.error);
       }
       // O OFF tem cadastros vazios (só o código, criados por leituras de apps): para o usuário,
       // é o mesmo que não encontrado.
@@ -98,6 +96,7 @@ function estaVazio(p: ProdutoOff): boolean {
     !p.product_name_pt?.trim() &&
     !p.ingredients_text_pt?.trim() &&
     !p.ingredients_text?.trim() &&
+    !p.ingredients_text_en?.trim() &&
     (p.categories_tags ?? []).length === 0 &&
     Object.keys(p.nutriments ?? {}).length === 0
   );

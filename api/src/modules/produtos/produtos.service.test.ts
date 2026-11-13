@@ -119,11 +119,44 @@ describe('ServicoProdutos.consultar', () => {
     expect(buscarObf).toHaveBeenCalledOnce();
   });
 
-  it('alimento encontrado no Open Food Facts não consulta o Open Beauty Facts', async () => {
-    const { servico, buscarObf } = montar({ off: async () => COLA, cache: cacheEmMemoria() });
+  it('alimento com dados no Open Food Facts ganha do Open Beauty Facts', async () => {
+    const { servico } = montar({
+      off: async () => COLA,
+      obf: async () => ({ ...SHAMPOO, code: COLA.code }),
+      cache: cacheEmMemoria(),
+    });
 
     expect((await servico.consultar(COLA.code))?.produto.tipo).toBe('alimento');
-    expect(buscarObf).not.toHaveBeenCalled();
+  });
+
+  it('cadastro do OFF só com nome perde para o Open Beauty Facts', async () => {
+    const soNome: ProdutoOff = { code: SHAMPOO.code, product_name: 'Shampoo' };
+    const { servico } = montar({
+      off: async () => soNome,
+      obf: async () => SHAMPOO,
+      cache: cacheEmMemoria(),
+    });
+
+    expect((await servico.consultar(SHAMPOO.code))?.produto.tipo).toBe('cosmetico');
+  });
+
+  it('cadastro do OFF só com nome é usado se o OBF não conhece o código', async () => {
+    const soNome: ProdutoOff = { code: '7890000000001', product_name: 'Óleo de rícino' };
+    const { servico } = montar({ off: async () => soNome, cache: cacheEmMemoria() });
+
+    const r = await servico.consultar(soNome.code);
+    expect(r?.produto.tipo).toBe('alimento');
+    expect(r?.analise.status).toBe('dados_insuficientes');
+  });
+
+  it('com o OFF fora do ar, o cosmético ainda é encontrado no Open Beauty Facts', async () => {
+    const { servico } = montar({
+      off: foraDoAr,
+      obf: async () => SHAMPOO,
+      cache: cacheEmMemoria(),
+    });
+
+    expect((await servico.consultar(SHAMPOO.code))?.produto.tipo).toBe('cosmetico');
   });
 
   it('código fora do Open Food Facts é buscado no Open Beauty Facts e analisado como cosmético', async () => {

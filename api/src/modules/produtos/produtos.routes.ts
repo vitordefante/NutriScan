@@ -27,7 +27,10 @@ export const produtosRoutes: FastifyPluginAsync<ProdutosDeps> = async (app, { pr
         return reply
           .code(404)
           .send(
-            erro('produto_nao_encontrado', 'Produto não encontrado na base do Open Food Facts.'),
+            erro(
+              'produto_nao_encontrado',
+              'Produto não encontrado no Open Food Facts nem no Open Beauty Facts.',
+            ),
           );
       }
       return resultado;

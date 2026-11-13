@@ -11,8 +11,12 @@ export type Ingrediente = {
   formas: string[];
 };
 
-/** Cabeçalhos que vêm grudados no primeiro ingrediente ("Ingredientes: Aqua, ..."). */
-const CABECALHO = /^(?:ingredients?|ingredientes?|composicao|composition|inci)\s*:\s*/;
+/** Cabeçalhos grudados em um ingrediente ("Ingredientes: Aqua, ...", "Shampoo. INCI: Aqua"). */
+const CABECALHO = /^(?:ingredients?|ingredientes?|composi[çc][ãa]o|composition|inci)\s*:\s*/i;
+
+/** Água escrita com o tratamento ("Água Deionizada", "Aqua Purificata") — não "Água de Coco". */
+const AGUA =
+  /^(?:aqua|water|agua|eau)(?: (?:deionizada|purificada|desmineralizada|destilada|purificata|deionized|demineralized|purified|distilled))?$/;
 
 /**
  * Divide a lista de ingredientes de um cosmético em itens.
@@ -22,7 +26,9 @@ const CABECALHO = /^(?:ingredients?|ingredientes?|composicao|composition|inci)\s
 export function lerIngredientes(texto: string | undefined): Ingrediente[] {
   if (!texto?.trim()) return [];
   const itens = decodificarHtml(texto)
-    .replace(/(\d),(\d)/g, '$1\u0000$2') // protege "1,3" e "0,5"
+    // Protege "1,3-diol" e "0,5%": um dígito sozinho antes da vírgula. "Ceteareth-20,1,2-Hexanediol"
+    // (lista sem espaços) são dois ingredientes: o "20" termina o nome do primeiro.
+    .replace(/(?<=(?:^|\W)\d),(?=\d)/g, '\u0000')
     // ". " seguido de palavra também separa: corta textos de rótulo grudados no fim
     // ("Parfum. www.nivea.com.br Produzido por…") sem quebrar abreviações como "Vit. E".
     .split(/[,;•·\n\r]|\s-\s|\.\s+(?=[A-Za-z]{3,})/)
@@ -36,8 +42,8 @@ export function lerIngredientes(texto: string | undefined): Ingrediente[] {
     .filter(Boolean);
 
   const ingredientes: Ingrediente[] = [];
-  for (const [i, item] of itens.entries()) {
-    const original = i === 0 ? item.replace(/^(?:ingredients?|ingredientes?)\s*:\s*/i, '') : item;
+  for (const item of itens) {
+    const original = item.replace(CABECALHO, '');
     const formas = formasDe(original);
     if (formas.length > 0) ingredientes.push({ original, formas });
   }
@@ -58,9 +64,7 @@ function decodificarHtml(texto: string): string {
  * (ex.: "Óleo de Coco, Água de Coco, Óleo de Abacate"), não a composição INCI completa.
  */
 export function listaPareceIncompleta(ingredientes: Ingrediente[]): boolean {
-  const temAgua = ingredientes.some((ing) =>
-    ing.formas.some((f) => /^(?:aqua|water|agua|eau)$/.test(f)),
-  );
+  const temAgua = ingredientes.some((ing) => ing.formas.some((f) => AGUA.test(f)));
   return ingredientes.length < 8 && !temAgua;
 }
 

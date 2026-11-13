@@ -120,18 +120,12 @@ function itemCertificacao(): ScoreItem {
   };
 }
 
-const SEVERIDADE: Record<NivelCosmetico, Alert['severidade']> = {
-  alto: 'alto',
-  moderado: 'moderado',
-  baixo: 'baixo',
-};
-
 function alertaDe({ grupo, ingredientes }: Achado): Alert {
   return {
     id: `cosmetico-${grupo.id}`,
     titulo: grupo.nome,
     descricao: grupo.motivo,
-    severidade: SEVERIDADE[grupo.nivel],
+    severidade: grupo.nivel,
     fonte: grupo.fonte,
     estimado: grupo.exposicaoPotencial ?? false,
     ingredientes,

@@ -77,14 +77,29 @@ export function criarServicoProdutos({
   }
 
   /**
-   * Alimento primeiro (a maior parte das leituras); se o Open Food Facts não conhece o código,
-   * tenta o Open Beauty Facts. Se o OFF diz "não encontrado" mas o OBF está fora do ar, é erro de
-   * fonte — não dá para afirmar que o produto não existe.
+   * Consulta as duas bases em paralelo (uma fora do ar não derruba a outra, e o cosmético não
+   * espera a resposta do OFF). Quem ganha:
+   * - cadastro do OFF com dados de alimento (tabela nutricional, NOVA ou Nutri-Score);
+   * - senão, o OBF, se conhece o código — o OFF tem cosméticos cadastrados por engano, só com nome;
+   * - senão, o cadastro "magro" do OFF.
+   * Se nenhuma conhece o código mas uma delas falhou, é erro de fonte: não dá para afirmar que o
+   * produto não existe.
    */
   async function buscarNasFontes(barcode: string): Promise<ResultadoFontes> {
-    const alimento = await off.buscarProduto(barcode);
-    if (alimento) return { fonte: 'open_food_facts', dados: alimento };
-    return { fonte: 'open_beauty_facts', dados: await obf.buscarProduto(barcode) };
+    const [alimento, cosmetico] = await Promise.allSettled([
+      off.buscarProduto(barcode),
+      obf.buscarProduto(barcode),
+    ]);
+    const doOff = alimento.status === 'fulfilled' ? alimento.value : undefined;
+    const doObf = cosmetico.status === 'fulfilled' ? cosmetico.value : undefined;
+
+    if (doObf && !(doOff && temDadosDeAlimento(doOff))) {
+      return { fonte: 'open_beauty_facts', dados: doObf };
+    }
+    if (doOff) return { fonte: 'open_food_facts', dados: doOff };
+    if (alimento.status === 'rejected') throw alimento.reason;
+    if (cosmetico.status === 'rejected') throw cosmetico.reason;
+    return { fonte: 'open_beauty_facts', dados: null };
   }
 
   return {
@@ -112,6 +127,14 @@ export function criarServicoProdutos({
       return montar(resultado, false);
     },
   };
+}
+
+function temDadosDeAlimento(p: ProdutoOff): boolean {
+  return (
+    Object.keys(p.nutriments ?? {}).length > 0 ||
+    p.nova_group !== undefined ||
+    p.nutriscore_grade !== undefined
+  );
 }
 
 function montar({ fonte, dados }: ResultadoFontes, desatualizado: boolean): ProductResult | null {

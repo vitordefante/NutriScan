@@ -47,6 +47,25 @@ describe('lerIngredientes', () => {
     ]);
   });
 
+  it('lista sem espaços: "Ceteareth-20,1,2-Hexanediol" são dois ingredientes', () => {
+    const itens = lerIngredientes('Aqua,Ceteareth-20,1,2-Hexanediol,Glycerin');
+    expect(itens.map((i) => i.original)).toEqual([
+      'Aqua',
+      'Ceteareth-20',
+      '1,2-Hexanediol',
+      'Glycerin',
+    ]);
+  });
+
+  it('tira o cabeçalho de qualquer item ("INCI:", "Composição:", "Shampoo. Ingredients:")', () => {
+    expect(lerIngredientes('INCI: Aqua, Glycerin')[0]!.original).toBe('Aqua');
+    expect(lerIngredientes('Composição: Água')[0]!.original).toBe('Água');
+    expect(lerIngredientes('Shampoo. Ingredients: Methylparaben').map((i) => i.original)).toEqual([
+      'Shampoo',
+      'Methylparaben',
+    ]);
+  });
+
   it('lista vazia ou só com símbolos não tem ingredientes', () => {
     expect(lerIngredientes('')).toEqual([]);
     expect(lerIngredientes(' . , ')).toEqual([]);
@@ -155,6 +174,17 @@ describe('analisarCosmetico', () => {
     const a = analisar('Óleo de Coco, Água de Coco, Óleo de Abacate, Manteiga de Murumuru');
     expect(a.status).toBe('parcial');
     expect(comNota(a).nota).toBe(100); // é um teto: "≤ 100"
+  });
+
+  it('"Água Deionizada" conta como água; "Água de Coco" não', () => {
+    expect(analisar('Água Deionizada, Glicerina, Lauril Sulfato de Sódio, Fragrância').status).toBe(
+      'completa',
+    );
+    expect(analisar('Aqua Purificata, Glycerin').status).toBe('completa');
+  });
+
+  it('Benzyl Salicylate conta só como disruptor em avaliação, não também como alérgeno', () => {
+    expect(grupos('Aqua, Glycerin, Benzyl Salicylate')).toEqual(['disruptores-em-avaliacao']);
   });
 
   it('lista curta COM água é considerada completa (produto simples)', () => {
