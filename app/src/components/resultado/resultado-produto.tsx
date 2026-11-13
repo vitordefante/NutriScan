@@ -2,7 +2,7 @@ import type { ProductResult } from '@nutriscan/shared';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Texto } from '@/components/ui/texto';
-import { resumoDosDestaques } from '@/lib/resumo-analise';
+import { resumoDosAlertasCosmetico, resumoDosDestaques } from '@/lib/resumo-analise';
 import { espaco } from '@/theme/tokens';
 
 import { CabecalhoProduto } from './cabecalho-produto';
@@ -15,6 +15,15 @@ type Props = { dados: ProductResult; onPorQue: () => void };
 /** Conteúdo da tela de resultado (produto + análise), já com os dados carregados. */
 export function ResultadoProduto({ dados, onPorQue }: Props) {
   const { produto, analise } = dados;
+  // Cosméticos não têm NOVA, Nutri-Score nem lupa: a nota vem só dos ingredientes de atenção,
+  // que chegam como alertas (do nível alto para o baixo).
+  const cosmetico = produto.tipo === 'cosmetico';
+  const resumo =
+    analise.status === 'dados_insuficientes'
+      ? ''
+      : cosmetico
+        ? resumoDosAlertasCosmetico(analise.alertas, analise.status === 'completa')
+        : resumoDosDestaques(analise.destaques, analise.status === 'completa');
 
   return (
     // "never": a área segura já é tratada pelo componente Tela; o ajuste automático do iOS somava de novo.
@@ -32,7 +41,7 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
             nota={analise.nota}
             faixa={analise.faixa}
             teto={analise.status === 'parcial'}
-            resumo={resumoDosDestaques(analise.destaques, analise.status === 'completa')}
+            resumo={resumo}
             onPorQue={onPorQue}
           />
 
@@ -55,7 +64,9 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
       )}
 
       {analise.alertas.length > 0 && (
-        <Secao titulo={`Alertas · ${analise.alertas.length}`}>
+        <Secao
+          titulo={`${cosmetico ? 'Ingredientes de atenção' : 'Alertas'} · ${analise.alertas.length}`}
+        >
           <View style={{ gap: 10 }}>
             {analise.alertas.map((alerta) => (
               <CartaoAlerta key={alerta.id} alerta={alerta} />
@@ -73,7 +84,8 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
       )}
 
       <Texto variante="legenda" style={estilos.rodape}>
-        Dados do produto: Open Food Facts.{'\n'}Metodologia da nota: NutriScan v1.
+        Dados do produto: {cosmetico ? 'Open Beauty Facts' : 'Open Food Facts'}.{'\n'}
+        Metodologia da nota: NutriScan v1{cosmetico ? ' (cosméticos)' : ''}.
         {dados.desatualizado ? '\nA base estava fora do ar: dados de uma consulta anterior.' : ''}
       </Texto>
     </ScrollView>

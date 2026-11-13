@@ -39,7 +39,7 @@ export const GRUPOS_COSMETICOS: GrupoCosmetico[] = [
   },
   {
     id: 'lilial',
-    nome: 'Lilial (butylphenyl methylpropional)',
+    nome: 'Lilial',
     nivel: 'alto',
     padrao: /butylphenyl methylpropional|\blilial\b/,
     motivo: 'Classificado como tóxico para a reprodução (CMR 1B); proibido em cosméticos.',

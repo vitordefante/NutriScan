@@ -1,4 +1,4 @@
-import type { AnalysisHighlights } from '@nutriscan/shared';
+import type { Alert, AnalysisHighlights } from '@nutriscan/shared';
 
 /**
  * Frase curta com os principais motivos da nota, para o cartão do resultado.
@@ -19,6 +19,29 @@ export function resumoDosDestaques(destaques: AnalysisHighlights, dadosCompletos
   }
   const frase = juntarComE(partes);
   return `${frase.charAt(0).toLocaleUpperCase('pt-BR')}${frase.slice(1)}.`;
+}
+
+/**
+ * Resumo de um cosmético: os grupos de ingredientes de atenção mais graves (a API já os manda do
+ * nível alto para o baixo). Ex.: "Lilial, isotiazolinonas (MIT/MCI) e mais 3 grupos."
+ */
+export function resumoDosAlertasCosmetico(alertas: Alert[], dadosCompletos: boolean): string {
+  if (alertas.length === 0) {
+    return dadosCompletos
+      ? 'Nenhum ingrediente de atenção na lista.'
+      : 'Nenhum ingrediente de atenção nos dados disponíveis.';
+  }
+  const principais = alertas.slice(0, 2).map((a, i) => (i === 0 ? a.titulo : minuscula(a.titulo)));
+  const resto = alertas.length - principais.length;
+  if (resto === 0) return `${juntarComE(principais)}.`;
+  return `${principais.join(', ')} e mais ${resto} ${resto === 1 ? 'grupo' : 'grupos'}.`;
+}
+
+/** Primeira letra minúscula, preservando siglas ("PFAS", "BHA"). */
+function minuscula(texto: string): string {
+  return /^[A-Z]{2}/.test(texto)
+    ? texto
+    : texto.charAt(0).toLocaleLowerCase('pt-BR') + texto.slice(1);
 }
 
 /** ["a", "b", "c"] → "a, b e c". */
