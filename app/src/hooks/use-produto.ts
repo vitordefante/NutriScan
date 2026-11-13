@@ -1,6 +1,12 @@
 import type { ProductResult } from '@nutriscan/shared';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
+import {
+  aindaValido,
+  assinarMemoria,
+  guardarNaMemoria,
+  itemNaMemoria,
+} from '@/lib/memoria-produtos';
 import { buscarProduto, ErroProduto, type TipoErroProduto } from '@/services/api-produtos';
 
 export type EstadoProduto =
@@ -12,41 +18,22 @@ export type EstadoProduto =
 type Resposta = {
   barcode: string;
   tentativa: number;
+  /** Quando chegou: uma versão mais nova na memória (ex.: depois da foto do rótulo) vence. */
+  em: number;
   resultado: { ok: true; dados: ProductResult } | { ok: false; tipo: TipoErroProduto };
 };
-
-/**
- * Memória curta dos produtos recém-buscados. Serve para a tela "Por que essa nota" abrir na
- * hora com o mesmo produto que o resultado acabou de mostrar — não é um cache de longo prazo
- * (esse fica na API): expira em minutos, guarda poucos itens e ignora respostas desatualizadas.
- */
-const VALIDADE_MS = 10 * 60 * 1000;
-const MAXIMO = 20;
-const memoria = new Map<string, { dados: ProductResult; em: number }>();
-
-function lerMemoria(barcode: string): ProductResult | undefined {
-  const item = memoria.get(barcode);
-  if (item && Date.now() - item.em < VALIDADE_MS) return item.dados;
-  return undefined;
-}
-
-function guardarNaMemoria(barcode: string, dados: ProductResult) {
-  // Cópia antiga (fonte estava fora do ar): não guarda, para buscar de novo da próxima vez.
-  if (dados.desatualizado) return;
-  memoria.delete(barcode); // reinserir coloca no fim (o mais recente)
-  memoria.set(barcode, { dados, em: Date.now() });
-  if (memoria.size > MAXIMO) memoria.delete(memoria.keys().next().value!);
-}
 
 export function useProduto(barcode: string) {
   const [tentativa, setTentativa] = useState(0);
   const [resposta, setResposta] = useState<Resposta | null>(null);
+  // Re-renderiza quando outra tela guarda uma versão nova deste produto.
+  const salvo = useSyncExternalStore(assinarMemoria, () => itemNaMemoria(barcode));
 
   useEffect(() => {
-    if (lerMemoria(barcode)) return;
+    if (aindaValido(itemNaMemoria(barcode))) return;
     const controle = new AbortController();
     const responder = (resultado: Resposta['resultado']) =>
-      setResposta({ barcode, tentativa, resultado });
+      setResposta({ barcode, tentativa, em: Date.now(), resultado });
 
     buscarProduto(barcode, controle.signal)
       .then((dados) => {
@@ -62,14 +49,15 @@ export function useProduto(barcode: string) {
 
   const tentarDeNovo = useCallback(() => setTentativa((t) => t + 1), []);
 
-  // O estado é derivado: a resposta só vale se for deste código e desta tentativa.
+  // O estado é derivado: a resposta só vale se for deste código e desta tentativa, e se não
+  // houver uma versão mais nova guardada na memória.
   const atual = resposta?.barcode === barcode && resposta.tentativa === tentativa ? resposta : null;
-  const salvo = lerMemoria(barcode);
+  const memoria = aindaValido(salvo) ? salvo : undefined;
   let estado: EstadoProduto;
-  if (atual) {
+  if (atual && !(memoria && memoria.em > atual.em)) {
     const r = atual.resultado;
     estado = r.ok ? { status: 'pronto', dados: r.dados } : { status: 'erro', tipo: r.tipo };
-  } else if (salvo) estado = { status: 'pronto', dados: salvo };
+  } else if (memoria) estado = { status: 'pronto', dados: memoria.dados };
   else estado = { status: 'carregando' };
 
   return { estado, tentarDeNovo };

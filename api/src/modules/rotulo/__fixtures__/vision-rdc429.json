@@ -1,0 +1,327 @@
+{
+  "descricao": "Saída real do Apple Vision (pt-BR, accurate) para um rótulo desenhado no modelo da RDC 429: ingredientes + tabela. Gerado por script Swift em 13/11/2026.",
+  "linhas": [
+    {
+      "texto": "INGREDIENTES: Farinha de trigo enriquecida com ferro e ácido",
+      "altura": 0.0233,
+      "x": 0.0426,
+      "y": 0.0377,
+      "largura": 0.7762
+    },
+    {
+      "texto": "fólico, açúcar, gordura vegetal, cacau em pó, sal, estabi-",
+      "y": 0.0625,
+      "altura": 0.0458,
+      "x": 0.0355,
+      "largura": 0.6954
+    },
+    {
+      "texto": "lizante lecitina de soja, aromatizante e corante caramelo IV.",
+      "largura": 0.7283,
+      "x": 0.0408,
+      "y": 0.1075,
+      "altura": 0.024
+    },
+    {
+      "y": 0.1366,
+      "largura": 0.7371,
+      "x": 0.0444,
+      "altura": 0.0276,
+      "texto": "ALÉRGICOS: CONTÉM TRIGO E SOJA. CONTÉM GLÚTEN."
+    },
+    {
+      "y": 0.2167,
+      "x": 0.0305,
+      "altura": 0.0458,
+      "texto": "INFORMAÇÃO NUTRICIONAL",
+      "largura": 0.4772
+    },
+    {
+      "y": 0.2776,
+      "altura": 0.0247,
+      "texto": "Porções por embalagem: 4 porções",
+      "largura": 0.4387,
+      "x": 0.0444
+    },
+    {
+      "texto": "Porção: 30 g (3 biscoitos)",
+      "x": 0.0426,
+      "y": 0.314,
+      "largura": 0.3215,
+      "altura": 0.0247
+    },
+    {
+      "y": 0.4141,
+      "x": 0.0444,
+      "altura": 0.0234,
+      "largura": 0.2771,
+      "texto": "Valor energético (kcal)"
+    },
+    {
+      "largura": 0.206,
+      "x": 0.0444,
+      "y": 0.465,
+      "texto": "Carboidratos (g)",
+      "altura": 0.0234
+    },
+    {
+      "x": 0.0444,
+      "largura": 0.2345,
+      "texto": "Açúcares totais (g)",
+      "altura": 0.025,
+      "y": 0.5159
+    },
+    {
+      "texto": "Açúcares adicionados (g)",
+      "largura": 0.3179,
+      "altura": 0.0248,
+      "x": 0.0444,
+      "y": 0.5668
+    },
+    {
+      "x": 0.0442,
+      "texto": "Proteínas (g)",
+      "y": 0.6168,
+      "largura": 0.1603,
+      "altura": 0.0252
+    },
+    {
+      "y": 0.6686,
+      "texto": "Gorduras totais (g)",
+      "x": 0.0444,
+      "altura": 0.0233,
+      "largura": 0.2327
+    },
+    {
+      "largura": 0.2877,
+      "altura": 0.0264,
+      "texto": "Gorduras saturadas (g)",
+      "x": 0.0444,
+      "y": 0.7164
+    },
+    {
+      "largura": 0.2281,
+      "altura": 0.0255,
+      "x": 0.0441,
+      "y": 0.7685,
+      "texto": "Gorduras trans (g)"
+    },
+    {
+      "altura": 0.0233,
+      "y": 0.8212,
+      "texto": "Fibras alimentares (g)",
+      "x": 0.0444,
+      "largura": 0.27
+    },
+    {
+      "altura": 0.0252,
+      "x": 0.0442,
+      "y": 0.8711,
+      "texto": "Sódio (mg)",
+      "largura": 0.139
+    },
+    {
+      "x": 0.5187,
+      "y": 0.3618,
+      "texto": "100 g",
+      "largura": 0.0817,
+      "altura": 0.0264
+    },
+    {
+      "x": 0.5187,
+      "y": 0.4099,
+      "largura": 0.0604,
+      "altura": 0.0291,
+      "texto": "480"
+    },
+    {
+      "texto": "68",
+      "altura": 0.0276,
+      "y": 0.4608,
+      "x": 0.5187,
+      "largura": 0.0444
+    },
+    {
+      "x": 0.5187,
+      "texto": "32",
+      "y": 0.5145,
+      "largura": 0.0391,
+      "altura": 0.0247
+    },
+    {
+      "altura": 0.0247,
+      "largura": 0.0409,
+      "texto": "30",
+      "y": 0.5654,
+      "x": 0.5187
+    },
+    {
+      "x": 0.5187,
+      "y": 0.6134,
+      "texto": "5,8",
+      "largura": 0.048,
+      "altura": 0.0349
+    },
+    {
+      "largura": 0.0409,
+      "altura": 0.0247,
+      "x": 0.5169,
+      "texto": "20",
+      "y": 0.6672
+    },
+    {
+      "texto": "9,5",
+      "x": 0.5204,
+      "largura": 0.0462,
+      "altura": 0.0305,
+      "y": 0.7166
+    },
+    {
+      "x": 0.675,
+      "y": 0.3618,
+      "altura": 0.0277,
+      "largura": 0.0657,
+      "texto": "30 g"
+    },
+    {
+      "texto": "144",
+      "x": 0.6714,
+      "y": 0.4113,
+      "altura": 0.0276,
+      "largura": 0.0586
+    },
+    {
+      "x": 0.675,
+      "largura": 0.0409,
+      "y": 0.4608,
+      "altura": 0.0291,
+      "texto": "20"
+    },
+    {
+      "largura": 0.0462,
+      "x": 0.6767,
+      "y": 0.5116,
+      "texto": "9,6",
+      "altura": 0.032
+    },
+    {
+      "y": 0.5625,
+      "x": 0.675,
+      "largura": 0.048,
+      "altura": 0.0334,
+      "texto": "9,0"
+    },
+    {
+      "x": 0.6714,
+      "altura": 0.0334,
+      "largura": 0.0444,
+      "texto": "1,7",
+      "y": 0.6148
+    },
+    {
+      "altura": 0.0334,
+      "x": 0.6732,
+      "y": 0.6642,
+      "texto": "6,0",
+      "largura": 0.0497
+    },
+    {
+      "y": 0.7151,
+      "x": 0.6732,
+      "largura": 0.0497,
+      "texto": "2,9",
+      "altura": 0.0349
+    },
+    {
+      "y": 0.3576,
+      "texto": "%VD*",
+      "altura": 0.0276,
+      "x": 0.8437,
+      "largura": 0.087
+    },
+    {
+      "altura": 0.0218,
+      "x": 0.8437,
+      "largura": 0.0195,
+      "y": 0.4128,
+      "texto": "7"
+    },
+    {
+      "x": 0.8437,
+      "y": 0.4637,
+      "largura": 0.0213,
+      "altura": 0.0233,
+      "texto": "7"
+    },
+    {
+      "texto": "18",
+      "y": 0.564,
+      "largura": 0.0391,
+      "altura": 0.0262,
+      "x": 0.8384
+    },
+    {
+      "altura": 0.0233,
+      "largura": 0.0195,
+      "y": 0.6163,
+      "texto": "3",
+      "x": 0.8437
+    },
+    {
+      "largura": 0.0249,
+      "x": 0.8401,
+      "texto": "9",
+      "y": 0.6672,
+      "altura": 0.0233
+    },
+    {
+      "x": 0.8401,
+      "altura": 0.0247,
+      "y": 0.718,
+      "largura": 0.0373,
+      "texto": "14"
+    },
+    {
+      "y": 0.8183,
+      "largura": 0.0409,
+      "altura": 0.0305,
+      "texto": "2,1",
+      "x": 0.5204
+    },
+    {
+      "largura": 0.0533,
+      "altura": 0.0247,
+      "texto": "310",
+      "x": 0.5187,
+      "y": 0.8706
+    },
+    {
+      "altura": 0.032,
+      "texto": "0,6",
+      "y": 0.8183,
+      "x": 0.675,
+      "largura": 0.048
+    },
+    {
+      "largura": 0.0409,
+      "x": 0.675,
+      "texto": "93",
+      "y": 0.8692,
+      "altura": 0.0262
+    },
+    {
+      "x": 0.8437,
+      "y": 0.8212,
+      "largura": 0.0195,
+      "altura": 0.0218,
+      "texto": "3"
+    },
+    {
+      "altura": 0.0233,
+      "largura": 0.0195,
+      "x": 0.8437,
+      "texto": "5",
+      "y": 0.8706
+    }
+  ]
+}

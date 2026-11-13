@@ -4,6 +4,7 @@ import { createDb } from './db/client.js';
 import { criarClienteObf, criarClienteOff } from './modules/produtos/open-food-facts.client.js';
 import { criarCacheProdutosPg } from './modules/produtos/produtos.repository.js';
 import { criarServicoProdutos } from './modules/produtos/produtos.service.js';
+import { criarRepositorioRotulosPg } from './modules/rotulo/rotulos.repository.js';
 
 const env = loadEnv();
 const database = createDb(env.DATABASE_URL, {
@@ -15,6 +16,7 @@ const produtos = criarServicoProdutos({
   off: criarClienteOff(),
   obf: criarClienteObf(),
   cache: criarCacheProdutosPg(database.db),
+  rotulos: criarRepositorioRotulosPg(database.db),
   log: { warn: (obj, msg) => app.log.warn(obj, msg) },
 });
 

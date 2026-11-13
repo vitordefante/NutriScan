@@ -1,7 +1,10 @@
-import type { ProductResult } from '@nutriscan/shared';
+import type { LabelSubmission, ProductResult } from '@nutriscan/shared';
 
 import { analisarAlimento } from '../analise/nota.js';
 import { analisarCosmetico } from '../analise-cosmetico/nota.js';
+import { combinarLeituras, type FotoRotulo, lerEnvio, type RotuloLido } from '../rotulo/leitura.js';
+import type { RepositorioRotulos } from '../rotulo/rotulos.repository.js';
+import { montarComRotulo } from './com-rotulo.js';
 import { type ClienteOff, FonteIndisponivelError } from './open-food-facts.client.js';
 import {
   paraDadosAlimento,
@@ -27,9 +30,17 @@ export type CacheProdutos = {
   salvar: (barcode: string, resultado: ResultadoFontes, atualizadoEm: Date) => Promise<void>;
 };
 
+export type ResultadoEnvio =
+  { ok: true; resultado: ProductResult } | { ok: false; ilegiveis: FotoRotulo[] };
+
 export type ServicoProdutos = {
   /** Produto + análise; null se o produto não existe. Lança FonteIndisponivelError. */
   consultar: (barcode: string) => Promise<ProductResult | null>;
+  /**
+   * Guarda na base própria o que foi lido nas fotos do rótulo e devolve a nova análise.
+   * Se alguma foto não pôde ser lida, nada é guardado.
+   */
+  enviarRotulo: (barcode: string, envio: LabelSubmission) => Promise<ResultadoEnvio>;
 };
 
 type Log = { warn: (obj: object, msg: string) => void };
@@ -41,6 +52,8 @@ type Opcoes = {
   /** Open Beauty Facts: consultado quando o Open Food Facts não conhece o código. */
   obf: ClienteOff;
   cache: CacheProdutos;
+  /** Base própria: rótulos lidos por foto no app. */
+  rotulos: RepositorioRotulos;
   log: Log;
   agora?: () => Date;
   /** Por quanto tempo um produto encontrado é usado sem consultar a fonte de novo. */
@@ -53,6 +66,7 @@ export function criarServicoProdutos({
   off,
   obf,
   cache,
+  rotulos,
   log,
   agora = () => new Date(),
   validadeEncontradoMs = 30 * DIA_MS,
@@ -102,29 +116,72 @@ export function criarServicoProdutos({
     return { fonte: 'open_beauty_facts', dados: null };
   }
 
+  /** Cache válido → fontes → cópia antiga do cache (se as fontes estiverem fora do ar). */
+  async function consultarBases(
+    barcode: string,
+  ): Promise<{ resultado: ResultadoFontes; desatualizado: boolean }> {
+    const emCache = await lerCache(barcode);
+    if (emCache) {
+      const validade = emCache.dados ? validadeEncontradoMs : validadeNaoEncontradoMs;
+      const idade = agora().getTime() - emCache.atualizadoEm.getTime();
+      if (idade < validade) return { resultado: emCache, desatualizado: false };
+    }
+
+    let resultado: ResultadoFontes;
+    try {
+      resultado = await buscarNasFontes(barcode);
+    } catch (err) {
+      // Fonte fora do ar: uma cópia antiga é melhor que um erro (ex.: durante a demo).
+      if (err instanceof FonteIndisponivelError && emCache) {
+        log.warn({ err, barcode }, 'Fonte indisponível; usando cópia antiga do cache');
+        return { resultado: emCache, desatualizado: true };
+      }
+      throw err;
+    }
+
+    await gravarCache(barcode, resultado);
+    return { resultado, desatualizado: false };
+  }
+
+  async function lerRotulo(barcode: string): Promise<RotuloLido | null> {
+    try {
+      return await rotulos.buscar(barcode);
+    } catch (err) {
+      log.warn({ err, barcode }, 'Falha ao ler a base de rótulos');
+      return null;
+    }
+  }
+
+  async function consultar(barcode: string): Promise<ProductResult | null> {
+    const lido = await lerRotulo(barcode);
+    if (!lido) {
+      const { resultado, desatualizado } = await consultarBases(barcode);
+      return montar(resultado, desatualizado);
+    }
+
+    // Com o rótulo lido por foto, as bases abertas são só um complemento (nome, marca, foto):
+    // se estiverem fora do ar, a análise sai mesmo assim, pela leitura.
+    try {
+      const { resultado, desatualizado } = await consultarBases(barcode);
+      return montarComRotulo(barcode, resultado.dados, lido, desatualizado);
+    } catch (err) {
+      if (!(err instanceof FonteIndisponivelError)) throw err;
+      log.warn({ err, barcode }, 'Fonte indisponível; produto montado só com o rótulo lido');
+      return montarComRotulo(barcode, null, lido, true);
+    }
+  }
+
   return {
-    async consultar(barcode) {
-      const emCache = await lerCache(barcode);
-      if (emCache) {
-        const validade = emCache.dados ? validadeEncontradoMs : validadeNaoEncontradoMs;
-        const idade = agora().getTime() - emCache.atualizadoEm.getTime();
-        if (idade < validade) return montar(emCache, false);
-      }
+    consultar,
 
-      let resultado: ResultadoFontes;
-      try {
-        resultado = await buscarNasFontes(barcode);
-      } catch (err) {
-        // Fonte fora do ar: uma cópia antiga é melhor que um erro (ex.: durante a demo).
-        if (err instanceof FonteIndisponivelError && emCache) {
-          log.warn({ err, barcode }, 'Fonte indisponível; usando cópia antiga do cache');
-          return montar(emCache, true);
-        }
-        throw err;
-      }
+    async enviarRotulo(barcode, envio) {
+      const leitura = lerEnvio(envio);
+      if (!leitura.ok) return leitura;
 
-      await gravarCache(barcode, resultado);
-      return montar(resultado, false);
+      const anterior = await rotulos.buscar(barcode);
+      await rotulos.salvar(barcode, combinarLeituras(anterior, leitura.lido), agora());
+      // Acabou de ser salvo: a consulta sempre encontra o produto.
+      return { ok: true, resultado: (await consultar(barcode))! };
     },
   };
 }
@@ -144,11 +201,13 @@ function montar({ fonte, dados }: ResultadoFontes, desatualizado: boolean): Prod
       produto: paraProduto(dados, 'cosmetico'),
       analise: analisarCosmetico(paraDadosCosmetico(dados)),
       desatualizado,
+      fonte,
     };
   }
   return {
     produto: paraProduto(dados, 'alimento'),
     analise: analisarAlimento(paraDadosAlimento(dados)),
     desatualizado,
+    fonte,
   };
 }

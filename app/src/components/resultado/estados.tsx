@@ -55,6 +55,18 @@ const ERROS: Record<TipoErroProduto, Conteudo> = {
       `O código ${b} ainda não está no Open Food Facts (alimentos) nem no Open Beauty Facts (cosméticos).`,
     repetir: false,
   },
+  rotulo_invalido: {
+    icone: 'alerta',
+    titulo: 'Envio inválido',
+    texto: () => 'O texto das fotos chegou em um formato inesperado.',
+    repetir: true,
+  },
+  rotulo_ilegivel: {
+    icone: 'alerta',
+    titulo: 'Rótulo ilegível',
+    texto: () => 'Não deu para ler o texto das fotos.',
+    repetir: true,
+  },
   codigo_invalido: {
     icone: 'alerta',
     titulo: 'Código inválido',
@@ -98,10 +110,19 @@ type PropsErro = {
   barcode: string;
   onTentarDeNovo: () => void;
   onEscanearOutro: () => void;
+  /** Produto não encontrado: oferece fotografar o rótulo (só onde o aparelho lê texto). */
+  onFotografar?: () => void;
 };
 
-export function EstadoErro({ tipo, barcode, onTentarDeNovo, onEscanearOutro }: PropsErro) {
+export function EstadoErro({
+  tipo,
+  barcode,
+  onTentarDeNovo,
+  onEscanearOutro,
+  onFotografar,
+}: PropsErro) {
   const erro = ERROS[tipo];
+  const fotografar = tipo === 'produto_nao_encontrado' ? onFotografar : undefined;
   return (
     <View style={estilos.centro}>
       <IconePixel nome={erro.icone} escala={5} />
@@ -110,12 +131,15 @@ export function EstadoErro({ tipo, barcode, onTentarDeNovo, onEscanearOutro }: P
       </Texto>
       <Texto variante="apoio" style={{ textAlign: 'center', fontSize: 15 }}>
         {erro.texto(barcode)}
+        {fotografar &&
+          '\n\nFotografe o rótulo para analisar agora. Fica guardado para a próxima vez.'}
       </Texto>
       <View style={estilos.botoes}>
         {erro.repetir && <Botao titulo="Tentar de novo" onPress={onTentarDeNovo} />}
+        {fotografar && <Botao titulo="Fotografar o rótulo" icone="escanear" onPress={fotografar} />}
         <Botao
           titulo="Escanear outro"
-          variante={erro.repetir ? 'secundario' : 'primario'}
+          variante={erro.repetir || fotografar ? 'secundario' : 'primario'}
           onPress={onEscanearOutro}
         />
       </View>
@@ -123,17 +147,34 @@ export function EstadoErro({ tipo, barcode, onTentarDeNovo, onEscanearOutro }: P
   );
 }
 
+type PropsAviso = {
+  faltando: string[];
+  texto: string;
+  /** Oferece completar os dados fotografando o rótulo. */
+  onCompletarComFoto?: () => void;
+};
+
 /** Caixa amarela explicando o que faltou (nota parcial ou sem nota). */
-export function AvisoFaltando({ faltando, texto }: { faltando: string[]; texto: string }) {
+export function AvisoFaltando({ faltando, texto, onCompletarComFoto }: PropsAviso) {
   return (
-    <View style={estilos.aviso}>
-      <IconePixel nome="alerta" />
-      <Texto style={{ flex: 1, fontSize: 14, lineHeight: 20 }}>
-        <Texto style={{ fontSize: 14, lineHeight: 20 }} variante="subtitulo">
-          Faltou: {faltando.join(', ')}.
-        </Texto>{' '}
-        {texto}
-      </Texto>
+    <View style={{ gap: 16 }}>
+      <View style={estilos.aviso}>
+        <IconePixel nome="alerta" />
+        <Texto style={{ flex: 1, fontSize: 14, lineHeight: 20 }}>
+          <Texto style={{ fontSize: 14, lineHeight: 20 }} variante="subtitulo">
+            Faltou: {faltando.join(', ')}.
+          </Texto>{' '}
+          {texto}
+        </Texto>
+      </View>
+      {onCompletarComFoto && (
+        <Botao
+          titulo="Completar com foto do rótulo"
+          icone="escanear"
+          variante="secundario"
+          onPress={onCompletarComFoto}
+        />
+      )}
     </View>
   );
 }

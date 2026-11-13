@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { type ClienteOff, FonteIndisponivelError } from './open-food-facts.client.js';
+import type { LabelLine } from '@nutriscan/shared';
+
+import type { RotuloLido } from '../rotulo/leitura.js';
+import type { RepositorioRotulos } from '../rotulo/rotulos.repository.js';
 import type { ProdutoOff } from './open-food-facts.mapper.js';
 import { type CacheProdutos, criarServicoProdutos, type EntradaCache } from './produtos.service.js';
 
@@ -52,14 +56,27 @@ function cacheEmMemoria(
 
 type Busca = ClienteOff['buscarProduto'];
 
+function rotulosEmMemoria(): RepositorioRotulos & { mapa: Map<string, RotuloLido> } {
+  const mapa = new Map<string, RotuloLido>();
+  return {
+    mapa,
+    buscar: async (barcode) => mapa.get(barcode) ?? null,
+    salvar: async (barcode, lido) => {
+      mapa.set(barcode, lido);
+    },
+  };
+}
+
 function montar({
   off: buscaOff,
   obf: buscaObf = async () => null,
   cache,
+  rotulos = rotulosEmMemoria(),
 }: {
   off: Busca;
   obf?: Busca;
   cache: CacheProdutos;
+  rotulos?: RepositorioRotulos;
 }) {
   const buscarProduto = vi.fn(buscaOff);
   const buscarObf = vi.fn(buscaObf);
@@ -68,6 +85,7 @@ function montar({
     off: { buscarProduto },
     obf: { buscarProduto: buscarObf },
     cache,
+    rotulos,
     log,
     agora: () => AGORA,
   });
@@ -215,5 +233,122 @@ describe('ServicoProdutos.consultar', () => {
 
     expect((await servico.consultar(COLA.code))?.produto.barcode).toBe(COLA.code);
     expect(log.warn).toHaveBeenCalledTimes(2);
+  });
+});
+
+/** Linhas do OCR de uma foto (um parágrafo por linha, uma embaixo da outra). */
+const fotoTexto = (...textos: string[]): LabelLine[] =>
+  textos.map((texto, i) => ({ texto, x: 0.05, y: 0.1 + i * 0.05, largura: 0.9, altura: 0.04 }));
+
+const FOTO_INGREDIENTES = fotoTexto(
+  'Ingredientes: farinha de trigo, açúcar, gordura vegetal,',
+  'aromatizante e corante tartrazina.',
+  'ALÉRGICOS: CONTÉM TRIGO.',
+);
+const FOTO_TABELA = fotoTexto(
+  'Porção de 30 g (3 biscoitos)',
+  '100 g 30 g %VD*',
+  'Valor energético (kcal) 480 144 7',
+  'Açúcares adicionados (g) 30 9 18',
+  'Gorduras saturadas (g) 9,5 2,9 14',
+  'Sódio (mg) 310 93 5',
+);
+
+describe('ServicoProdutos.enviarRotulo (base própria)', () => {
+  it('produto desconhecido: monta e analisa só pela foto, com o nome digitado', async () => {
+    const { servico } = montar({ off: async () => null, cache: cacheEmMemoria() });
+
+    const r = await servico.enviarRotulo('7890000000001', {
+      tipo: 'alimento',
+      nome: 'Biscoito da padaria',
+      ingredientes: FOTO_INGREDIENTES,
+      tabela: FOTO_TABELA,
+    });
+
+    if (!r.ok) throw new Error('esperava leitura');
+    expect(r.resultado.fonte).toBe('foto');
+    expect(r.resultado.produto.nome).toBe('Biscoito da padaria');
+    const { analise } = r.resultado;
+    if (analise.status === 'dados_insuficientes') throw new Error('esperava nota');
+    expect(analise.destaques.nova?.grupo).toBe(4);
+    expect(analise.destaques.lupa.map((l) => l.nutriente)).toEqual(
+      expect.arrayContaining(['acucar_adicionado', 'gordura_saturada']),
+    );
+    expect(analise.alertas.map((a) => a.id)).toContain('aditivo-corantes-azoicos');
+  });
+
+  it('o próximo scan do mesmo código já encontra o produto (sem nova foto)', async () => {
+    const { servico } = montar({ off: async () => null, cache: cacheEmMemoria() });
+    await servico.enviarRotulo('7890000000001', {
+      tipo: 'alimento',
+      ingredientes: FOTO_INGREDIENTES,
+    });
+
+    const r = await servico.consultar('7890000000001');
+    expect(r?.fonte).toBe('foto');
+    expect(r?.produto.nome).toBe('Produto sem nome');
+  });
+
+  it('cadastro do OFF sem ingredientes: mantém nome e marca, usa a lista da foto', async () => {
+    const semLista: ProdutoOff = {
+      code: '7890000000002',
+      product_name: 'Biscoito X',
+      brands: 'Marca Y',
+    };
+    const { servico } = montar({ off: async () => semLista, cache: cacheEmMemoria() });
+
+    const r = await servico.enviarRotulo(semLista.code, {
+      tipo: 'alimento',
+      ingredientes: FOTO_INGREDIENTES,
+    });
+
+    if (!r.ok) throw new Error('esperava leitura');
+    expect(r.resultado.produto).toMatchObject({ nome: 'Biscoito X', marca: 'Marca Y' });
+    expect(r.resultado.produto.ingredientes).toContain('farinha de trigo');
+  });
+
+  it('foto ilegível: diz qual foto e não guarda nada', async () => {
+    const rotulos = rotulosEmMemoria();
+    const { servico } = montar({ off: async () => null, cache: cacheEmMemoria(), rotulos });
+
+    const r = await servico.enviarRotulo('7890000000003', {
+      tipo: 'alimento',
+      ingredientes: FOTO_INGREDIENTES,
+      tabela: fotoTexto('borrado'),
+    });
+
+    expect(r).toEqual({ ok: false, ilegiveis: ['tabela'] });
+    expect(rotulos.mapa.size).toBe(0);
+  });
+
+  it('novo envio só com a tabela mantém a lista enviada antes', async () => {
+    const rotulos = rotulosEmMemoria();
+    const { servico } = montar({ off: async () => null, cache: cacheEmMemoria(), rotulos });
+
+    await servico.enviarRotulo('7890000000004', {
+      tipo: 'alimento',
+      ingredientes: FOTO_INGREDIENTES,
+    });
+    await servico.enviarRotulo('7890000000004', { tipo: 'alimento', tabela: FOTO_TABELA });
+
+    const lido = rotulos.mapa.get('7890000000004');
+    expect(lido?.ingredientes).toContain('farinha de trigo');
+    expect(lido?.nutrientes?.sodioMg).toBe(310);
+  });
+
+  it('com as bases fora do ar, o produto lido por foto continua respondendo', async () => {
+    const rotulos = rotulosEmMemoria();
+    rotulos.mapa.set('7890000000005', {
+      tipo: 'cosmetico',
+      nome: 'Creme',
+      ingredientes: 'Aqua, Parfum',
+    });
+    const { servico } = montar({ off: foraDoAr, obf: foraDoAr, cache: cacheEmMemoria(), rotulos });
+
+    const r = await servico.consultar('7890000000005');
+
+    expect(r?.fonte).toBe('foto');
+    expect(r?.produto.tipo).toBe('cosmetico');
+    expect(r?.desatualizado).toBe(true);
   });
 });

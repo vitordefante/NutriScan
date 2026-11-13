@@ -122,15 +122,47 @@ export type ProductResult = {
   produto: Product;
   analise: Analysis;
   /**
-   * true quando a fonte (Open Food Facts) estava fora do ar e a resposta veio de uma cópia
+   * true quando a base aberta estava fora do ar e a resposta veio de uma cópia
    * antiga do cache. A análise continua válida, mas os dados do produto podem estar desatualizados.
    */
   desatualizado: boolean;
+  /** De onde vieram os dados do produto: bases abertas ou fotos do rótulo enviadas no app. */
+  fonte: ProductSource;
+};
+
+export type ProductSource = 'open_food_facts' | 'open_beauty_facts' | 'foto';
+
+/**
+ * Uma linha de texto lida (OCR) na foto de um rótulo, no próprio aparelho.
+ * Posição normalizada (0–1) com origem no canto superior esquerdo da foto em pé.
+ */
+export type LabelLine = {
+  texto: string;
+  x: number;
+  y: number;
+  largura: number;
+  altura: number;
+};
+
+/** Corpo de POST /produtos/:barcode/rotulo: o texto lido nas fotos (as fotos não saem do aparelho). */
+export type LabelSubmission = {
+  tipo: ProductKind;
+  /** Nome digitado pelo usuário, para produtos que não estão nas bases. */
+  nome?: string;
+  /** Foto da lista de ingredientes. */
+  ingredientes?: LabelLine[];
+  /** Foto da tabela nutricional (alimentos). */
+  tabela?: LabelLine[];
 };
 
 /** Corpo das respostas de erro da API. */
 export type ApiError = {
-  erro: 'codigo_invalido' | 'produto_nao_encontrado' | 'fonte_indisponivel';
+  erro:
+    | 'codigo_invalido'
+    | 'produto_nao_encontrado'
+    | 'fonte_indisponivel'
+    | 'rotulo_invalido'
+    | 'rotulo_ilegivel';
   mensagem: string;
 };
 

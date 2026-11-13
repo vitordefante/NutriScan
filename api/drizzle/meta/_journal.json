@@ -8,6 +8,13 @@
       "when": 1794353423698,
       "tag": "0000_cache_produtos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794590248840,
+      "tag": "0001_rotulos_lidos",
+      "breakpoints": true
     }
   ]
 }
