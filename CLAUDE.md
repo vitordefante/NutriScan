@@ -74,7 +74,7 @@ npm run format       # Prettier
 - **Contaminantes** (mercúrio, arsênio, agrotóxicos, PFAS, microplásticos): alerta de **exposição potencial** inferido por categoria/ingrediente, com fonte (ex.: PARA/ANVISA); nunca "este produto contém". Peso pequeno na nota.
 - **Contas:** e-mail + senha implementados na API (`@fastify/jwt` + argon2); token no app em `expo-secure-store`. Escanear funciona sem login; log de exposição exige conta e sincroniza na API.
 - **Nota:** 0–100, exibida como barra de HP. Cada componente é um `ScoreItem` (`pontos`, `motivo`, `fonte`) — a tela "por que essa nota" lista esses itens. Os pesos refletem a metodologia do autor (viés naturalista) e são documentados de forma transparente.
-- **UI:** profissional e organizada, com detalhes em pixel art (fonte, ícones, barra de HP, ícones de alimentos dos produtores).
+- **UI:** profissional e organizada, com detalhes em pixel art (fonte, ícones, barra de HP, ícones de alimentos dos produtores). **Design system v0 aprovado — ver `docs/design-system.md`** (tokens em `app/src/theme/tokens.ts`); o autor quer telas limpas, sem redundância, com os fatos antes das lacunas.
 - **Foto/OCR:** fica para o final.
 - **Git:** uma branch por fase, PR via `gh`, `/code-review` antes do merge.
 
@@ -82,7 +82,7 @@ npm run format       # Prettier
 
 0. Fundação (monorepo, API com /health, app com abas) — feito
 1. Produtos + motor de nota de alimentos (Open Food Facts, cache, testes) — feito (branch `fase-1`)
-2. Scanner + tela de resultado + design pixel art (primeiro build no iPhone)
+2. Scanner + tela de resultado + design pixel art (primeiro build no iPhone) — feito (PR #4)
 3. Cosméticos (Open Beauty Facts + lista curada)
 4. Alternativas
 5. Contas + exposure tracking
@@ -103,7 +103,7 @@ npm run format       # Prettier
 **Alimentos: metodologia v1 aprovada e implementada — ver `docs/metodologia-nota.md`** (fonte de verdade dos pesos; o teste `api/src/modules/analise/calibracao.test.ts` trava as notas de produtos reais, então mudança de regra = atualizar o doc e esse teste juntos). Princípios:
 
 - **Alimentos:** compor a partir de Nutri-Score, classificação NOVA (ultraprocessados — alinhada ao Guia Alimentar para a População Brasileira), rotulagem nutricional frontal da ANVISA (alto em açúcar adicionado, gordura saturada, sódio) e aditivos com alerta (referências EFSA/IARC).
-- **Cosméticos:** lista curada própria de ingredientes de atenção (ex.: parabenos, liberadores de formaldeído, certos filtros UV, fragrâncias alergênicas), cada um com nível de risco e referência.
+- **Cosméticos: metodologia v1 aprovada — ver `docs/metodologia-cosmeticos.md`** (fonte de verdade da lista curada e dos pesos). Nota só pela lista de ingredientes INCI: grupos de ingredientes de atenção em três níveis (alto −25, moderado −10 até −40, baixo −3 até −15), cada um com motivo e fonte; escolhas do viés do autor são declaradas como tal.
 - Toda penalidade exibida ao usuário deve ter a fonte associada. Linguagem neutra e baseada em evidência — sem acusar marcas.
 - Tratar cadastros incompletos com honestidade: indicar quando faltam dados em vez de inventar nota.
 
@@ -127,7 +127,6 @@ npm run format       # Prettier
 
 ## Decisões pendentes
 
-- Lista curada de ingredientes de cosméticos.
 - Provedor de nuvem para a API e o banco.
-- OCR/foto: serviço a usar (somente se houver tempo).
-- Referências visuais de UI (o autor vai enviar antes da Fase 2).
+- OCR/foto: serviço a usar. Para cosméticos ele é mais importante que o previsto: o Open Beauty Facts tem pouca cobertura no Brasil (~500 produtos, ~40% com ingredientes).
+- Conferir no texto oficial as referências marcadas **[a confirmar]** em `docs/metodologia-cosmeticos.md`.
