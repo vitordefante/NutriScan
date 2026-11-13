@@ -39,6 +39,8 @@ export type Alert = {
   fonte: string;
   /** true quando o alerta é inferido pela categoria (ex.: mercúrio em atum), não medido no produto. */
   estimado: boolean;
+  /** Cosméticos: os nomes do rótulo que ativaram o alerta (ex.: ["Methylparaben", "Propylparaben"]). */
+  ingredientes?: string[];
 };
 
 export type NovaGroup = 1 | 2 | 3 | 4;
