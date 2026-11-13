@@ -1,3 +1,5 @@
+import type { NovaGroup, NutriScoreLetter } from '@nutriscan/shared';
+
 /**
  * Entrada do motor de nota: os dados de um alimento já normalizados.
  *
@@ -25,8 +27,9 @@ export type DadosAlimento = {
   nutrientes: Nutrientes;
 };
 
-export type GrupoNova = 1 | 2 | 3 | 4;
-export type LetraNutriScore = 'A' | 'B' | 'C' | 'D' | 'E';
+/** Os mesmos tipos do contrato com o app (@nutriscan/shared), com nomes em português aqui. */
+export type GrupoNova = NovaGroup;
+export type LetraNutriScore = NutriScoreLetter;
 
 export type Nutrientes = {
   energiaKcal?: number;

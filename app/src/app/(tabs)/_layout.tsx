@@ -1,13 +1,19 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 
+import { cores, fontes } from '@/theme/tokens';
+
 /**
- * Abas principais do app.
- * Ícones provisórios (SF Symbols no iOS, Material no Android) —
- * serão trocados pelos ícones pixel art na fase de design.
+ * Abas principais do app (barra nativa do sistema).
+ * Ícones provisórios (SF Symbols no iOS, Material no Android) — os ícones pixel art
+ * precisam virar imagens PNG para a barra nativa (pendência registrada em docs/design-system.md).
  */
 export default function TabsLayout() {
   return (
-    <NativeTabs>
+    <NativeTabs
+      tintColor={cores.tinta}
+      labelStyle={{ fontFamily: fontes.pixel, fontSize: 10 }}
+      backgroundColor={cores.papel}
+    >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Escanear</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="barcode.viewfinder" md="barcode_scanner" />

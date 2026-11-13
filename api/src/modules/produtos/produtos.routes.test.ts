@@ -7,7 +7,14 @@ import type { ServicoProdutos } from './produtos.service.js';
 
 const RESULTADO: ProductResult = {
   produto: { barcode: '7894900010398', tipo: 'alimento', nome: 'Refrigerante', categorias: [] },
-  analise: { status: 'completa', nota: 5, faixa: 'pessimo', itens: [], alertas: [] },
+  analise: {
+    status: 'completa',
+    nota: 5,
+    faixa: 'pessimo',
+    itens: [],
+    alertas: [],
+    destaques: { nova: null, nutriScore: null, lupa: [] },
+  },
   desatualizado: false,
 };
 

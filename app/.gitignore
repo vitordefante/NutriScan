@@ -40,3 +40,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# endereço da API desta máquina (copiado de .env.example)
+.env
