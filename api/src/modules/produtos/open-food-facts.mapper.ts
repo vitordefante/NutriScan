@@ -7,6 +7,7 @@ import type {
   LetraNutriScore,
   Nutrientes,
 } from '../analise/dados-alimento.js';
+import type { DadosCosmetico } from '../analise-cosmetico/nota.js';
 import { subtipoDasCategorias } from './subtipo.js';
 
 /**
@@ -37,6 +38,10 @@ export const produtoOffSchema = z.object({
   labels_tags: listaDeTextos,
   additives_tags: listaDeTextos,
   ingredients_text_pt: texto,
+  // Cosméticos (Open Beauty Facts): a lista INCI muitas vezes só existe no campo genérico
+  // ou em inglês. Alimentos continuam usando só o texto em português.
+  ingredients_text: texto,
+  ingredients_text_en: texto,
   nova_group: z.union([z.number(), z.string()]).optional().catch(undefined),
   nutriscore_grade: texto,
   nutriments: z.record(z.string(), z.unknown()).optional().catch(undefined),
@@ -52,19 +57,31 @@ export function nomeDoProduto(p: ProdutoOff): string {
 }
 
 /** Dados do produto para exibição no app. */
-export function paraProduto(p: ProdutoOff): Product {
+export function paraProduto(p: ProdutoOff, tipo: Product['tipo'] = 'alimento'): Product {
   const marca = p.brands?.split(',')[0]?.trim();
   const categorias = p.categories_tags ?? [];
   const subtipo = subtipoDasCategorias(categorias);
   return {
     barcode: p.code,
-    tipo: 'alimento',
+    tipo,
     nome: nomeDoProduto(p),
     ...(marca && { marca }),
     ...(p.image_front_url && { imagemUrl: p.image_front_url }),
     ...(subtipo && { subtipo }),
     categorias,
     ...(p.ingredients_text_pt && { ingredientes: p.ingredients_text_pt }),
+  };
+}
+
+/** Entrada do motor de cosméticos (cadastro do Open Beauty Facts). */
+export function paraDadosCosmetico(p: ProdutoOff): DadosCosmetico {
+  const ingredientes = [p.ingredients_text_pt, p.ingredients_text, p.ingredients_text_en].find(
+    (t) => t?.trim(),
+  );
+  return {
+    nome: nomeDoProduto(p),
+    ...(ingredientes && { ingredientes }),
+    selos: p.labels_tags ?? [],
   };
 }
 

@@ -22,6 +22,20 @@ const COLA: ProdutoOff = {
   },
 };
 
+const SHAMPOO: ProdutoOff = {
+  code: '7891150102613',
+  product_name: 'Shampoo de teste',
+  categories_tags: ['en:shampoos'],
+  ingredients_text:
+    'Aqua, Sodium Laureth Sulfate, Cocamidopropyl Betaine, Parfum, Sodium Chloride, Glycerin, Citric Acid, Methylparaben',
+};
+
+const off = (dados: ProdutoOff | null): EntradaCache => ({
+  fonte: 'open_food_facts',
+  dados,
+  atualizadoEm: AGORA,
+});
+
 /** Cache em memória, com uma entrada inicial opcional. */
 function cacheEmMemoria(
   inicial?: [string, EntradaCache],
@@ -30,17 +44,34 @@ function cacheEmMemoria(
   return {
     mapa,
     buscar: async (barcode) => mapa.get(barcode) ?? null,
-    salvar: async (barcode, dados, atualizadoEm) => {
-      mapa.set(barcode, { dados, atualizadoEm });
+    salvar: async (barcode, resultado, atualizadoEm) => {
+      mapa.set(barcode, { ...resultado, atualizadoEm });
     },
   };
 }
 
-function montar({ off, cache }: { off: ClienteOff['buscarProduto']; cache: CacheProdutos }) {
-  const buscarProduto = vi.fn(off);
+type Busca = ClienteOff['buscarProduto'];
+
+function montar({
+  off: buscaOff,
+  obf: buscaObf = async () => null,
+  cache,
+}: {
+  off: Busca;
+  obf?: Busca;
+  cache: CacheProdutos;
+}) {
+  const buscarProduto = vi.fn(buscaOff);
+  const buscarObf = vi.fn(buscaObf);
   const log = { warn: vi.fn() };
-  const servico = criarServicoProdutos({ off: { buscarProduto }, cache, log, agora: () => AGORA });
-  return { servico, buscarProduto, log };
+  const servico = criarServicoProdutos({
+    off: { buscarProduto },
+    obf: { buscarProduto: buscarObf },
+    cache,
+    log,
+    agora: () => AGORA,
+  });
+  return { servico, buscarProduto, buscarObf, log };
 }
 
 const foraDoAr = async (): Promise<ProdutoOff | null> => {
@@ -57,11 +88,11 @@ describe('ServicoProdutos.consultar', () => {
     expect(r?.produto.nome).toBe('Refrigerante de Cola');
     expect(r?.analise.status).toBe('completa');
     expect(r?.desatualizado).toBe(false);
-    expect(cache.mapa.get(COLA.code)).toEqual({ dados: COLA, atualizadoEm: AGORA });
+    expect(cache.mapa.get(COLA.code)).toEqual(off(COLA));
   });
 
   it('usa o cache válido sem consultar a fonte', async () => {
-    const cache = cacheEmMemoria([COLA.code, { dados: COLA, atualizadoEm: diasAtras(29) }]);
+    const cache = cacheEmMemoria([COLA.code, { ...off(COLA), atualizadoEm: diasAtras(29) }]);
     const { servico, buscarProduto } = montar({ off: async () => null, cache });
 
     expect((await servico.consultar(COLA.code))?.produto.barcode).toBe(COLA.code);
@@ -69,7 +100,7 @@ describe('ServicoProdutos.consultar', () => {
   });
 
   it('consulta a fonte de novo quando o cache venceu', async () => {
-    const cache = cacheEmMemoria([COLA.code, { dados: COLA, atualizadoEm: diasAtras(31) }]);
+    const cache = cacheEmMemoria([COLA.code, { ...off(COLA), atualizadoEm: diasAtras(31) }]);
     const { servico, buscarProduto } = montar({ off: async () => COLA, cache });
 
     await servico.consultar(COLA.code);
@@ -78,17 +109,86 @@ describe('ServicoProdutos.consultar', () => {
     expect(cache.mapa.get(COLA.code)?.atualizadoEm).toEqual(AGORA);
   });
 
-  it('guarda "não encontrado" no cache por 1 dia', async () => {
+  it('guarda "não encontrado" (nas duas fontes) no cache por 1 dia', async () => {
     const cache = cacheEmMemoria();
-    const { servico, buscarProduto } = montar({ off: async () => null, cache });
+    const { servico, buscarProduto, buscarObf } = montar({ off: async () => null, cache });
 
     expect(await servico.consultar('7890000000000')).toBeNull();
     expect(await servico.consultar('7890000000000')).toBeNull();
     expect(buscarProduto).toHaveBeenCalledOnce();
+    expect(buscarObf).toHaveBeenCalledOnce();
+  });
+
+  it('alimento com dados no Open Food Facts ganha do Open Beauty Facts', async () => {
+    const { servico } = montar({
+      off: async () => COLA,
+      obf: async () => ({ ...SHAMPOO, code: COLA.code }),
+      cache: cacheEmMemoria(),
+    });
+
+    expect((await servico.consultar(COLA.code))?.produto.tipo).toBe('alimento');
+  });
+
+  it('cadastro do OFF só com nome perde para o Open Beauty Facts', async () => {
+    const soNome: ProdutoOff = { code: SHAMPOO.code, product_name: 'Shampoo' };
+    const { servico } = montar({
+      off: async () => soNome,
+      obf: async () => SHAMPOO,
+      cache: cacheEmMemoria(),
+    });
+
+    expect((await servico.consultar(SHAMPOO.code))?.produto.tipo).toBe('cosmetico');
+  });
+
+  it('cadastro do OFF só com nome é usado se o OBF não conhece o código', async () => {
+    const soNome: ProdutoOff = { code: '7890000000001', product_name: 'Óleo de rícino' };
+    const { servico } = montar({ off: async () => soNome, cache: cacheEmMemoria() });
+
+    const r = await servico.consultar(soNome.code);
+    expect(r?.produto.tipo).toBe('alimento');
+    expect(r?.analise.status).toBe('dados_insuficientes');
+  });
+
+  it('com o OFF fora do ar, o cosmético ainda é encontrado no Open Beauty Facts', async () => {
+    const { servico } = montar({
+      off: foraDoAr,
+      obf: async () => SHAMPOO,
+      cache: cacheEmMemoria(),
+    });
+
+    expect((await servico.consultar(SHAMPOO.code))?.produto.tipo).toBe('cosmetico');
+  });
+
+  it('código fora do Open Food Facts é buscado no Open Beauty Facts e analisado como cosmético', async () => {
+    const cache = cacheEmMemoria();
+    const { servico } = montar({ off: async () => null, obf: async () => SHAMPOO, cache });
+
+    const r = await servico.consultar(SHAMPOO.code);
+
+    expect(r?.produto.tipo).toBe('cosmetico');
+    expect(r?.produto.subtipo).toBe('Shampoo');
+    expect(r?.analise.alertas.map((a) => a.titulo)).toContain('Fragrância não revelada');
+    expect(cache.mapa.get(SHAMPOO.code)?.fonte).toBe('open_beauty_facts');
+  });
+
+  it('cosmético em cache é analisado como cosmético', async () => {
+    const cache = cacheEmMemoria([
+      SHAMPOO.code,
+      { fonte: 'open_beauty_facts', dados: SHAMPOO, atualizadoEm: diasAtras(1) },
+    ]);
+    const { servico, buscarProduto } = montar({ off: async () => null, cache });
+
+    expect((await servico.consultar(SHAMPOO.code))?.produto.tipo).toBe('cosmetico');
+    expect(buscarProduto).not.toHaveBeenCalled();
+  });
+
+  it('OFF diz "não encontrado" mas o OBF está fora do ar: erro de fonte, não "não encontrado"', async () => {
+    const { servico } = montar({ off: async () => null, obf: foraDoAr, cache: cacheEmMemoria() });
+    await expect(servico.consultar(SHAMPOO.code)).rejects.toBeInstanceOf(FonteIndisponivelError);
   });
 
   it('com a fonte fora do ar, usa a cópia antiga do cache marcada como desatualizada', async () => {
-    const cache = cacheEmMemoria([COLA.code, { dados: COLA, atualizadoEm: diasAtras(90) }]);
+    const cache = cacheEmMemoria([COLA.code, { ...off(COLA), atualizadoEm: diasAtras(90) }]);
     const { servico, log } = montar({ off: foraDoAr, cache });
 
     const r = await servico.consultar(COLA.code);

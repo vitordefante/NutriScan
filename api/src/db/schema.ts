@@ -6,7 +6,8 @@
 import { jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 /**
- * Cache das respostas do Open Food Facts, por código de barras.
+ * Cache das respostas do Open Food Facts (alimentos) e do Open Beauty Facts (cosméticos),
+ * por código de barras. `fonte` diz de qual base veio o produto.
  *
  * Guarda o dado BRUTO da fonte, não a nota: assim uma mudança na metodologia vale na hora
  * para todos os produtos, sem precisar limpar o cache.

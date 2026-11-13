@@ -8,7 +8,7 @@ Responda e documente em **português do Brasil**.
 
 ## O que é o app
 
-Aplicativo que analisa **alimentos e cosméticos** a partir do código de barras (com leitura do rótulo por foto/OCR como extra) e retorna:
+Aplicativo que analisa **alimentos e cosméticos** a partir do código de barras (com leitura do rótulo por foto quando o produto não está na base) e retorna:
 
 - nota/rating de qualidade, com explicação de **por que** o produto recebeu aquela nota;
 - alertas de ingredientes e aditivos potencialmente danosos;
@@ -23,7 +23,7 @@ Objetivo: incentivar consumo mais consciente, com base em fontes reconhecidas e 
 2. Escanear cosmético (ou fotografar a lista de ingredientes) → análise de ingredientes com alertas.
 3. Abrir mapa → filtrar produtores por categoria → detalhe → contato (WhatsApp).
 
-Extras: histórico de escaneamentos e log de exposição (sincronizados com a conta do usuário), OCR do rótulo como fallback quando o produto não está na base.
+Extras: histórico de escaneamentos e log de exposição (sincronizados com a conta do usuário), foto do rótulo como fallback quando o produto não está na base (fase 4).
 
 ## Stack
 
@@ -74,21 +74,21 @@ npm run format       # Prettier
 - **Contaminantes** (mercúrio, arsênio, agrotóxicos, PFAS, microplásticos): alerta de **exposição potencial** inferido por categoria/ingrediente, com fonte (ex.: PARA/ANVISA); nunca "este produto contém". Peso pequeno na nota.
 - **Contas:** e-mail + senha implementados na API (`@fastify/jwt` + argon2); token no app em `expo-secure-store`. Escanear funciona sem login; log de exposição exige conta e sincroniza na API.
 - **Nota:** 0–100, exibida como barra de HP. Cada componente é um `ScoreItem` (`pontos`, `motivo`, `fonte`) — a tela "por que essa nota" lista esses itens. Os pesos refletem a metodologia do autor (viés naturalista) e são documentados de forma transparente.
-- **UI:** profissional e organizada, com detalhes em pixel art (fonte, ícones, barra de HP, ícones de alimentos dos produtores).
-- **Foto/OCR:** fica para o final.
+- **UI:** profissional e organizada, com detalhes em pixel art (fonte, ícones, barra de HP, ícones de alimentos dos produtores). **Design system v0 aprovado — ver `docs/design-system.md`** (tokens em `app/src/theme/tokens.ts`); o autor quer telas limpas, sem redundância, com os fatos antes das lacunas.
+- **Foto do rótulo:** antecipada para a fase 4 (13/11/2026), porque a cobertura de cosméticos brasileiros nas bases abertas é baixa. Modelo inspirado na Yuka: base própria que cresce com cada foto.
 - **Git:** uma branch por fase, PR via `gh`, `/code-review` antes do merge.
 
 ## Roadmap
 
 0. Fundação (monorepo, API com /health, app com abas) — feito
 1. Produtos + motor de nota de alimentos (Open Food Facts, cache, testes) — feito (branch `fase-1`)
-2. Scanner + tela de resultado + design pixel art (primeiro build no iPhone)
-3. Cosméticos (Open Beauty Facts + lista curada)
-4. Alternativas
-5. Contas + exposure tracking
-6. Mapa de produtores + formulário de pedido
-7. Entrega: deploy, estados de erro, APK, build release no iPhone
-8. Extra: foto/OCR
+2. Scanner + tela de resultado + design pixel art (primeiro build no iPhone) — feito (PR #4)
+3. Cosméticos (Open Beauty Facts + lista curada) — feito (branch `fase-3`)
+4. Foto do rótulo + base própria (antecipada; era a fase 8): quando o produto não está nas bases abertas ou vem sem ingredientes, o usuário fotografa a lista, uma IA de visão na API a extrai, o mesmo motor calcula a nota e o resultado fica gravado no Postgres ligado ao código de barras (o próximo scan já acha). Opcional: devolver ao Open Beauty Facts.
+5. Alternativas
+6. Contas + exposure tracking
+7. Mapa de produtores + formulário de pedido
+8. Entrega: deploy, estados de erro, APK, build release no iPhone
 
 ## Arquitetura
 
@@ -103,7 +103,7 @@ npm run format       # Prettier
 **Alimentos: metodologia v1 aprovada e implementada — ver `docs/metodologia-nota.md`** (fonte de verdade dos pesos; o teste `api/src/modules/analise/calibracao.test.ts` trava as notas de produtos reais, então mudança de regra = atualizar o doc e esse teste juntos). Princípios:
 
 - **Alimentos:** compor a partir de Nutri-Score, classificação NOVA (ultraprocessados — alinhada ao Guia Alimentar para a População Brasileira), rotulagem nutricional frontal da ANVISA (alto em açúcar adicionado, gordura saturada, sódio) e aditivos com alerta (referências EFSA/IARC).
-- **Cosméticos:** lista curada própria de ingredientes de atenção (ex.: parabenos, liberadores de formaldeído, certos filtros UV, fragrâncias alergênicas), cada um com nível de risco e referência.
+- **Cosméticos: metodologia v1 aprovada — ver `docs/metodologia-cosmeticos.md`** (fonte de verdade da lista curada e dos pesos). Nota só pela lista de ingredientes INCI: grupos de ingredientes de atenção em três níveis (alto −25, moderado −10 até −40, baixo −3 até −15), cada um com motivo e fonte; escolhas do viés do autor são declaradas como tal.
 - Toda penalidade exibida ao usuário deve ter a fonte associada. Linguagem neutra e baseada em evidência — sem acusar marcas.
 - Tratar cadastros incompletos com honestidade: indicar quando faltam dados em vez de inventar nota.
 
@@ -122,12 +122,11 @@ npm run format       # Prettier
 ## Cronograma
 
 - **Semana 1 (10–16/11):** setup do repositório, API com motor de nota de alimentos + testes, Postgres via Docker, app com scanner e tela de resultado integrados.
-- **Semana 2 (17–23/11):** cosméticos (lista curada + análise), alternativas, API e tela do mapa de produtores (visitas presenciais), histórico local.
-- **Semana 3 (24–30/11):** estados de carregamento/erro, polimento visual, deploy, APK, build no iPhone, ensaio da demo. OCR se sobrar tempo.
+- **Semana 2 (17–23/11):** cosméticos (lista curada + análise) — adiantado; foto do rótulo + base própria, alternativas, API e tela do mapa de produtores (visitas presenciais), histórico local.
+- **Semana 3 (24–30/11):** estados de carregamento/erro, polimento visual, deploy, APK, build no iPhone, ensaio da demo.
 
 ## Decisões pendentes
 
-- Lista curada de ingredientes de cosméticos.
 - Provedor de nuvem para a API e o banco.
-- OCR/foto: serviço a usar (somente se houver tempo).
-- Referências visuais de UI (o autor vai enviar antes da Fase 2).
+- Foto do rótulo: serviço de IA de visão a usar (custo por foto). Para cosméticos ele é mais importante que o previsto: o Open Beauty Facts tem pouca cobertura no Brasil (~500 produtos, ~40% com ingredientes).
+- Conferir no texto oficial as referências marcadas **[a confirmar]** em `docs/metodologia-cosmeticos.md`.

@@ -1,18 +1,30 @@
 import type { ProductResult } from '@nutriscan/shared';
 
 import { analisarAlimento } from '../analise/nota.js';
+import { analisarCosmetico } from '../analise-cosmetico/nota.js';
 import { type ClienteOff, FonteIndisponivelError } from './open-food-facts.client.js';
-import { paraDadosAlimento, paraProduto, type ProdutoOff } from './open-food-facts.mapper.js';
+import {
+  paraDadosAlimento,
+  paraDadosCosmetico,
+  paraProduto,
+  type ProdutoOff,
+} from './open-food-facts.mapper.js';
 
-export type EntradaCache = {
-  /** null = a fonte disse que o produto não existe. */
+/** Alimentos vêm do Open Food Facts; cosméticos, do Open Beauty Facts. */
+export type FonteProduto = 'open_food_facts' | 'open_beauty_facts';
+
+/** O que uma consulta às fontes devolveu. */
+export type ResultadoFontes = {
+  fonte: FonteProduto;
+  /** null = nenhuma das fontes conhece o produto. */
   dados: ProdutoOff | null;
-  atualizadoEm: Date;
 };
+
+export type EntradaCache = ResultadoFontes & { atualizadoEm: Date };
 
 export type CacheProdutos = {
   buscar: (barcode: string) => Promise<EntradaCache | null>;
-  salvar: (barcode: string, dados: ProdutoOff | null, atualizadoEm: Date) => Promise<void>;
+  salvar: (barcode: string, resultado: ResultadoFontes, atualizadoEm: Date) => Promise<void>;
 };
 
 export type ServicoProdutos = {
@@ -26,6 +38,8 @@ const DIA_MS = 24 * 60 * 60 * 1000;
 
 type Opcoes = {
   off: ClienteOff;
+  /** Open Beauty Facts: consultado quando o Open Food Facts não conhece o código. */
+  obf: ClienteOff;
   cache: CacheProdutos;
   log: Log;
   agora?: () => Date;
@@ -37,6 +51,7 @@ type Opcoes = {
 
 export function criarServicoProdutos({
   off,
+  obf,
   cache,
   log,
   agora = () => new Date(),
@@ -53,12 +68,38 @@ export function criarServicoProdutos({
     }
   }
 
-  async function gravarCache(barcode: string, dados: ProdutoOff | null) {
+  async function gravarCache(barcode: string, resultado: ResultadoFontes) {
     try {
-      await cache.salvar(barcode, dados, agora());
+      await cache.salvar(barcode, resultado, agora());
     } catch (err) {
       log.warn({ err, barcode }, 'Falha ao gravar o cache de produtos');
     }
+  }
+
+  /**
+   * Consulta as duas bases em paralelo (uma fora do ar não derruba a outra, e o cosmético não
+   * espera a resposta do OFF). Quem ganha:
+   * - cadastro do OFF com dados de alimento (tabela nutricional, NOVA ou Nutri-Score);
+   * - senão, o OBF, se conhece o código — o OFF tem cosméticos cadastrados por engano, só com nome;
+   * - senão, o cadastro "magro" do OFF.
+   * Se nenhuma conhece o código mas uma delas falhou, é erro de fonte: não dá para afirmar que o
+   * produto não existe.
+   */
+  async function buscarNasFontes(barcode: string): Promise<ResultadoFontes> {
+    const [alimento, cosmetico] = await Promise.allSettled([
+      off.buscarProduto(barcode),
+      obf.buscarProduto(barcode),
+    ]);
+    const doOff = alimento.status === 'fulfilled' ? alimento.value : undefined;
+    const doObf = cosmetico.status === 'fulfilled' ? cosmetico.value : undefined;
+
+    if (doObf && !(doOff && temDadosDeAlimento(doOff))) {
+      return { fonte: 'open_beauty_facts', dados: doObf };
+    }
+    if (doOff) return { fonte: 'open_food_facts', dados: doOff };
+    if (alimento.status === 'rejected') throw alimento.reason;
+    if (cosmetico.status === 'rejected') throw cosmetico.reason;
+    return { fonte: 'open_beauty_facts', dados: null };
   }
 
   return {
@@ -67,31 +108,46 @@ export function criarServicoProdutos({
       if (emCache) {
         const validade = emCache.dados ? validadeEncontradoMs : validadeNaoEncontradoMs;
         const idade = agora().getTime() - emCache.atualizadoEm.getTime();
-        if (idade < validade) return montar(emCache.dados, false);
+        if (idade < validade) return montar(emCache, false);
       }
 
-      let dados: ProdutoOff | null;
+      let resultado: ResultadoFontes;
       try {
-        dados = await off.buscarProduto(barcode);
+        resultado = await buscarNasFontes(barcode);
       } catch (err) {
         // Fonte fora do ar: uma cópia antiga é melhor que um erro (ex.: durante a demo).
         if (err instanceof FonteIndisponivelError && emCache) {
           log.warn({ err, barcode }, 'Fonte indisponível; usando cópia antiga do cache');
-          return montar(emCache.dados, true);
+          return montar(emCache, true);
         }
         throw err;
       }
 
-      await gravarCache(barcode, dados);
-      return montar(dados, false);
+      await gravarCache(barcode, resultado);
+      return montar(resultado, false);
     },
   };
 }
 
-function montar(dados: ProdutoOff | null, desatualizado: boolean): ProductResult | null {
+function temDadosDeAlimento(p: ProdutoOff): boolean {
+  return (
+    Object.keys(p.nutriments ?? {}).length > 0 ||
+    p.nova_group !== undefined ||
+    p.nutriscore_grade !== undefined
+  );
+}
+
+function montar({ fonte, dados }: ResultadoFontes, desatualizado: boolean): ProductResult | null {
   if (!dados) return null;
+  if (fonte === 'open_beauty_facts') {
+    return {
+      produto: paraProduto(dados, 'cosmetico'),
+      analise: analisarCosmetico(paraDadosCosmetico(dados)),
+      desatualizado,
+    };
+  }
   return {
-    produto: paraProduto(dados),
+    produto: paraProduto(dados, 'alimento'),
     analise: analisarAlimento(paraDadosAlimento(dados)),
     desatualizado,
   };

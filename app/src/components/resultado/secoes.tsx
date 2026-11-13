@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { IconePixel } from '@/components/ui/icone-pixel';
 import { Texto } from '@/components/ui/texto';
-import { cores, coresNova, coresNutriScore, espaco } from '@/theme/tokens';
+import { cores, coresNova, coresNutriScore, espaco, fontes } from '@/theme/tokens';
 
 /** Seção da tela de resultado: título pixel em caixa alta + conteúdo. */
 export function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
@@ -123,6 +123,17 @@ export function CartaoAlerta({ alerta }: { alerta: Alert }) {
           </View>
         </View>
         <Texto style={{ fontSize: 14, lineHeight: 20 }}>{alerta.descricao}</Texto>
+        {alerta.ingredientes && alerta.ingredientes.length > 0 && (
+          <Texto variante="apoio">
+            <Texto variante="apoio" style={{ fontFamily: fontes.textoNegrito }}>
+              No rótulo:
+            </Texto>{' '}
+            {alerta.ingredientes.join(', ')}
+          </Texto>
+        )}
+        {alerta.estimado && (
+          <Texto variante="legenda">Exposição potencial: inferida, não medida no produto.</Texto>
+        )}
         <Texto variante="legenda">Fonte: {alerta.fonte}</Texto>
       </View>
     </View>
