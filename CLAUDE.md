@@ -75,7 +75,7 @@ npm run format       # Prettier
 - **Contas:** e-mail + senha implementados na API (`@fastify/jwt` + argon2); token no app em `expo-secure-store`. Escanear funciona sem login; log de exposição exige conta e sincroniza na API.
 - **Nota:** 0–100, exibida como barra de HP. Cada componente é um `ScoreItem` (`pontos`, `motivo`, `fonte`) — a tela "por que essa nota" lista esses itens. Os pesos refletem a metodologia do autor (viés naturalista) e são documentados de forma transparente.
 - **UI:** profissional e organizada, com detalhes em pixel art (fonte, ícones, barra de HP, ícones de alimentos dos produtores). **Design system v0 aprovado — ver `docs/design-system.md`** (tokens em `app/src/theme/tokens.ts`); o autor quer telas limpas, sem redundância, com os fatos antes das lacunas.
-- **Foto do rótulo:** antecipada para a fase 4 (13/11/2026), porque a cobertura de cosméticos brasileiros nas bases abertas é baixa. Modelo inspirado na Yuka: base própria que cresce com cada foto.
+- **Foto do rótulo:** antecipada para a fase 4 (13/11/2026), porque a cobertura das bases abertas no Brasil é baixa. Modelo inspirado na Yuka: base própria que cresce com cada foto. **OCR gratuito no aparelho** (sem custo de API): módulo Expo local `app/modules/leitor-rotulo` (Swift + Apple Vision, pt-BR, devolve cada linha com a posição — necessária para remontar a tabela, que o Vision lê por coluna). As fotos não saem do celular; só o texto vai para a API. Android ainda sem o módulo (o botão não aparece lá). Foco: alimentos.
 - **Git:** uma branch por fase, PR via `gh`, `/code-review` antes do merge.
 
 ## Roadmap
@@ -84,7 +84,7 @@ npm run format       # Prettier
 1. Produtos + motor de nota de alimentos (Open Food Facts, cache, testes) — feito (branch `fase-1`)
 2. Scanner + tela de resultado + design pixel art (primeiro build no iPhone) — feito (PR #4)
 3. Cosméticos (Open Beauty Facts + lista curada) — feito (branch `fase-3`)
-4. Foto do rótulo + base própria (antecipada; era a fase 8): quando o produto não está nas bases abertas ou vem sem ingredientes, o usuário fotografa a lista, uma IA de visão na API a extrai, o mesmo motor calcula a nota e o resultado fica gravado no Postgres ligado ao código de barras (o próximo scan já acha). Opcional: devolver ao Open Beauty Facts.
+4. Foto do rótulo + base própria (antecipada; era a fase 8): quando o produto não está nas bases abertas ou vem sem ingredientes/tabela, o usuário fotografa a lista de ingredientes e a tabela nutricional; o OCR roda **no aparelho** (Apple Vision), a API extrai a lista e os valores por 100 g/ml, o mesmo motor calcula a nota e a leitura fica gravada no Postgres (`rotulos_lidos`) ligada ao código de barras (o próximo scan já acha) — branch `fase-4`.
 5. Alternativas
 6. Contas + exposure tracking
 7. Mapa de produtores + formulário de pedido
@@ -128,5 +128,5 @@ npm run format       # Prettier
 ## Decisões pendentes
 
 - Provedor de nuvem para a API e o banco.
-- Foto do rótulo: serviço de IA de visão a usar (custo por foto). Para cosméticos ele é mais importante que o previsto: o Open Beauty Facts tem pouca cobertura no Brasil (~500 produtos, ~40% com ingredientes).
+- Foto do rótulo no Android (ML Kit): decidir se entra antes do APK.
 - Conferir no texto oficial as referências marcadas **[a confirmar]** em `docs/metodologia-cosmeticos.md`.
