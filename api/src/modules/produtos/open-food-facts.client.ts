@@ -2,8 +2,8 @@ import { CAMPOS_OFF, type ProdutoOff, produtoOffSchema } from './open-food-facts
 
 /** A fonte não respondeu de forma utilizável (fora do ar, limite de requisições, demora). */
 export class FonteIndisponivelError extends Error {
-  constructor(motivo: string, options?: ErrorOptions) {
-    super(`Open Food Facts indisponível: ${motivo}`, options);
+  constructor(motivo: string, options?: ErrorOptions & { fonte?: string }) {
+    super(`${options?.fonte ?? 'Open Food Facts'} indisponível: ${motivo}`, options);
     this.name = 'FonteIndisponivelError';
   }
 }
@@ -15,10 +15,24 @@ export type ClienteOff = {
 
 type Opcoes = {
   baseUrl?: string;
+  /** Nome da base, para as mensagens de erro e os logs. */
+  nome?: string;
   timeoutMs?: number;
   /** Injetável para os testes. */
   fetch?: typeof fetch;
 };
+
+/**
+ * O Open Beauty Facts (cosméticos) é do mesmo projeto e tem a mesma API do Open Food Facts —
+ * só muda o endereço.
+ */
+export function criarClienteObf(opcoes: Omit<Opcoes, 'baseUrl' | 'nome'> = {}): ClienteOff {
+  return criarClienteOff({
+    ...opcoes,
+    baseUrl: 'https://world.openbeautyfacts.org',
+    nome: 'Open Beauty Facts',
+  });
+}
 
 /**
  * O OFF pede que todo cliente se identifique pelo User-Agent (nome/versão e contato).
@@ -28,9 +42,15 @@ const USER_AGENT = 'NutriScan/0.1 (TCC; https://github.com/vitordefante/NutriSca
 
 export function criarClienteOff({
   baseUrl = 'https://world.openfoodfacts.org',
+  nome = 'Open Food Facts',
   timeoutMs = 8_000,
   fetch: fetchFn = fetch,
 }: Opcoes = {}): ClienteOff {
+  class FonteIndisponivel extends FonteIndisponivelError {
+    constructor(motivo: string, options?: ErrorOptions) {
+      super(motivo, { ...options, fonte: nome });
+    }
+  }
   return {
     async buscarProduto(barcode) {
       const url = `${baseUrl}/api/v2/product/${encodeURIComponent(barcode)}?fields=${CAMPOS_OFF}`;
@@ -42,20 +62,20 @@ export function criarClienteOff({
           signal: AbortSignal.timeout(timeoutMs),
         });
       } catch (err) {
-        throw new FonteIndisponivelError('falha de rede ou tempo esgotado', { cause: err });
+        throw new FonteIndisponivel('falha de rede ou tempo esgotado', { cause: err });
       }
 
       // O OFF responde 404 com um JSON "product not found" para códigos desconhecidos.
       if (resposta.status === 404) return null;
-      if (resposta.status === 429) throw new FonteIndisponivelError('limite de requisições (429)');
-      if (!resposta.ok) throw new FonteIndisponivelError(`HTTP ${resposta.status}`);
+      if (resposta.status === 429) throw new FonteIndisponivel('limite de requisições (429)');
+      if (!resposta.ok) throw new FonteIndisponivel(`HTTP ${resposta.status}`);
 
       // Em manutenção, o OFF responde 200 com uma página HTML em vez de JSON.
       let corpo: unknown;
       try {
         corpo = await resposta.json();
       } catch (err) {
-        throw new FonteIndisponivelError('resposta não é JSON', { cause: err });
+        throw new FonteIndisponivel('resposta não é JSON', { cause: err });
       }
 
       const status = (corpo as { status?: unknown }).status;
@@ -63,7 +83,7 @@ export function criarClienteOff({
 
       const produto = produtoOffSchema.safeParse((corpo as { product?: unknown }).product);
       if (!produto.success) {
-        throw new FonteIndisponivelError('formato de produto inesperado', { cause: produto.error });
+        throw new FonteIndisponivel('formato de produto inesperado', { cause: produto.error });
       }
       // O OFF tem cadastros vazios (só o código, criados por leituras de apps): para o usuário,
       // é o mesmo que não encontrado.
@@ -77,6 +97,7 @@ function estaVazio(p: ProdutoOff): boolean {
     !p.product_name?.trim() &&
     !p.product_name_pt?.trim() &&
     !p.ingredients_text_pt?.trim() &&
+    !p.ingredients_text?.trim() &&
     (p.categories_tags ?? []).length === 0 &&
     Object.keys(p.nutriments ?? {}).length === 0
   );

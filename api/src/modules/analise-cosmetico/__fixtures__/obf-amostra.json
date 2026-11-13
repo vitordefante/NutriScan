@@ -1,0 +1,189 @@
+{
+  "fonte": "Open Beauty Facts (openbeautyfacts.org), licença ODbL. Recorte dos campos usados pelo motor.",
+  "coletadoEm": "2026-11-12",
+  "produtos": [
+    {
+      "code": "7891024134610",
+      "product_name": "crema dental",
+      "brands": "colgate",
+      "categories_tags": ["en:toothpastes"],
+      "labels_tags": ["en:calcium-source", "en:with-fluoride"],
+      "ingredients_text": "CALCIUM CARBONATE, AQUA, GLYCERIN, SODIUM LAURYL SULFATE, SODIUM MONOFLUOROPHOSPHATE 0.145%, AROMA, CELLULOSE GUM, SODIUM BICARBONATE, TETRASODIUM PYROPHOSPHATE, BENZYL ALCOHOL, SODIUM SACCHARIN, SODIUM HYDROXIDE."
+    },
+    {
+      "code": "7891317024789",
+      "product_name": "White Fresh Menta",
+      "brands": "NeutroDerm",
+      "ingredients_text": "aqua/água, glycerin/glicerina, sodium saccharin/sacarina sódica, sucralose/sucralose, sodium monofluorophosphate/monofluorfosfato de sódio, poloxamer 407/poloxâmero 407, PVP/copolímero de polivinilpirrolidona, hydrogen peroxide/peróxido de hidrogênio, disodium pyrophosphate/di-hidrogenofosfato de dissódio, PEG-40 hydrogenated castor oil/óleo de rícino hidrogenado, phosphoric acid/ácido fosfórico, aroma",
+      "ingredients_text_en": "aqua/água, glycerin/glicerina, sodium saccharin/sacarina sódica, sucralose/sucralose, sodium monofluorophosphate/monofluorfosfato de sódio, poloxamer 407/poloxâmero 407, PVP/copolímero de polivinilpirrolidona, hydrogen peroxide/peróxido de hidrogênio, disodium pyrophosphate/di-hidrogenofosfato de dissódio, PEG-40 hydrogenated castor oil/óleo de rícino hidrogenado, phosphoric acid/ácido fosfórico, aroma"
+    },
+    {
+      "code": "7891150102613",
+      "product_name": "Nutricao+ Tri-oleos Shampoo",
+      "brands": "Dove",
+      "ingredients_text": "Aqua, Sodium Laureth Sulfate, Cocamidopropyl Betaine, Parfum, Sodium Chloride, Dimethiconol, Glycol Distearate, Glycerin, Carbomer, Guar Hydroxypropyltrimonium Chloride, Sodium Benzoate, Citric Acid, Disodium EDTA, Titanium Dioxide, Cocamide MEA, Glycol Stearate, Glyceryl Oleate, PEG-45M, Sodium Hydroxide, Benzyl Salicylate, Geraniol, Hexyl Cinnamal, Limonene, Linalool",
+      "ingredients_text_en": "Aqua, Sodium Laureth Sulfate, Cocamidopropyl Betaine, Parfum, Sodium Chloride, Dimethiconol, Glycol Distearate, Glycerin, Carbomer, Guar Hydroxypropyltrimonium Chloride, Sodium Benzoate, Citric Acid, Disodium EDTA, Titanium Dioxide, Cocamide MEA, Glycol Stearate, Glyceryl Oleate, PEG-45M, Sodium Hydroxide, Benzyl Salicylate, Geraniol, Hexyl Cinnamal, Limonene, Linalool"
+    },
+    {
+      "code": "7899563258781",
+      "product_name": "Shampoo Natura Plant Hidratação Reparadora",
+      "product_name_pt": "Shampoo Natura Plant Hidratação Reparadora",
+      "brands": "Natura",
+      "categories_tags": ["en:hair", "en:shampoos", "pt:Hidratante"],
+      "labels_tags": ["en:vegetarian", "en:vegan", "en:without-paraben"],
+      "ingredients_text": "Aqua, Sodium Laureth Sulfate, Cocamidopropyl Betaine, PPG-15 Stearyl Ether, Glycol Distearate, Parfum, Dimethiconol, Triethanolamine, Acrylates/V10-30 Alkyl Acrylate Crosspolymer, Sodium Chloride, Polyquaternium-10, Elaeis Guineensis Oil, Tetrasodium EDTA, PEG-4 Laurate, PEG-4 Dilaurate, Sodium Hydroxide, Citric Acid, Tea-dodecylbenzenesulfonate, Glycerin, PEG-200, Iodopropynyl Butylcarbamate, Sodium Benzoate, Sodium Acetate, Hydrolyzed Quinoa, Methylisothiazolinone, Isopropyl Alcohol, Butylene Glycol, Bht, Magnesium Nitrate, Phenoxyethanol, TBHQ, Methylchloroisothiazolinone, Potassium Sorbate, Ethylhexylglycerin, Magnesium Chloride, Hexyl Cinnamal, Benzyl Salicylate, Linalool.",
+      "ingredients_text_pt": "Aqua, Sodium Laureth Sulfate, Cocamidopropyl Betaine, PPG-15 Stearyl Ether, Glycol Distearate, Parfum, Dimethiconol, Triethanolamine, Acrylates/V10-30 Alkyl Acrylate Crosspolymer, Sodium Chloride, Polyquaternium-10, Elaeis Guineensis Oil, Tetrasodium EDTA, PEG-4 Laurate, PEG-4 Dilaurate, Sodium Hydroxide, Citric Acid, Tea-dodecylbenzenesulfonate, Glycerin, PEG-200, Iodopropynyl Butylcarbamate, Sodium Benzoate, Sodium Acetate, Hydrolyzed Quinoa, Methylisothiazolinone, Isopropyl Alcohol, Butylene Glycol, Bht, Magnesium Nitrate, Phenoxyethanol, TBHQ, Methylchloroisothiazolinone, Potassium Sorbate, Ethylhexylglycerin, Magnesium Chloride, Hexyl Cinnamal, Benzyl Salicylate, Linalool."
+    },
+    {
+      "code": "7891150049628",
+      "product_name": "Shampoo Seda Joias da Natureza Abacate e Karité",
+      "product_name_pt": "Shampoo Seda Joias da Natureza Abacate e Karité",
+      "brands": "Seda",
+      "categories_tags": ["en:hair", "en:shampoos", "pt:Hidratante"],
+      "labels_tags": ["en:not-tested-on-animals", "en:without-paraben"],
+      "ingredients_text": "AQUA, SODIUM LAURETH SULFATE, SODIUM CHLORIDE, COCAMIDOPROPYL BETAINE, GLYCERIN, PARFUM, DIMETHICONOL, SODIUM BENZOATE, GLYCOL DISTEARATE, CARBOMER, CITRIC ACID, GUAR HYDROXYPROPYLTRIMONIUM CHLORIDE, COCAMIDE MEA, DISODIUM EDTA, MICA, PEG-45M, TITANIUM DIOXIDE, CI 19140, ARGANIA SPINOSA KERNEL OIL^, BUTYROSPERMUM PARKII BUTTER, COCOS NUCIFERA OIL^, SODIUM HYDROXIDE, CI 17200, PERSEA GRATISSIMA FRUIT EXTRACT, CI 42090, HEXYL CINNAMAL. ^INGREDIENTES ORGÂNICOS",
+      "ingredients_text_pt": "AQUA, SODIUM LAURETH SULFATE, SODIUM CHLORIDE, COCAMIDOPROPYL BETAINE, GLYCERIN, PARFUM, DIMETHICONOL, SODIUM BENZOATE, GLYCOL DISTEARATE, CARBOMER, CITRIC ACID, GUAR HYDROXYPROPYLTRIMONIUM CHLORIDE, COCAMIDE MEA, DISODIUM EDTA, MICA, PEG-45M, TITANIUM DIOXIDE, CI 19140, ARGANIA SPINOSA KERNEL OIL^, BUTYROSPERMUM PARKII BUTTER, COCOS NUCIFERA OIL^, SODIUM HYDROXIDE, CI 17200, PERSEA GRATISSIMA FRUIT EXTRACT, CI 42090, HEXYL CINNAMAL. ^INGREDIENTES ORGÂNICOS"
+    },
+    {
+      "code": "7899706180924",
+      "product_name": "Shampoo L'Oréal Paris Elseve Liso dos Sonhos 200ml",
+      "product_name_pt": "Shampoo L'Oréal Paris Elseve Liso dos Sonhos 200ml",
+      "brands": "L'Oréal",
+      "categories_tags": ["en:hair", "en:shampoos", "en:hair-care"],
+      "labels_tags": ["en:without-paraben"],
+      "ingredients_text": "Aqua/Water, Sodium Laureth Sulfate, Coco-Betaine, Glycerin, Sodium Chloride, Sodium Benzoate, Sodium Hydroxide, Hydroxycitronellal, Hydrolyzed Wheat Protein, Hydrolyzed Corn Protein, Hydrolyzed Soy Protein, Theobroma Cacao Seed Butter / Cocoa Seed Butter, Phenoxyethanol, PEG-60 Hydrogenated Castor Oil, Polyquaternium-10, Salicylic AciS, Limonene, Benzyl Salicylate, Linalool, Benzyl Alcohol, Propylene GlycoL, Alpha-Isomethyl Ionone, Citric Acid, Citronellol, Coumarin, Hexylene Glycol, Hexyl Cinnamal, Parfum / Fragrance.",
+      "ingredients_text_pt": "Aqua/Water, Sodium Laureth Sulfate, Coco-Betaine, Glycerin, Sodium Chloride, Sodium Benzoate, Sodium Hydroxide, Hydroxycitronellal, Hydrolyzed Wheat Protein, Hydrolyzed Corn Protein, Hydrolyzed Soy Protein, Theobroma Cacao Seed Butter / Cocoa Seed Butter, Phenoxyethanol, PEG-60 Hydrogenated Castor Oil, Polyquaternium-10, Salicylic AciS, Limonene, Benzyl Salicylate, Linalool, Benzyl Alcohol, Propylene GlycoL, Alpha-Isomethyl Ionone, Citric Acid, Citronellol, Coumarin, Hexylene Glycol, Hexyl Cinnamal, Parfum / Fragrance."
+    },
+    {
+      "code": "7896115702679",
+      "product_name": "TRÁ LÁ LÁ KIDS",
+      "product_name_pt": "TRÁ LÁ LÁ KIDS",
+      "brands": "PHISALIA",
+      "categories_tags": ["en:hair", "en:shampoos"],
+      "labels_tags": ["en:vegetarian", "en:vegan", "pt:Limpa e condiciona"],
+      "ingredients_text": "AQUA, SODIUM LAURETH SULFATE, COCAMIDE DEA, COCAMIDOPROPYL BETAINE, SODIUM CHLORIDE, DISODIUM COCOYL GLUTAMATE, DISODIUM LAURETH SULFOSUCCINATE, TRIETHANOLAMINE, PARFUM PHENOXYETHANOL, PEG-150 DISTEARATE, GUAR HYDROXYPROPYLTRIMONIUM CHLORIDE CARBOMER, PEG-12 DIMETHICONE, POLYQUATERNIUM-10, GLYCOL DISTEARATE, COCAMIDE MEA, LAURETH-10, CITRIC ACID, TETRASODIUM EDTA, CI 42090, METHYLCHLOROISOTHIAZOLINONE, METHYLISOTHIAZOLINONE BUTYLPHENYL METHYLPROPIONAL &quot;MEDIDA ESTIMADA CONSIDERANDO 10ML POR BANHO. MODO DE USAR: APLIQUE O SHAMPOO TRÁ LÁ LÁ KIDS 2EM1 NOS CABELOS MOLHADOS E MASSAGEIE ATÉ FORMAR ESPUMA EM SEGUIDA ENXAGUE E: VEGANO",
+      "ingredients_text_pt": "AQUA, SODIUM LAURETH SULFATE, COCAMIDE DEA, COCAMIDOPROPYL BETAINE, SODIUM CHLORIDE, DISODIUM COCOYL GLUTAMATE, DISODIUM LAURETH SULFOSUCCINATE, TRIETHANOLAMINE, PARFUM PHENOXYETHANOL, PEG-150 DISTEARATE, GUAR HYDROXYPROPYLTRIMONIUM CHLORIDE CARBOMER, PEG-12 DIMETHICONE, POLYQUATERNIUM-10, GLYCOL DISTEARATE, COCAMIDE MEA, LAURETH-10, CITRIC ACID, TETRASODIUM EDTA, CI 42090, METHYLCHLOROISOTHIAZOLINONE, METHYLISOTHIAZOLINONE BUTYLPHENYL METHYLPROPIONAL &quot;MEDIDA ESTIMADA CONSIDERANDO 10ML POR BANHO. MODO DE USAR: APLIQUE O SHAMPOO TRÁ LÁ LÁ KIDS 2EM1 NOS CABELOS MOLHADOS E MASSAGEIE ATÉ FORMAR ESPUMA EM SEGUIDA ENXAGUE E: VEGANO"
+    },
+    {
+      "code": "7897622317370",
+      "product_name": "Baby Wipes",
+      "brands": "New Carinho",
+      "ingredients_text": "Aqua, Propylene Glycol, PEG-40 Hydrogenated Castor Oil, Glycerin, Disodium EDTA, Ethylhexylglycerin, Parfum, Phenoxyethanol, Potassium Sorbate, Glyceryl Oleate, PEG-20 Glyceryl Laurate, Bisabolol, Disodium Cocoamphodiacetate, Butylene Glycol, Cocamidopropyl Betaine, Benzoic Acid, Ethylhexylglycerin, Phenoxyethanol, Parfum, Cinnamyl Alcohol, Citronellol, Geraniol, Linalool, Citral",
+      "ingredients_text_en": "Aqua, Propylene Glycol, PEG-40 Hydrogenated Castor Oil, Glycerin, Disodium EDTA, Ethylhexylglycerin, Parfum, Phenoxyethanol, Potassium Sorbate, Glyceryl Oleate, PEG-20 Glyceryl Laurate, Bisabolol, Disodium Cocoamphodiacetate, Butylene Glycol, Cocamidopropyl Betaine, Benzoic Acid, Ethylhexylglycerin, Phenoxyethanol, Parfum, Cinnamyl Alcohol, Citronellol, Geraniol, Linalool, Citral"
+    },
+    {
+      "code": "7898623951785",
+      "product_name": "Máscara de Hidratação Capilar Salon Line Maria Natureza Leite de Coco & Óleo de Monoi",
+      "product_name_pt": "Máscara de Hidratação Capilar Salon Line Maria Natureza Leite de Coco & Óleo de Monoi",
+      "brands": "Salon Line",
+      "categories_tags": ["en:hair", "pt:Hidratante"],
+      "labels_tags": ["en:vegetarian", "en:vegan", "en:without-paraben"],
+      "ingredients_text": "Óleo de Coco, Água de Coco, Óleo de Abacate, Manteiga de Murumuru, CB2, Queratina vegetal",
+      "ingredients_text_pt": "Óleo de Coco, Água de Coco, Óleo de Abacate, Manteiga de Murumuru, CB2, Queratina vegetal"
+    },
+    {
+      "code": "4005808846290",
+      "product_name": "Nivea creme para mãos 3 em 1 anti idade",
+      "product_name_pt": "Nivea creme para mãos 3 em 1 anti idade",
+      "brands": "Nivea",
+      "categories_tags": ["en:body", "en:hand-creams"],
+      "ingredients_text": "Aqua (Água), Glycerin (Glicerol), Octyldodecanol (Octildodecanol), Cetyl Alcohol (Alcool Cetílico), Octocrylene (Octocrileno), Stearyl Alcohol (Álcool Estearilico), Glyceryl Stearate SE (Estearato de Glicerila Autoemulsionante), Hydrogenated Coco-Glycerides (Coco-Glicerídeos Hidrogenados), Creatine (Creatina), 1-Methylhydantoin-2-Imide (1-Metilidantoin-2-Imida), Ubiquinone (Ubidecarenona), Butyrospermum Parkii Butter (Manteiga de Butyrospermum Parkii), Dimethicone (Dimeticona), Butyl Methoxydibenzoylmethane (Avobenzona), Acrylates/C10-30 Alkyl Acrylate Crosspolymer (Crospolímero de Acrilatos/Acrilato de Alquila C10-30), Carbomer (Carbômer), Sodium Cetearyl Sulfate (Cetearil Sulfato de Sódio), Sodium Hydroxide (Hidróxido de Sódio), Ethylhexylglycerin (Etilexilglicerina), Phenoxyethanol (Fenoxietanol) Trisodium EDTA (Edetato Trissódico), Linalool (Linalol), Citronellol (Citronell 6290 Hexyl Cinnamal (Hexil Cinamal), Benzyl Alcohol (Álcool Benzílico), Alpha-Isomethyl Ionone (Alfa-Isometil lonona), d-Limonene (Dextrolimoneno), Eugenol (Eugenol), Parfum (Perfume). www.NIVEA.com.br Produzido por: Beiersdorf Ind. e Com. Ltda.",
+      "ingredients_text_pt": "Aqua (Água), Glycerin (Glicerol), Octyldodecanol (Octildodecanol), Cetyl Alcohol (Alcool Cetílico), Octocrylene (Octocrileno), Stearyl Alcohol (Álcool Estearilico), Glyceryl Stearate SE (Estearato de Glicerila Autoemulsionante), Hydrogenated Coco-Glycerides (Coco-Glicerídeos Hidrogenados), Creatine (Creatina), 1-Methylhydantoin-2-Imide (1-Metilidantoin-2-Imida), Ubiquinone (Ubidecarenona), Butyrospermum Parkii Butter (Manteiga de Butyrospermum Parkii), Dimethicone (Dimeticona), Butyl Methoxydibenzoylmethane (Avobenzona), Acrylates/C10-30 Alkyl Acrylate Crosspolymer (Crospolímero de Acrilatos/Acrilato de Alquila C10-30), Carbomer (Carbômer), Sodium Cetearyl Sulfate (Cetearil Sulfato de Sódio), Sodium Hydroxide (Hidróxido de Sódio), Ethylhexylglycerin (Etilexilglicerina), Phenoxyethanol (Fenoxietanol) Trisodium EDTA (Edetato Trissódico), Linalool (Linalol), Citronellol (Citronell 6290 Hexyl Cinnamal (Hexil Cinamal), Benzyl Alcohol (Álcool Benzílico), Alpha-Isomethyl Ionone (Alfa-Isometil lonona), d-Limonene (Dextrolimoneno), Eugenol (Eugenol), Parfum (Perfume). www.NIVEA.com.br Produzido por: Beiersdorf Ind. e Com. Ltda."
+    },
+    {
+      "code": "4005900915900",
+      "product_name": "Creme Facial Nivea Q10 Energy Antissinais para os Olhos",
+      "product_name_pt": "Creme Facial Nivea Q10 Energy Antissinais para os Olhos",
+      "brands": "Nivea",
+      "categories_tags": ["pt:Creme para os olhos", "pt:Hidratante"],
+      "labels_tags": ["pt:Com Q10"],
+      "ingredients_text": "Aqua, Glycerin, Dicaprylyl Carbonate, Methylpropanediol, Glyceryl Stearate, Cetearyl Alcohol, Hydrogenated Vegetable Oil, Tapioca Starch, C12-15 Alkyl Benzoate, Caprylic/Capric Triglyceride, Octyldodecanol, 1,2-Hexanediol, Ubiquinone, Sodium Ascorbyl Phosphate, Tocopherol, Tocopheryl Acetate, Creatine, 1-Methylhydantoin-2-Imide, Potassium Cetyl Phosphate, Hydrogenated Palm Glycerides, Carrageenan, Xanthan Gum, Ethylhexylglycerin, Caprylyl Glycol, Sodium Hydroxide, Phenoxyethanol, CI 7789",
+      "ingredients_text_pt": "Aqua, Glycerin, Dicaprylyl Carbonate, Methylpropanediol, Glyceryl Stearate, Cetearyl Alcohol, Hydrogenated Vegetable Oil, Tapioca Starch, C12-15 Alkyl Benzoate, Caprylic/Capric Triglyceride, Octyldodecanol, 1,2-Hexanediol, Ubiquinone, Sodium Ascorbyl Phosphate, Tocopherol, Tocopheryl Acetate, Creatine, 1-Methylhydantoin-2-Imide, Potassium Cetyl Phosphate, Hydrogenated Palm Glycerides, Carrageenan, Xanthan Gum, Ethylhexylglycerin, Caprylyl Glycol, Sodium Hydroxide, Phenoxyethanol, CI 7789"
+    },
+    {
+      "code": "7908132258012",
+      "product_name": "Ekos Maracujá",
+      "product_name_pt": "Ekos Maracujá",
+      "brands": "Ekos, Natura",
+      "categories_tags": ["en:body", "en:body-creams", "en:moisturizing-creams"],
+      "labels_tags": ["en:vegetarian", "en:vegan"],
+      "ingredients_text": "AQUA, GLYCERIN, PROPANEDIOL, CAPRYLIC TRIGLYCERIDE, PASSIFLORA EDULIS SEED OIL, SODIUM ACRYLATES COPOLYMER, DODECANE, PARFUM, TOCOPHEROL, HYDROXYACETOPHENONE, LECITHIN, POLYGRYCERYL-3 CAPRILATE, SODIUM GLUCONATE, MAURITIA FLEXUOSA FRUIT OIL, LIMONENE, HEXYL CINNAMAL, LINALOOL, COUMARIN, CITRONELLOL, ALPHA-ISOMETHYL IONONE, BENZYL BENZOATE, HYDROXYCITRONELLAL, CITRAL.",
+      "ingredients_text_pt": "AQUA, GLYCERIN, PROPANEDIOL, CAPRYLIC TRIGLYCERIDE, PASSIFLORA EDULIS SEED OIL, SODIUM ACRYLATES COPOLYMER, DODECANE, PARFUM, TOCOPHEROL, HYDROXYACETOPHENONE, LECITHIN, POLYGRYCERYL-3 CAPRILATE, SODIUM GLUCONATE, MAURITIA FLEXUOSA FRUIT OIL, LIMONENE, HEXYL CINNAMAL, LINALOOL, COUMARIN, CITRONELLOL, ALPHA-ISOMETHYL IONONE, BENZYL BENZOATE, HYDROXYCITRONELLAL, CITRAL."
+    },
+    {
+      "code": "7896512905222",
+      "product_name": "Sabonete Glicerina Tradicional Granado 90 g",
+      "product_name_pt": "Sabonete Glicerina Tradicional Granado 90 g",
+      "brands": "Casa Granado Laboratórios Farmácias e Drogarias S.A, Casa Granado Laboratórios Farmácias e Drogarias Sociedade Anônima, Granado",
+      "categories_tags": [
+        "en:hygiene",
+        "en:soaps",
+        "en:bar-soaps",
+        "pt:Sabonetes Glicerinados",
+        "pt:Sabonetes em Barra Glicerinados"
+      ],
+      "ingredients_text": "ÓLEO DE PALMISTE, SACAROSE, AGUA, ÁLCOOL ETÍLICO, PROPILENOGLICOL, ÁCIDO ESTEÁRICO, HIDRÓX IDO DE SÓDIO, ÁCIDO PALMÍTICO, FRAGRANCIA, GLICEROL, ÁCIDO MIRÍSTICO, ÁCIDO ETIDRÔNICO, EDETATO DE SÓDIO, LAURILETERSULFATO DE SÓDIO, AMARELO DE TARTRAZINA, DIMETILIDANTOÍNA, SULFATO DE SÓDIO, CORANTE LARANJA 15510, CLORETO DE SÓDIO, EUGENOL.",
+      "ingredients_text_pt": "ÓLEO DE PALMISTE, SACAROSE, AGUA, ÁLCOOL ETÍLICO, PROPILENOGLICOL, ÁCIDO ESTEÁRICO, HIDRÓX IDO DE SÓDIO, ÁCIDO PALMÍTICO, FRAGRANCIA, GLICEROL, ÁCIDO MIRÍSTICO, ÁCIDO ETIDRÔNICO, EDETATO DE SÓDIO, LAURILETERSULFATO DE SÓDIO, AMARELO DE TARTRAZINA, DIMETILIDANTOÍNA, SULFATO DE SÓDIO, CORANTE LARANJA 15510, CLORETO DE SÓDIO, EUGENOL."
+    },
+    {
+      "code": "7898516730589",
+      "product_name": "Puro Gel de Aloe",
+      "product_name_pt": "Puro Gel de Aloe",
+      "brands": "livealoe",
+      "categories_tags": ["pt:hidratante"],
+      "labels_tags": ["en:vegetarian", "en:vegan"],
+      "ingredients_text": "Gel de Aloe vera (Babosa), Sesquicaprilato de xilitol, Caprilil glicol, Goma xantana, Glicerina vegetal, Água.",
+      "ingredients_text_pt": "Gel de Aloe vera (Babosa), Sesquicaprilato de xilitol, Caprilil glicol, Goma xantana, Glicerina vegetal, Água."
+    },
+    {
+      "code": "4005900633309",
+      "product_name": "Deodorant Active Dry Impact Men",
+      "product_name_pt": "Desodorante Active Dry Impact Men",
+      "brands": "Nivea",
+      "categories_tags": ["en:hygiene", "en:deodorants"],
+      "ingredients_text": "Butane, Isobutane, Propane, Isopropyl Palmitate, Aluminum Chlorohydrate, Dicaprylyl Ether, Caprylic/Capric Triglyceride, Aluminum Sesquichlorohydrate, Magnesium Aluminum Silicate, Octyldodecanol, Persea Gratíssima Oil, Disteardimonium Hectorite, Propylene Carbonate, Tocopherol, d-Limonene, Linalool), Geraniol, Citronellol, Eugenol, Alpha-Isomethyl Ionone, Citral, Parfum.",
+      "ingredients_text_en": "Butane, Isobutane, Propane, Isopropyl Palmitate, Aluminum Chlorohydrate, Dicaprylyl Ether, Caprylic/Capric Triglyceride, Aluminum Sesquichlorohydrate, Magnesium Aluminum Silicate, Octyldodecanol, Persea Gratíssima Oil, Disteardimonium Hectorite, Propylene Carbonate, Tocopherol, d-Limonene, Linalool), Geraniol, Citronellol, Eugenol, Alpha-Isomethyl Ionone, Citral, Parfum."
+    },
+    {
+      "code": "7891010250980",
+      "product_name": "Protetor Solar Facial Neutrogena Sun Fresh FPS30 40g",
+      "product_name_pt": "Protetor Solar Facial Neutrogena Sun Fresh FPS30 40g",
+      "brands": "Neutrogena",
+      "categories_tags": [
+        "en:suncare",
+        "en:in-sun-protections",
+        "en:sunscreen",
+        "pt:Cuidados com a pele",
+        "pt:Proteção UV"
+      ],
+      "labels_tags": ["en:dermatologically-tested", "fr:non-comedogene"],
+      "ingredients_text": "Aqua, Homosalate, Octocrylene, Butyl Methoxydibenzoylmethane, Glycerin, Methylene Bis-Benzotriazolyl Tetramethylbutylphenol, Aluminum Starch Octenylsuccinate, Ethylhexyl Triazone, Silica, Phenoxyethanol, Potassium Cetyl Phosphate, Glyceryl Stearate, PEG-100 Stearate, Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine, Sodium Potassium Aluminum Silicate, Triacontanyl PVP, Hydroxyacetophenone, Diisopropyl Adipate, Hydrolyzed Jojoba Esters, Titanium Dioxide, Dimethicone, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Parfum, Acrylates/Dimethicone Copolymer, Tocopheryl Acetate, Disodium EDTA, Jojoba Esters, Sodium Hydroxide, Amyl Cinnamal, Benzyl Salicylate.",
+      "ingredients_text_pt": "Aqua, Homosalate, Octocrylene, Butyl Methoxydibenzoylmethane, Glycerin, Methylene Bis-Benzotriazolyl Tetramethylbutylphenol, Aluminum Starch Octenylsuccinate, Ethylhexyl Triazone, Silica, Phenoxyethanol, Potassium Cetyl Phosphate, Glyceryl Stearate, PEG-100 Stearate, Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine, Sodium Potassium Aluminum Silicate, Triacontanyl PVP, Hydroxyacetophenone, Diisopropyl Adipate, Hydrolyzed Jojoba Esters, Titanium Dioxide, Dimethicone, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Parfum, Acrylates/Dimethicone Copolymer, Tocopheryl Acetate, Disodium EDTA, Jojoba Esters, Sodium Hydroxide, Amyl Cinnamal, Benzyl Salicylate."
+    },
+    {
+      "code": "4005900201126",
+      "product_name": "Protetor Solar Facial Nivea Sun Toque Seco Antissinais FPS 60 50ml",
+      "product_name_pt": "Protetor Solar Facial Nivea Sun Toque Seco Antissinais FPS 60 50ml",
+      "brands": "nivea",
+      "categories_tags": [
+        "en:suncare",
+        "en:in-sun-protections",
+        "en:sunscreen",
+        "pt:cuidados com a pele"
+      ],
+      "labels_tags": ["en:without-paraben", "fr:non-comedogene"],
+      "ingredients_text": "Parfum, Ethylhexylglycerin, BHT, Trisodium EDTA, VP/Hexadecene Copolymer, Silica Dimethyl Silylate, Silica, Glycerin, Dimethicone, Polyglyceryl-4 Diisostearate Polyhydroxystearate Sebacate, Sodium Hydroxide, Phenylbenzimidazole Sulfonic Acid, Ethylhexyl Salicylate, Polymethylsilsesquioxane, Polyamide-5, Homosalate, Titanium Dioxide (nano), Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine, Butyl Methoxydibenzoylmethane, Methyl Methacrylate Crosspolymer, Alcohol, Octocrylene, Isopropyl Palmitate, Butylene Glycol Dicaprylate/Dicaprate, Aqua",
+      "ingredients_text_pt": "Parfum, Ethylhexylglycerin, BHT, Trisodium EDTA, VP/Hexadecene Copolymer, Silica Dimethyl Silylate, Silica, Glycerin, Dimethicone, Polyglyceryl-4 Diisostearate Polyhydroxystearate Sebacate, Sodium Hydroxide, Phenylbenzimidazole Sulfonic Acid, Ethylhexyl Salicylate, Polymethylsilsesquioxane, Polyamide-5, Homosalate, Titanium Dioxide (nano), Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine, Butyl Methoxydibenzoylmethane, Methyl Methacrylate Crosspolymer, Alcohol, Octocrylene, Isopropyl Palmitate, Butylene Glycol Dicaprylate/Dicaprate, Aqua"
+    },
+    {
+      "code": "7891035913099",
+      "product_name": "Veet For Men CREME P/DEPILAR VEET FOR MEN",
+      "product_name_pt": "Veet For Men CREME P/DEPILAR VEET FOR MEN",
+      "brands": "Veet",
+      "categories_tags": ["en:hygiene", "en:hair-removal", "pt:Cuidados masculinos"],
+      "labels_tags": ["en:hypoallergenic", "en:dermatologically-tested"],
+      "ingredients_text": "Aqua, Cera Microcristallina, Calcium Hydroxide, Paraffinum Liquidum, Cetyl Palmitate, Glyceryl Stearate, PEG-100 Stearate, Parfum, Triethanolamine, Sodium Myristate, Stearic Acid, Magnesium Aluminum Silicate, Methylparaben, Propylparaben, Disodium EDTA, Sodium Sulfite, Butylphenyl Methylpropional, Citronellol, Geraniol, Limonene, Linalool, Alpha-Isomethyl Ionone",
+      "ingredients_text_pt": "Aqua, Cera Microcristallina, Calcium Hydroxide, Paraffinum Liquidum, Cetyl Palmitate, Glyceryl Stearate, PEG-100 Stearate, Parfum, Triethanolamine, Sodium Myristate, Stearic Acid, Magnesium Aluminum Silicate, Methylparaben, Propylparaben, Disodium EDTA, Sodium Sulfite, Butylphenyl Methylpropional, Citronellol, Geraniol, Limonene, Linalool, Alpha-Isomethyl Ionone"
+    }
+  ]
+}

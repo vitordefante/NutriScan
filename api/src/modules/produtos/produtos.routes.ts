@@ -33,7 +33,7 @@ export const produtosRoutes: FastifyPluginAsync<ProdutosDeps> = async (app, { pr
       return resultado;
     } catch (err) {
       if (err instanceof FonteIndisponivelError) {
-        request.log.error({ err }, 'Open Food Facts indisponível e produto fora do cache');
+        request.log.error({ err }, 'Fonte de produtos indisponível e produto fora do cache');
         return reply
           .code(503)
           .send(
