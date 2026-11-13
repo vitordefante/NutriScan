@@ -1,8 +1,10 @@
+import type { FrontLabelNutrient } from '@nutriscan/shared';
+
 import type { Alimento } from './alimento.js';
 import type { ClassificacaoNova } from './nova.js';
 import { INGREDIENTES_ACUCAR, itensPrincipais } from './texto.js';
 
-export type NutrienteLupa = 'acucar_adicionado' | 'gordura_saturada' | 'sodio';
+export type NutrienteLupa = FrontLabelNutrient;
 
 export type AltoEm = {
   nutriente: NutrienteLupa;

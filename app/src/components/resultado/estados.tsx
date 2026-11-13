@@ -72,6 +72,18 @@ const ERROS: Record<TipoErroProduto, Conteudo> = {
     texto: () => 'Confira a internet do celular e tente de novo.',
     repetir: true,
   },
+  tempo_esgotado: {
+    icone: 'alerta',
+    titulo: 'O servidor demorou demais',
+    texto: () => 'A resposta não chegou a tempo. Tente de novo em instantes.',
+    repetir: true,
+  },
+  servidor_fora: {
+    icone: 'alerta',
+    titulo: 'Servidor do NutriScan fora do ar',
+    texto: () => 'O servidor não está respondendo agora. Tente de novo em instantes.',
+    repetir: true,
+  },
   inesperado: {
     icone: 'alerta',
     titulo: 'Algo deu errado',

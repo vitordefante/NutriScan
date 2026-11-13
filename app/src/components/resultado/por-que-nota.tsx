@@ -2,6 +2,7 @@ import type { ScoreBand, ScoreItem } from '@nutriscan/shared';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { BarraHp } from '@/components/ui/barra-hp';
+import { CartaoEmPilha } from '@/components/ui/cartao-em-pilha';
 import { IconePixel } from '@/components/ui/icone-pixel';
 import { Texto } from '@/components/ui/texto';
 import { cores, espaco, faixas, fontes } from '@/theme/tokens';
@@ -70,10 +71,9 @@ export function PorQueNota({ itens, nota, faixa, teto }: Props) {
 /** Fechamento da conta: a nota depois de todos os descontos (cartão escuro, folha deslocada). */
 function NotaFinal({ nota, faixa, teto }: Omit<Props, 'itens'>) {
   return (
-    <View style={estilos.pilhaFinal}>
-      <View style={estilos.folhaDeTras} />
+    <CartaoEmPilha style={estilos.final}>
       <View
-        style={estilos.final}
+        style={{ gap: 12 }}
         accessible
         accessibilityLabel={`Nota final: ${teto ? 'no máximo ' : ''}${nota} de 100`}
       >
@@ -91,7 +91,7 @@ function NotaFinal({ nota, faixa, teto }: Omit<Props, 'itens'>) {
         </View>
         <BarraHp valor={nota} cor={faixas[faixa].preenchimento} altura={12} escura />
       </View>
-    </View>
+    </CartaoEmPilha>
   );
 }
 
@@ -116,24 +116,7 @@ const estilos = StyleSheet.create({
     gap: 10,
   },
   topoItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  pilhaFinal: { marginTop: 4, marginRight: 8, marginBottom: 8 },
-  folhaDeTras: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    right: -8,
-    bottom: -8,
-    borderWidth: espaco.borda,
-    borderColor: cores.tinta,
-    backgroundColor: cores.papel,
-  },
-  final: {
-    borderWidth: espaco.borda,
-    borderColor: cores.tinta,
-    backgroundColor: cores.tinta,
-    padding: 16,
-    gap: 12,
-  },
+  final: { backgroundColor: cores.tinta, padding: 16 },
   topoFinal: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   pontos: {
     borderWidth: espaco.borda,

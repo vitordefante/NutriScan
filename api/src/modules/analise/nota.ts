@@ -90,11 +90,11 @@ function montarDestaques(
   altos: AltoEm[],
 ): AnalysisHighlights {
   return {
+    // O motivo já diz quando o grupo foi estimado ("Estimado pela categoria…").
     nova: nova && {
       grupo: nova.grupo,
       nome: NOME_GRUPO_NOVA[nova.grupo],
-      motivo: itemNova(nova).motivo,
-      estimado: nova.origem === 'categoria' || nova.origem === 'nome',
+      motivo: motivoNova(nova),
     },
     nutriScore: nutriScore && { letra: nutriScore.letra },
     lupa: altos.map((alto) => ({
@@ -114,8 +114,7 @@ export function faixaDaNota(nota: number): ScoreBand {
   return 'pessimo';
 }
 
-function itemNova(nova: ClassificacaoNova): ScoreItem {
-  const estimado = nova.origem === 'categoria' || nova.origem === 'nome';
+function motivoNova(nova: ClassificacaoNova): string {
   const motivos: Record<ClassificacaoNova['origem'], string> = {
     ingredientes:
       nova.marcadores.length > 0
@@ -125,11 +124,16 @@ function itemNova(nova: ClassificacaoNova): ScoreItem {
     categoria: 'Estimado pela categoria do produto (sem lista de ingredientes).',
     nome: 'Estimado pelo nome do produto (sem lista de ingredientes nem categoria).',
   };
+  return motivos[nova.origem];
+}
+
+function itemNova(nova: ClassificacaoNova): ScoreItem {
+  const estimado = nova.origem === 'categoria' || nova.origem === 'nome';
   return {
     id: 'nova',
     label: `Processamento: NOVA ${nova.grupo} (${DESCRICAO_NOVA[nova.grupo]})`,
     pontos: PESOS.nova[nova.grupo],
-    motivo: motivos[nova.origem],
+    motivo: motivoNova(nova),
     fonte: FONTES.nova,
     ...(estimado && { estimado }),
   };

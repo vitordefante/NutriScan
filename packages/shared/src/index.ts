@@ -54,8 +54,8 @@ export type AnalysisHighlights = {
     grupo: NovaGroup;
     /** Ex.: "Ultraprocessado". */
     nome: string;
+    /** Diz também quando o grupo foi estimado (ex.: "Estimado pela categoria…"). */
     motivo: string;
-    estimado: boolean;
   } | null;
   nutriScore: { letra: NutriScoreLetter } | null;
   /** Avisos da rotulagem frontal da ANVISA ("lupa"); vazio quando não há nenhum "alto em". */

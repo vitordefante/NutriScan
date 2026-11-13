@@ -117,7 +117,6 @@ describe('destaques', () => {
         nome: 'Ultraprocessado',
         motivo:
           'Contém marcadores de ultraprocessamento: aromatizante, emulsificante, gordura vegetal.',
-        estimado: false,
       },
       nutriScore: { letra: 'C' },
       lupa: [

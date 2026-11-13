@@ -32,6 +32,18 @@ describe('subtipoDasCategorias', () => {
     ).toBe('Creme de leite');
   });
 
+  it('categoria genérica não vence uma mais específica que veio depois dela', () => {
+    expect(subtipoDasCategorias(['en:dairies', 'en:milks', 'en:creams', 'en:butters'])).toBe(
+      'Manteiga',
+    );
+  });
+
+  it('usa a categoria genérica quando é a única conhecida (leite UHT real)', () => {
+    expect(subtipoDasCategorias(['en:dairies', 'en:milks', 'en:uht-milks', 'en:whole-milks'])).toBe(
+      'Leite',
+    );
+  });
+
   it('ignora tags em português (texto livre)', () => {
     expect(subtipoDasCategorias(['en:breads', 'pt:Processado'])).toBe('Pão');
   });

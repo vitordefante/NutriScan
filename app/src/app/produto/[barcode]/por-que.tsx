@@ -14,7 +14,10 @@ export default function TelaPorQue() {
   const analise = estado.status === 'pronto' ? estado.dados.analise : null;
   const temNota = analise !== null && analise.status !== 'dados_insuficientes';
 
-  const titulo = temNota ? `POR QUE ${analise.nota}?` : 'POR QUE ESSA NOTA?';
+  // Nota parcial é um teto: o título mostra "≤" como o cartão da nota final.
+  const titulo = temNota
+    ? `POR QUE ${analise.status === 'parcial' ? '≤' : ''}${analise.nota}?`
+    : 'POR QUE ESSA NOTA?';
 
   return (
     <Tela>

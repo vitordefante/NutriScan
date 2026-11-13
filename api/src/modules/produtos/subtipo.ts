@@ -40,6 +40,7 @@ const NOMES: Record<string, string> = {
   // Laticínios e ovos
   'en:milks': 'Leite',
   'en:condensed-milks': 'Leite condensado',
+  'en:creams': 'Creme de leite',
   'en:cheeses': 'Queijo',
   'en:yogurts': 'Iogurte',
   'en:butters': 'Manteiga',
@@ -62,22 +63,20 @@ const NOMES: Record<string, string> = {
 };
 
 /**
- * Categorias que vencem mesmo aparecendo antes na lista: o cadastro colaborativo às vezes
- * acrescenta uma categoria mais genérica depois (ex.: creme de leite marcado também como
- * "en:milks").
+ * Categorias amplas que o cadastro colaborativo às vezes acrescenta DEPOIS de uma mais precisa
+ * (ex.: creme de leite marcado também como "en:milks"). Só são usadas se nenhuma outra
+ * categoria conhecida aparecer.
  */
-const PRIORITARIAS: Record<string, string> = {
-  'en:creams': 'Creme de leite',
-};
+const GENERICAS = new Set(['en:milks']);
 
 export function subtipoDasCategorias(categorias: readonly string[]): string | undefined {
-  for (const categoria of categorias) {
-    const nome = PRIORITARIAS[categoria];
-    if (nome) return nome;
-  }
+  let generica: string | undefined;
   for (let i = categorias.length - 1; i >= 0; i--) {
-    const nome = NOMES[categorias[i]!];
-    if (nome) return nome;
+    const categoria = categorias[i]!;
+    const nome = NOMES[categoria];
+    if (!nome) continue;
+    if (!GENERICAS.has(categoria)) return nome;
+    generica ??= nome;
   }
-  return undefined;
+  return generica;
 }

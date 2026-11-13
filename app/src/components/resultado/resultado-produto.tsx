@@ -32,7 +32,7 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
             nota={analise.nota}
             faixa={analise.faixa}
             teto={analise.status === 'parcial'}
-            resumo={resumoDosDestaques(analise.destaques)}
+            resumo={resumoDosDestaques(analise.destaques, analise.status === 'completa')}
             onPorQue={onPorQue}
           />
 
