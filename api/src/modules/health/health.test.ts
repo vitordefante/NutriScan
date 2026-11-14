@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { buildApp } from '../../app.js';
 
-const produtos = { consultar: async () => null };
+const produtos = {
+  consultar: async () => null,
+  enviarRotulo: async () => ({ ok: false as const, ilegiveis: [] }),
+};
 
 describe('GET /health', () => {
   it('responde 200 quando o banco está acessível', async () => {

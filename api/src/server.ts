@@ -1,9 +1,14 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { buildApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { createDb } from './db/client.js';
 import { criarClienteObf, criarClienteOff } from './modules/produtos/open-food-facts.client.js';
 import { criarCacheProdutosPg } from './modules/produtos/produtos.repository.js';
 import { criarServicoProdutos } from './modules/produtos/produtos.service.js';
+import { criarRepositorioRotulosPg } from './modules/rotulo/rotulos.repository.js';
 
 const env = loadEnv();
 const database = createDb(env.DATABASE_URL, {
@@ -15,6 +20,22 @@ const produtos = criarServicoProdutos({
   off: criarClienteOff(),
   obf: criarClienteObf(),
   cache: criarCacheProdutosPg(database.db),
+  rotulos: criarRepositorioRotulosPg(database.db),
+  ...(env.OCR_DEBUG_DIR &&
+    env.NODE_ENV !== 'production' && {
+      // Diagnóstico: grava em segundo plano e nunca derruba o envio. Caminho relativo à pasta
+      // da API (não ao diretório de onde ela foi iniciada), coberto pelo .gitignore.
+      registrarEnvio: (barcode, envio, leitura) => {
+        const pasta = resolve(dirname(fileURLToPath(import.meta.url)), '..', env.OCR_DEBUG_DIR!);
+        const arquivo = join(
+          pasta,
+          `${barcode}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
+        );
+        mkdir(pasta, { recursive: true })
+          .then(() => writeFile(arquivo, JSON.stringify({ barcode, envio, leitura }, null, 1)))
+          .catch((err: unknown) => app.log.warn({ err }, 'Falha ao guardar o OCR do envio'));
+      },
+    }),
   log: { warn: (obj, msg) => app.log.warn(obj, msg) },
 });
 

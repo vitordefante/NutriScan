@@ -10,10 +10,28 @@ import { CartaoNota } from './cartao-nota';
 import { AvisoFaltando } from './estados';
 import { CartaoAlerta, CartaoNova, EscalaNutriScore, LupaAnvisa, Secao } from './secoes';
 
-type Props = { dados: ProductResult; onPorQue: () => void };
+type Props = {
+  dados: ProductResult;
+  onPorQue: () => void;
+  /** Dados incompletos: oferece fotografar o rótulo (só onde o aparelho lê texto). */
+  onCompletarComFoto?: () => void;
+};
+
+const NOME_FONTE: Record<ProductResult['fonte'], string> = {
+  open_food_facts: 'Open Food Facts',
+  open_beauty_facts: 'Open Beauty Facts',
+  foto: 'fotos do rótulo enviadas no app',
+};
+
+/** "Open Food Facts + fotos do rótulo enviadas no app (leitura automática, não revisada)". */
+function creditoDosDados({ fonte, rotuloPorFoto }: ProductResult): string {
+  const base = fonte === 'foto' ? NOME_FONTE.foto : NOME_FONTE[fonte];
+  const complemento = fonte !== 'foto' && rotuloPorFoto ? ` + ${NOME_FONTE.foto}` : '';
+  return `${base}${complemento}${rotuloPorFoto ? ' (leitura automática, não revisada)' : ''}`;
+}
 
 /** Conteúdo da tela de resultado (produto + análise), já com os dados carregados. */
-export function ResultadoProduto({ dados, onPorQue }: Props) {
+export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto }: Props) {
   const { produto, analise } = dados;
   // Cosméticos não têm NOVA, Nutri-Score nem lupa: a nota vem só dos ingredientes de atenção,
   // que chegam como alertas (do nível alto para o baixo).
@@ -34,6 +52,7 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
         <AvisoFaltando
           faltando={analise.faltando}
           texto="Sem esses dados não dá para calcular uma nota honesta para este produto."
+          onCompletarComFoto={onCompletarComFoto}
         />
       ) : (
         <>
@@ -80,11 +99,12 @@ export function ResultadoProduto({ dados, onPorQue }: Props) {
         <AvisoFaltando
           faltando={analise.faltando}
           texto="Com os dados completos, a nota só poderia ficar igual ou menor."
+          onCompletarComFoto={onCompletarComFoto}
         />
       )}
 
       <Texto variante="legenda" style={estilos.rodape}>
-        Dados do produto: {cosmetico ? 'Open Beauty Facts' : 'Open Food Facts'}.{'\n'}
+        Dados do produto: {creditoDosDados(dados)}.{'\n'}
         Metodologia da nota: NutriScan v1{cosmetico ? ' (cosméticos)' : ''}.
         {dados.desatualizado ? '\nA base estava fora do ar: dados de uma consulta anterior.' : ''}
       </Texto>

@@ -9,6 +9,11 @@ const envSchema = z.object({
   DATABASE_URL: z
     .string()
     .regex(/^postgres(ql)?:\/\//, 'deve começar com postgres:// ou postgresql://'),
+  /**
+   * Só em desenvolvimento: pasta onde cada envio de rótulo (texto do OCR + o que foi lido) é
+   * guardado em JSON, para reproduzir leituras que deram errado. Fora do Git.
+   */
+  OCR_DEBUG_DIR: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,0 +1,264 @@
+{
+  "descricao": "Hellmann's 7891150072046: foto da tabela tirada no app (iPhone 13 mini), 14/11/2026. Modelo RDC 429, com coluna de 100 g.",
+  "linhas": [
+    {
+      "texto": "INFORMAÇÃO NUTRICIONAL",
+      "x": 0.3818,
+      "y": 0.3692,
+      "largura": 0.3721,
+      "altura": 0.0276
+    },
+    {
+      "texto": "Porções por embalagem: Cerca de 55.",
+      "x": 0.3447,
+      "y": 0.4015,
+      "largura": 0.3648,
+      "altura": 0.0232
+    },
+    {
+      "texto": "Porção: 12 g (1 colher de sopa)",
+      "x": 0.3444,
+      "y": 0.4199,
+      "largura": 0.3015,
+      "altura": 0.0256
+    },
+    {
+      "texto": "Valor energético (kcal)",
+      "x": 0.3464,
+      "y": 0.4875,
+      "largura": 0.2046,
+      "altura": 0.0235
+    },
+    {
+      "texto": "Carboidratos (g)",
+      "x": 0.3469,
+      "y": 0.5145,
+      "largura": 0.1415,
+      "altura": 0.0175
+    },
+    {
+      "texto": "Açúcares totais (g)",
+      "x": 0.3547,
+      "y": 0.5363,
+      "largura": 0.1705,
+      "altura": 0.0175
+    },
+    {
+      "texto": "Açúcares adicionados (g)",
+      "x": 0.3643,
+      "y": 0.5595,
+      "largura": 0.2403,
+      "altura": 0.0176
+    },
+    {
+      "texto": "Proteínas (g)",
+      "x": 0.3465,
+      "y": 0.5827,
+      "largura": 0.113,
+      "altura": 0.0166
+    },
+    {
+      "texto": "Gorduras totais (g)",
+      "x": 0.3478,
+      "y": 0.602,
+      "largura": 0.1667,
+      "altura": 0.0237
+    },
+    {
+      "texto": "Gorduras saturadas (g)",
+      "x": 0.3556,
+      "y": 0.6246,
+      "largura": 0.2189,
+      "altura": 0.0259
+    },
+    {
+      "texto": "Gorduras trans (g)",
+      "x": 0.3554,
+      "y": 0.6477,
+      "largura": 0.1691,
+      "altura": 0.026
+    },
+    {
+      "texto": "100 g",
+      "x": 0.6069,
+      "y": 0.4627,
+      "largura": 0.0598,
+      "altura": 0.0209
+    },
+    {
+      "texto": "304",
+      "x": 0.6182,
+      "y": 0.4869,
+      "largura": 0.0407,
+      "altura": 0.016
+    },
+    {
+      "texto": "6,7",
+      "x": 0.6221,
+      "y": 0.5102,
+      "largura": 0.0329,
+      "altura": 0.0203
+    },
+    {
+      "texto": "2,5",
+      "x": 0.6221,
+      "y": 0.5334,
+      "largura": 0.0349,
+      "altura": 0.0203
+    },
+    {
+      "texto": "2,5",
+      "x": 0.6221,
+      "y": 0.5567,
+      "largura": 0.0349,
+      "altura": 0.0203
+    },
+    {
+      "texto": "0,6",
+      "x": 0.6221,
+      "y": 0.5799,
+      "largura": 0.0349,
+      "altura": 0.0203
+    },
+    {
+      "texto": "30",
+      "x": 0.626,
+      "y": 0.6047,
+      "largura": 0.0291,
+      "altura": 0.016
+    },
+    {
+      "texto": "4,8",
+      "x": 0.624,
+      "y": 0.6279,
+      "largura": 0.0349,
+      "altura": 0.0189
+    },
+    {
+      "texto": "0,3",
+      "x": 0.624,
+      "y": 0.6512,
+      "largura": 0.0349,
+      "altura": 0.0203
+    },
+    {
+      "texto": "12 9",
+      "x": 0.6755,
+      "y": 0.4615,
+      "largura": 0.0468,
+      "altura": 0.0242
+    },
+    {
+      "texto": "%VD*",
+      "x": 0.7209,
+      "y": 0.4651,
+      "largura": 0.0504,
+      "altura": 0.016
+    },
+    {
+      "texto": "37",
+      "x": 0.688,
+      "y": 0.4869,
+      "largura": 0.0252,
+      "altura": 0.016
+    },
+    {
+      "texto": "2",
+      "x": 0.7442,
+      "y": 0.4884,
+      "largura": 0.0155,
+      "altura": 0.0174
+    },
+    {
+      "texto": "0,8",
+      "x": 0.686,
+      "y": 0.5102,
+      "largura": 0.031,
+      "altura": 0.0189
+    },
+    {
+      "texto": "0,3",
+      "x": 0.686,
+      "y": 0.5334,
+      "largura": 0.031,
+      "altura": 0.0189
+    },
+    {
+      "texto": "0,3",
+      "x": 0.688,
+      "y": 0.5552,
+      "largura": 0.0291,
+      "altura": 0.0203
+    },
+    {
+      "texto": "0,1",
+      "x": 0.688,
+      "y": 0.5785,
+      "largura": 0.0291,
+      "altura": 0.0189
+    },
+    {
+      "texto": "3,7",
+      "x": 0.688,
+      "y": 0.6017,
+      "largura": 0.031,
+      "altura": 0.0189
+    },
+    {
+      "texto": "0,6",
+      "x": 0.688,
+      "y": 0.625,
+      "largura": 0.031,
+      "altura": 0.0189
+    },
+    {
+      "texto": "3",
+      "x": 0.7481,
+      "y": 0.6221,
+      "largura": 0.0116,
+      "altura": 0.0131
+    },
+    {
+      "texto": "Fibras alimentares (g)",
+      "x": 0.3471,
+      "y": 0.6681,
+      "largura": 0.201,
+      "altura": 0.0296
+    },
+    {
+      "texto": "Sódio (mg)",
+      "x": 0.3455,
+      "y": 0.6889,
+      "largura": 0.1007,
+      "altura": 0.029
+    },
+    {
+      "texto": "596",
+      "x": 0.6221,
+      "y": 0.6977,
+      "largura": 0.0407,
+      "altura": 0.0174
+    },
+    {
+      "texto": "72",
+      "x": 0.6919,
+      "y": 0.6933,
+      "largura": 0.0252,
+      "altura": 0.0174
+    },
+    {
+      "texto": "4",
+      "x": 0.7461,
+      "y": 0.6875,
+      "largura": 0.0155,
+      "altura": 0.016
+    },
+    {
+      "texto": "Percentual de valores diários fornecidos pela porção.",
+      "x": 0.3504,
+      "y": 0.715,
+      "largura": 0.3765,
+      "altura": 0.0265
+    }
+  ]
+}
