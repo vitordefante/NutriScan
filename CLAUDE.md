@@ -85,7 +85,7 @@ npm run format       # Prettier
 2. Scanner + tela de resultado + design pixel art (primeiro build no iPhone) — feito (PR #4)
 3. Cosméticos (Open Beauty Facts + lista curada) — feito (branch `fase-3`)
 4. Foto do rótulo + base própria (antecipada; era a fase 8): quando o produto não está nas bases abertas ou vem sem ingredientes/tabela, o usuário fotografa a lista de ingredientes e a tabela nutricional; o OCR roda **no aparelho** (Apple Vision), a API extrai a lista e os valores por 100 g/ml, o mesmo motor calcula a nota e a leitura fica gravada no Postgres (`rotulos_lidos`) ligada ao código de barras (o próximo scan já acha) — feito (branch `fase-4`). A tabela é lida pela coluna (par mútuo nome↔valor); o OCR bruto de cada envio fica em `api/data/ocr/` em desenvolvimento (`OCR_DEBUG_DIR`).
-5. Alternativas
+5. Alternativas — feito (branch `fase-5`): `GET /produtos/:barcode/alternativas` busca no OFF/OBF os produtos da mesma categoria vendidos no Brasil, calcula a nota de cada um com o mesmo motor e devolve até 5 com nota completa ≥ referência + 5 (regras em `docs/metodologia-nota.md`, seção 7). A busca do OFF tem limite baixo (~10/min, responde 503): cache por categoria em `buscas_categoria` (7 dias, cópia antiga se a busca falhar). **Aquecer o cache dos produtos da demo** antes da apresentação.
 6. Contas + exposure tracking
 7. Mapa de produtores + formulário de pedido
 8. Entrega: deploy, estados de erro, APK, build release no iPhone

@@ -15,6 +15,13 @@
       "when": 1794590248840,
       "tag": "0001_rotulos_lidos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794681535068,
+      "tag": "0002_buscas_categoria",
+      "breakpoints": true
     }
   ]
 }

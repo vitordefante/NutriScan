@@ -10,7 +10,7 @@ export type ProdutosDeps = {
 };
 
 /** EAN-8, UPC-A (12), EAN-13 ou GTIN-14: só dígitos. */
-const paramsSchema = z.object({ barcode: z.string().regex(/^\d{8,14}$/) });
+export const paramsSchema = z.object({ barcode: z.string().regex(/^\d{8,14}$/) });
 
 /** Linhas do OCR feito no aparelho. Limites folgados para um rótulo, apertados para abuso. */
 const linhasSchema = z
@@ -102,4 +102,7 @@ export const produtosRoutes: FastifyPluginAsync<ProdutosDeps> = async (app, { pr
   });
 };
 
-const erro = (codigo: ApiError['erro'], mensagem: string): ApiError => ({ erro: codigo, mensagem });
+export const erro = (codigo: ApiError['erro'], mensagem: string): ApiError => ({
+  erro: codigo,
+  mensagem,
+});

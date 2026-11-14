@@ -1,7 +1,5 @@
 import type { LabelSubmission, ProductResult } from '@nutriscan/shared';
 
-import { analisarAlimento } from '../analise/nota.js';
-import { analisarCosmetico } from '../analise-cosmetico/nota.js';
 import {
   combinarLeituras,
   type FotoRotulo,
@@ -12,12 +10,8 @@ import {
 import type { RepositorioRotulos } from '../rotulo/rotulos.repository.js';
 import { montarComRotulo } from './com-rotulo.js';
 import { type ClienteOff, FonteIndisponivelError } from './open-food-facts.client.js';
-import {
-  paraDadosAlimento,
-  paraDadosCosmetico,
-  paraProduto,
-  type ProdutoOff,
-} from './open-food-facts.mapper.js';
+import { montarResultado } from './montar.js';
+import type { ProdutoOff } from './open-food-facts.mapper.js';
 
 /** Alimentos vêm do Open Food Facts; cosméticos, do Open Beauty Facts. */
 export type FonteProduto = 'open_food_facts' | 'open_beauty_facts';
@@ -165,7 +159,7 @@ export function criarServicoProdutos({
     const lido = await lerRotulo(barcode);
     if (!lido) {
       const { resultado, desatualizado } = await consultarBases(barcode);
-      return montar(resultado, desatualizado);
+      return montarResultado(resultado, desatualizado);
     }
 
     return montarComLeitura(barcode, lido);
@@ -208,24 +202,4 @@ function temDadosDeAlimento(p: ProdutoOff): boolean {
     p.nova_group !== undefined ||
     p.nutriscore_grade !== undefined
   );
-}
-
-function montar({ fonte, dados }: ResultadoFontes, desatualizado: boolean): ProductResult | null {
-  if (!dados) return null;
-  if (fonte === 'open_beauty_facts') {
-    return {
-      produto: paraProduto(dados, 'cosmetico'),
-      analise: analisarCosmetico(paraDadosCosmetico(dados)),
-      desatualizado,
-      fonte,
-      rotuloPorFoto: false,
-    };
-  }
-  return {
-    produto: paraProduto(dados, 'alimento'),
-    analise: analisarAlimento(paraDadosAlimento(dados)),
-    desatualizado,
-    fonte,
-    rotuloPorFoto: false,
-  };
 }

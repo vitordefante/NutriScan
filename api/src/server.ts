@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { buildApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { createDb } from './db/client.js';
+import { criarServicoAlternativas } from './modules/alternativas/alternativas.service.js';
+import { criarCacheBuscasPg } from './modules/alternativas/buscas.repository.js';
 import { criarClienteObf, criarClienteOff } from './modules/produtos/open-food-facts.client.js';
 import { criarCacheProdutosPg } from './modules/produtos/produtos.repository.js';
 import { criarServicoProdutos } from './modules/produtos/produtos.service.js';
@@ -16,11 +18,16 @@ const database = createDb(env.DATABASE_URL, {
   onConnectionError: (err) => app.log.error({ err }, 'Conexão com o banco perdida'),
 });
 
+const off = criarClienteOff();
+const obf = criarClienteObf();
+const rotulos = criarRepositorioRotulosPg(database.db);
+const log = { warn: (obj: object, msg: string) => app.log.warn(obj, msg) };
+
 const produtos = criarServicoProdutos({
-  off: criarClienteOff(),
-  obf: criarClienteObf(),
+  off,
+  obf,
   cache: criarCacheProdutosPg(database.db),
-  rotulos: criarRepositorioRotulosPg(database.db),
+  rotulos,
   ...(env.OCR_DEBUG_DIR &&
     env.NODE_ENV !== 'production' && {
       // Diagnóstico: grava em segundo plano e nunca derruba o envio. Caminho relativo à pasta
@@ -36,10 +43,18 @@ const produtos = criarServicoProdutos({
           .catch((err: unknown) => app.log.warn({ err }, 'Falha ao guardar o OCR do envio'));
       },
     }),
-  log: { warn: (obj, msg) => app.log.warn(obj, msg) },
+  log,
 });
 
-const app = buildApp({ pingDb: database.ping, produtos }, { logger: true });
+const alternativas = criarServicoAlternativas({
+  produtos,
+  busca: { open_food_facts: off, open_beauty_facts: obf },
+  cache: criarCacheBuscasPg(database.db),
+  rotulos,
+  log,
+});
+
+const app = buildApp({ pingDb: database.ping, produtos, alternativas }, { logger: true });
 app.addHook('onClose', () => database.close());
 
 // Encerra com elegância (Ctrl+C ou parada do servidor na nuvem).

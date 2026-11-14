@@ -51,3 +51,49 @@ describe('criarClienteOff', () => {
     );
   });
 });
+
+describe('buscarPorCategoria', () => {
+  it('busca produtos do Brasil na categoria, os mais escaneados primeiro', async () => {
+    const { fn, chamadas } = fetchFalso(
+      json({ count: 44, products: [{ code: '1', product_name: 'Maionese A' }] }),
+    );
+
+    const r = await criarClienteOff({ fetch: fn }).buscarPorCategoria('en:mayonnaises');
+
+    expect(r).toEqual({ total: 44, produtos: [{ code: '1', product_name: 'Maionese A' }] });
+    const url = new URL(chamadas[0]!.url);
+    expect(url.pathname).toBe('/api/v2/search');
+    expect(url.searchParams.get('categories_tags')).toBe('en:mayonnaises');
+    expect(url.searchParams.get('countries_tags')).toBe('en:brazil');
+    expect(url.searchParams.get('sort_by')).toBe('unique_scans_n');
+    expect(url.searchParams.get('fields')).toMatch(/^code,/);
+  });
+
+  it('deixa de fora cadastros malformados ou vazios, sem derrubar a busca', async () => {
+    const { fn } = fetchFalso(
+      json({
+        count: 3,
+        products: [
+          { product_name: 'Sem código' },
+          { code: '2' },
+          { code: '3', product_name: 'Ok' },
+        ],
+      }),
+    );
+
+    const r = await criarClienteOff({ fetch: fn }).buscarPorCategoria('en:mayonnaises');
+
+    expect(r.produtos.map((p) => p.code)).toEqual(['3']);
+  });
+
+  it.each([
+    ['limite de buscas', json({}, 429)],
+    ['página HTML', new Response('<html>Too many requests</html>')],
+    ['formato inesperado', json({ produtos: [] })],
+  ])('lança FonteIndisponivelError: %s', async (_caso, resposta) => {
+    const { fn } = fetchFalso(resposta);
+    await expect(
+      criarClienteOff({ fetch: fn }).buscarPorCategoria('en:mayonnaises'),
+    ).rejects.toBeInstanceOf(FonteIndisponivelError);
+  });
+});

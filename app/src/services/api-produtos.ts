@@ -1,4 +1,9 @@
-import type { ApiError, LabelSubmission, ProductResult } from '@nutriscan/shared';
+import type {
+  AlternativesResult,
+  ApiError,
+  LabelSubmission,
+  ProductResult,
+} from '@nutriscan/shared';
 import Constants from 'expo-constants';
 
 /**
@@ -41,6 +46,14 @@ export function buscarProduto(barcode: string, signal?: AbortSignal): Promise<Pr
   return chamarApi(`/produtos/${encodeURIComponent(barcode)}`, {}, signal);
 }
 
+/** GET /produtos/:barcode/alternativas — produtos da mesma categoria com nota maior. */
+export function buscarAlternativas(
+  barcode: string,
+  signal?: AbortSignal,
+): Promise<AlternativesResult> {
+  return chamarApi(`/produtos/${encodeURIComponent(barcode)}/alternativas`, {}, signal);
+}
+
 /**
  * POST /produtos/:barcode/rotulo — envia o texto lido nas fotos do rótulo (as fotos não saem do
  * aparelho) e recebe a nova análise. Erro "rotulo_ilegivel": a mensagem diz qual foto refazer.
@@ -53,11 +66,7 @@ export function enviarRotulo(barcode: string, envio: LabelSubmission): Promise<P
   });
 }
 
-async function chamarApi(
-  caminho: string,
-  init: RequestInit,
-  signal?: AbortSignal,
-): Promise<ProductResult> {
+async function chamarApi<T>(caminho: string, init: RequestInit, signal?: AbortSignal): Promise<T> {
   if (!API_URL) {
     throw new ErroProduto('inesperado', 'EXPO_PUBLIC_API_URL não foi definida neste build.');
   }
@@ -75,7 +84,7 @@ async function chamarApi(
 
   try {
     const resposta = await fetch(`${API_URL}${caminho}`, { ...init, signal: controle.signal });
-    if (resposta.ok) return (await resposta.json()) as ProductResult;
+    if (resposta.ok) return (await resposta.json()) as T;
 
     const corpo = (await resposta.json().catch(() => null)) as Partial<ApiError> | null;
     if (corpo?.erro) throw new ErroProduto(corpo.erro, corpo.mensagem ?? '');

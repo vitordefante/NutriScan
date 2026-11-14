@@ -231,7 +231,38 @@ teste falha. "≤" indica nota parcial; "est." indica NOVA estimada.
 | Salgadinho de milho              |    2 | NOVA 4 −45, E −32, alto em gordura saturada e sódio −20, realçadores −1              |
 | Barra de cereal                  |    0 | NOVA 4 −45, D −22, alto em açúcar e gordura saturada −20, BHA −8, BHT −4, polióis −1 |
 
-## 7. Limitações conhecidas
+## 7. Alternativas melhores
+
+Na tela de resultado, a seção **Alternativas melhores** sugere produtos da mesma categoria com nota
+maior. As regras (código em `api/src/modules/alternativas/`):
+
+1. **Mesma régua.** Cada candidato passa pelo mesmo motor desta metodologia (inclusive com a
+   leitura de fotos do rótulo da base própria, quando existe). Não se usa a nota de outro app.
+2. **Mercado brasileiro.** Busca no Open Food Facts (Open Beauty Facts, para cosméticos) os
+   produtos marcados como vendidos no Brasil, os mais escaneados primeiro.
+3. **Categoria.** Parte da categoria mais específica do produto (ex.: _achocolatados_) e consulta
+   também a de cima (ex.: _cacau e chocolate em pó_), que é onde costuma estar a opção menos
+   processada: o cacau 100% como alternativa ao achocolatado reflete o viés da metodologia
+   (seção 2, peso do NOVA 4). Um terceiro nível só é consultado se nada for encontrado. Categorias
+   largas demais (_molhos_, _bebidas_, _snacks_…) nunca entram: ketchup não é alternativa a maionese.
+4. **Só nota completa.** Uma nota parcial é um teto (seção 4); como poderia cair com os dados
+   que faltam, não dá para garantir que o produto é melhor.
+5. **Margem de 5 pontos.** Diferenças menores estão dentro do que muda com o arredondamento da
+   tabela nutricional.
+6. **Sem repetir o próprio produto.** Cadastros repetidos (outro tamanho, outra grafia da marca,
+   "Nescau" × "Achocolatado em pó Nescau Refil") contam como o mesmo produto. Versões _light_,
+   _zero_, _integral_… contam como produtos diferentes.
+7. **Até 5 alternativas**, da maior nota para a menor. A tela mostra quantos produtos foram
+   comparados. Sem nota de referência (faltam dados do produto escaneado), a lista vira
+   **Mais bem avaliados**, sem afirmar que são melhores.
+
+O Open Food Facts limita as buscas (cerca de 10 por minuto). Por isso cada categoria fica em cache
+no banco por 7 dias, e se a base estiver fora do ar vale a última busca guardada.
+
+## 8. Limitações conhecidas
+
+- As alternativas dependem das categorias cadastradas no OFF: produto sem categoria não tem
+  alternativas, e categorias atribuídas errado levam a comparações erradas.
 
 - A nota depende da qualidade dos dados do OFF. Valores claramente errados (ex.: biscoito recheado
   com 1 g de gordura saturada por 100 g) distorcem o resultado.

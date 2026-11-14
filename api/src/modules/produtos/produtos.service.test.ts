@@ -61,6 +61,8 @@ function rotulosEmMemoria(): RepositorioRotulos & { mapa: Map<string, RotuloLido
   return {
     mapa,
     buscar: async (barcode) => mapa.get(barcode) ?? null,
+    buscarVarios: async (barcodes) =>
+      new Map(barcodes.flatMap((b) => (mapa.has(b) ? [[b, mapa.get(b)!] as const] : []))),
     salvar: async (barcode, lido) => {
       mapa.set(barcode, lido);
     },

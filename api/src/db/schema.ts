@@ -3,7 +3,7 @@
  * Depois de mudar este arquivo: `npm run db:generate -w @nutriscan/api` (gera a migração SQL)
  * e `npm run db:migrate -w @nutriscan/api` (aplica no banco).
  */
-import { jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { integer, jsonb, pgTable, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
 
 /**
  * Cache das respostas do Open Food Facts (alimentos) e do Open Beauty Facts (cosméticos),
@@ -39,3 +39,20 @@ export const rotulosLidos = pgTable('rotulos_lidos', {
   criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
   atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull(),
 });
+
+/**
+ * Cache das buscas por categoria (alternativas): o limite de buscas do Open Food Facts é baixo
+ * (~10 por minuto), então cada categoria é consultada no máximo uma vez por semana.
+ * `produtos` guarda os cadastros BRUTOS (como em produtos_cache), não as notas.
+ */
+export const buscasCategoria = pgTable(
+  'buscas_categoria',
+  {
+    fonte: text('fonte').notNull(),
+    categoria: text('categoria').notNull(),
+    total: integer('total').notNull(),
+    produtos: jsonb('produtos').notNull(),
+    atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.fonte, t.categoria] })],
+);
