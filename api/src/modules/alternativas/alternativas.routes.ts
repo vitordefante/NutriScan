@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 
 import { FonteIndisponivelError } from '../produtos/open-food-facts.client.js';
-import { erro, paramsSchema } from '../produtos/produtos.routes.js';
+import { erro, paramsBarcode } from '../../http/respostas.js';
 import type { ServicoAlternativas } from './alternativas.service.js';
 
 export type AlternativasDeps = {
@@ -13,7 +13,7 @@ export const alternativasRoutes: FastifyPluginAsync<AlternativasDeps> = async (
   { alternativas },
 ) => {
   app.get('/produtos/:barcode/alternativas', async (request, reply) => {
-    const params = paramsSchema.safeParse(request.params);
+    const params = paramsBarcode.safeParse(request.params);
     if (!params.success) {
       return reply
         .code(400)

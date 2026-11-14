@@ -73,6 +73,16 @@ export function SecaoAlternativas({ estado, tipo, onAbrir, onTentarDeNovo }: Pro
             </Texto>
           )}
           <Texto variante="legenda">{legenda(estado.dados, BASE[tipo])}</Texto>
+          {estado.dados.incompleta && (
+            <View style={estilos.linhaErro}>
+              <Texto variante="legenda" style={{ flex: 1 }}>
+                Parte da busca falhou agora: a lista pode estar incompleta.
+              </Texto>
+              <Pressable onPress={onTentarDeNovo} accessibilityRole="button" hitSlop={10}>
+                <Texto style={estilos.link}>Tentar de novo</Texto>
+              </Pressable>
+            </View>
+          )}
         </>
       )}
     </Secao>

@@ -15,6 +15,11 @@ import Constants from 'expo-constants';
  */
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? (__DEV__ ? urlDaApiEmDesenvolvimento() : null);
 const TEMPO_LIMITE_MS = 15_000;
+/**
+ * Alternativas: com a categoria fora do cache, a API faz até três buscas no Open Food Facts
+ * (que podem levar ~8 s cada). A tela não fica presa: a seção carrega à parte.
+ */
+const TEMPO_LIMITE_ALTERNATIVAS_MS = 30_000;
 
 /**
  *   rede local: hostUri "192.168.0.10:8081" → "http://192.168.0.10:8081/api"
@@ -51,7 +56,12 @@ export function buscarAlternativas(
   barcode: string,
   signal?: AbortSignal,
 ): Promise<AlternativesResult> {
-  return chamarApi(`/produtos/${encodeURIComponent(barcode)}/alternativas`, {}, signal);
+  return chamarApi(
+    `/produtos/${encodeURIComponent(barcode)}/alternativas`,
+    {},
+    signal,
+    TEMPO_LIMITE_ALTERNATIVAS_MS,
+  );
 }
 
 /**
@@ -66,7 +76,12 @@ export function enviarRotulo(barcode: string, envio: LabelSubmission): Promise<P
   });
 }
 
-async function chamarApi<T>(caminho: string, init: RequestInit, signal?: AbortSignal): Promise<T> {
+async function chamarApi<T>(
+  caminho: string,
+  init: RequestInit,
+  signal?: AbortSignal,
+  tempoLimiteMs = TEMPO_LIMITE_MS,
+): Promise<T> {
   if (!API_URL) {
     throw new ErroProduto('inesperado', 'EXPO_PUBLIC_API_URL não foi definida neste build.');
   }
@@ -80,7 +95,7 @@ async function chamarApi<T>(caminho: string, init: RequestInit, signal?: AbortSi
   const tempo = setTimeout(() => {
     esgotou = true;
     controle.abort();
-  }, TEMPO_LIMITE_MS);
+  }, tempoLimiteMs);
 
   try {
     const resposta = await fetch(`${API_URL}${caminho}`, { ...init, signal: controle.signal });

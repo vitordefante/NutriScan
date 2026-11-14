@@ -174,6 +174,11 @@ export type AlternativesResult =
        * uma porção digitados como "por 100 g").
        */
       ignorados: number;
+      /**
+       * Uma das buscas falhou (base fora do ar): a lista pode estar incompleta. O app não a
+       * guarda, para buscar de novo da próxima vez.
+       */
+      incompleta: boolean;
       /** Da maior nota para a menor. */
       alternativas: Alternative[];
     };

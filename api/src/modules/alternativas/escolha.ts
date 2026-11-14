@@ -85,14 +85,19 @@ export function escolherAlternativas(
   return { comparados: unicos.length, alternativas };
 }
 
+/**
+ * Palavras do texto, sem o tamanho ("550g", "1,05 kg", "12 un"). Números sem unidade ficam:
+ * "Cacau 100%" e "Chocolate 70%" não são o mesmo produto que "Cacau" e "Chocolate 40%".
+ */
 const palavrasDe = (texto: string) =>
   normalizar(texto)
+    .replace(/\d+(?:[.,]\d+)?\s*(?:kg|gm|g|ml|l|un|unidades?)\b/g, ' ')
     .split(/[^a-z0-9]+/)
     .filter(Boolean);
 
-/** Tamanho e embalagem não mudam o produto ("550g", "refil", "pote", "squeeze"…). */
+/** A embalagem não muda o produto ("refil", "pote", "squeeze"…). */
 const EMBALAGEM =
-  /^(?:\d+(?:g|kg|ml|l|un)?|g|kg|ml|l|un|unidades?|pacote|pote|caixa|lata|refil|sache|squeeze|sqz|frasco|tubo|embalagem)$/;
+  /^(?:pacote|pote|caixa|lata|refil|sache|squeeze|sqz|frasco|tubo|embalagem|garrafa|vidro)$/;
 
 /** Palavras que não identificam um produto: só dizem o que ele é. */
 const COMUNS = new Set(
@@ -104,7 +109,7 @@ const VARIANTES = new Set(['light', 'zero', 'diet', 'integral', 'organico', 'veg
 
 type Identidade = {
   marca: string;
-  /** Palavras do nome sem a marca, o tamanho e a embalagem. */
+  /** Palavras do nome sem a marca, o tamanho, a embalagem e as palavras comuns ("de", "original"). */
   nome: Set<string>;
   /** Só as palavras que distinguem o produto (ex.: "nescau"; numa "Maionese", nenhuma). */
   proprias: Set<string>;
@@ -116,12 +121,13 @@ function identidade(nome: string, marca: string | undefined, genericas: Set<stri
   const marcaJunta = daMarca.join('');
   // Tira do nome a marca, mesmo escrita de outro jeito ("HELLMANNS" com a marca "Hellmann's").
   const doNome = palavrasDe(nome).filter(
-    (p) => !daMarca.includes(p) && !parecidas(p, marcaJunta) && !EMBALAGEM.test(p),
+    (p) =>
+      !daMarca.includes(p) && !parecidas(p, marcaJunta) && !EMBALAGEM.test(p) && !COMUNS.has(p),
   );
   return {
     marca: marcaJunta,
     nome: new Set(doNome),
-    proprias: new Set(doNome.filter((p) => !COMUNS.has(p) && !genericas.has(p))),
+    proprias: new Set(doNome.filter((p) => !genericas.has(p))),
   };
 }
 
@@ -144,11 +150,10 @@ const contido = (a: Set<string>, b: Set<string>) => [...a].every((p) => b.has(p)
 
 /**
  * O mesmo produto em outro cadastro (outro tamanho, outra grafia):
- * - nome igual, sem contar marca, tamanho e embalagem: "Maionese Hellmann's 500 g" = "Maionese"
- *   (ambas Hellmann's);
+ * - nome igual, sem contar marca, tamanho, embalagem e palavras comuns: "Maionese Hellmann's
+ *   500 g" = "Maionese" (ambas Hellmann's); "Toddy" = "Toddy Original";
  * - ou, da mesma marca, um nome tem todas as palavras próprias do outro: "Nescau" =
- *   "Achocolatado em pó Nescau Refil"; ou nenhum tem palavra própria ("Toddy" = "Toddy
- *   Original") — menos quando só um deles é "light", "zero"…
+ *   "Achocolatado em pó Nescau Refil" — menos quando só um deles é "light", "zero"…
  */
 function mesmoProduto(a: Identidade, b: Identidade): boolean {
   if (!parecidas(a.marca, b.marca)) return false;
@@ -160,8 +165,6 @@ function mesmoProduto(a: Identidade, b: Identidade): boolean {
       .sort()
       .join();
   if (variante(a) !== variante(b)) return false;
-  // Nenhum dos dois tem palavra própria: é o produto básico da marca ("Toddy", "Toddy Original").
-  if (a.proprias.size === 0 && b.proprias.size === 0) return true;
   return (
     (a.proprias.size > 0 && contido(a.proprias, b.nome)) ||
     (b.proprias.size > 0 && contido(b.proprias, a.nome))

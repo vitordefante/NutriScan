@@ -164,6 +164,23 @@ describe('escolherAlternativas', () => {
     ]);
   });
 
+  it('cacau 100% da mesma marca do achocolatado é outro produto (é a alternativa!)', () => {
+    const achocolatado: Referencia = {
+      barcode: '300',
+      nome: 'Achocolatado em pó',
+      marca: 'Garoto',
+      categorias: ['en:cocoa-and-chocolate-powders', 'en:instant-chocolate-powders'],
+      nota: 23,
+    };
+    const { alternativas } = escolherAlternativas(achocolatado, [
+      resultado('301', 'Cacau em pó 100%', 90, { marca: 'Garoto' }),
+      resultado('302', 'Chocolate em pó 70%', 70, { marca: 'Garoto' }),
+      resultado('303', 'Chocolate em pó 50%', 60, { marca: 'Garoto' }),
+      resultado('304', 'Achocolatado em pó 400 g', 80, { marca: 'Garoto' }),
+    ]);
+    expect(alternativas.map((a) => a.barcode)).toEqual(['301', '302', '303']);
+  });
+
   it('a mesma marca escrita de outro jeito ainda é a mesma marca', () => {
     const { alternativas } = escolherAlternativas(
       { ...REFERENCIA, nome: 'Maionese', marca: 'Hellmans' },
@@ -269,6 +286,14 @@ describe('cadastrosSuspeitos', () => {
     expect(suspeitos.has('light')).toBe(true);
     expect(suspeitos.has('real')).toBe(false);
     expect(suspeitos.has('cem')).toBe(false);
+  });
+
+  it('0 kcal é real (chá, refrigerante zero), não erro de porção', () => {
+    const chas = [0, 2, 30, 35, 40, 42, 45].map((energiaKcal, i) => ({
+      barcode: String(i),
+      energiaKcal,
+    }));
+    expect([...cadastrosSuspeitos(chas)]).toEqual(['1']); // só o de 2 kcal, sem porção
   });
 
   it('com poucos produtos (ou sem tabela), ninguém é descartado', () => {
@@ -527,13 +552,58 @@ describe('ServicoAlternativas', () => {
     expect(log.warn).toHaveBeenCalled();
   });
 
-  it('busca fora do ar e sem cache: repassa o erro', async () => {
+  it('todas as buscas fora do ar e sem cache: repassa o erro', async () => {
     const { servico } = await montar({
-      categorias: { 'en:instant-chocolate-powders': new FonteIndisponivelError('teste') },
+      categorias: {
+        'en:instant-chocolate-powders': new FonteIndisponivelError('teste'),
+        'en:cocoa-and-chocolate-powders': new FonteIndisponivelError('teste'),
+      },
     });
     await expect(servico.consultar(ACHOCOLATADO.code)).rejects.toBeInstanceOf(
       FonteIndisponivelError,
     );
+  });
+
+  it('a categoria específica fora do ar: responde com a de cima, marcada como incompleta', async () => {
+    const { servico } = await montar({
+      categorias: {
+        'en:instant-chocolate-powders': new FonteIndisponivelError('teste'),
+        'en:cocoa-and-chocolate-powders': busca(CACAU),
+      },
+    });
+
+    expect(await servico.consultar(ACHOCOLATADO.code)).toMatchObject({
+      incompleta: true,
+      alternativas: [{ barcode: CACAU.code }],
+    });
+  });
+
+  it('as duas primeiras buscas saem juntas (sem esperar uma pela outra)', async () => {
+    let soltar!: () => void;
+    const segura = new Promise<void>((r) => (soltar = r));
+    const iniciadas: string[] = [];
+    const servico = criarServicoAlternativas({
+      produtos: produtosCom(ACHOCOLATADO),
+      busca: {
+        open_food_facts: {
+          buscarPorCategoria: async (c) => {
+            iniciadas.push(c);
+            await segura;
+            return busca(CACAU);
+          },
+        },
+        open_beauty_facts: { buscarPorCategoria: vi.fn() },
+      },
+      cache: cacheEmMemoria().cache,
+      rotulos: rotulosEmMemoria(),
+      log: { warn: vi.fn() },
+      agora: () => AGORA,
+    });
+
+    const pedido = servico.consultar(ACHOCOLATADO.code);
+    await vi.waitFor(() => expect(iniciadas).toHaveLength(2));
+    soltar();
+    await pedido;
   });
 
   it('o nível de cima fora do ar: responde com o que achou no anterior', async () => {
@@ -548,6 +618,7 @@ describe('ServicoAlternativas', () => {
       status: 'ok',
       categoria: 'Achocolatado',
       comparados: 1,
+      incompleta: true,
       alternativas: [],
     });
   });

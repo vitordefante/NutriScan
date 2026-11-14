@@ -33,7 +33,8 @@ export function cadastrosSuspeitos(cadastros: readonly EnergiaDoCadastro[]): Set
 
   const limite = mediana(energias) * FRACAO_MINIMA;
   const suspeito = ({ energiaKcal, porcaoG }: EnergiaDoCadastro) => {
-    if (energiaKcal === undefined || energiaKcal >= limite) return false;
+    // 0 kcal é real (chá, água, refrigerante zero): uma porção digitada como 100 g não zera nada.
+    if (energiaKcal === undefined || energiaKcal <= 0 || energiaKcal >= limite) return false;
     // Sem a porção, não há como confirmar: vale só a regra da mediana.
     if (!porcaoG || porcaoG <= 0) return true;
     // Com porção de 100 g ou mais, a conta não sobe o valor: o baixo é real.

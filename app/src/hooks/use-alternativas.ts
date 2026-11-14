@@ -29,7 +29,8 @@ export function useAlternativas(barcode: string, nota: number | null, ativo: boo
     const controle = new AbortController();
     buscarAlternativas(barcode, controle.signal)
       .then((dados) => {
-        recebidas.set(chave, dados);
+        // Lista incompleta (uma busca falhou): não guarda, para buscar de novo ao reabrir.
+        if (!(dados.status === 'ok' && dados.incompleta)) recebidas.set(chave, dados);
         setResposta({ chave, ok: true, dados });
       })
       .catch(() => {

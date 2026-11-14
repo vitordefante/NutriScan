@@ -138,49 +138,69 @@ export function criarServicoAlternativas({
 
       // Da categoria mais específica para a mais geral. A de cima é sempre consultada: é nela
       // que costuma estar a opção menos processada (achocolatado → "cacau e chocolate em pó",
-      // onde está o cacau 100%). Mais um nível só se ainda não houver nenhuma alternativa.
-      // Se um nível de cima falhar, fica com o que os anteriores acharam.
-      const candidatos = new Map<string, Candidato>();
-      let resposta: AlternativesResult | null = null;
+      // onde está o cacau 100%) — as duas buscas saem juntas, para a resposta não demorar o
+      // dobro. Mais um nível só se ainda não houver nenhuma alternativa. Um nível que falhar
+      // fica de fora e a resposta sai marcada como incompleta.
+      const buscar = (categoria: string) =>
+        buscarCategoria(fonte, categoria).then(
+          (r) => ({ ok: true as const, r }),
+          (err: unknown) => ({ ok: false as const, err }),
+        );
+      const adiantadas = categorias.slice(0, 2).map(buscar);
+
+      const candidatos = new Map<string, ProductResult>();
+      const suspeitos = new Set<string>();
+      let resposta: Extract<AlternativesResult, { status: 'ok' }> | null = null;
+      let primeiroErro: unknown;
       for (const [nivel, categoria] of categorias.entries()) {
-        let encontrados: ResultadoBusca;
-        try {
-          encontrados = await buscarCategoria(fonte, categoria);
-        } catch (err) {
-          if (resposta && err instanceof FonteIndisponivelError) break;
-          throw err;
+        const busca = await (adiantadas[nivel] ?? buscar(categoria));
+        if (!busca.ok) {
+          if (!(busca.err instanceof FonteIndisponivelError)) throw busca.err;
+          primeiroErro ??= busca.err;
+          continue;
         }
-        for (const c of await analisar(fonte, encontrados)) {
-          const codigo = c.resultado.produto.barcode;
-          if (!candidatos.has(codigo)) candidatos.set(codigo, c);
-        }
+
+        const desteNivel = await analisar(fonte, busca.r);
         // Valores fora do padrão da categoria (ex.: porção digitada como 100 g) não são
-        // sugeridos: a nota deles não é confiável.
-        const suspeitos = cadastrosSuspeitos(
-          [...candidatos.values()].map((c) => ({
+        // sugeridos: a nota deles não é confiável. A mediana é a desta busca.
+        for (const b of cadastrosSuspeitos(
+          desteNivel.map((c) => ({
             barcode: c.resultado.produto.barcode,
             ...(c.energiaKcal !== undefined && { energiaKcal: c.energiaKcal }),
             ...(c.porcaoG !== undefined && { porcaoG: c.porcaoG }),
           })),
-        );
+        )) {
+          suspeitos.add(b);
+        }
+        for (const { resultado } of desteNivel) {
+          if (!candidatos.has(resultado.produto.barcode)) {
+            candidatos.set(resultado.produto.barcode, resultado);
+          }
+        }
+
+        const todos = [...candidatos.values()];
         const { comparados, alternativas } = escolherAlternativas(
           referencia,
-          [...candidatos.values()]
-            .map((c) => c.resultado)
-            .filter((r) => !suspeitos.has(r.produto.barcode)),
+          todos.filter((r) => !suspeitos.has(r.produto.barcode)),
         );
-        // A categoria mais geral consultada: ela contém as anteriores.
+        // Ignorados = os que seriam comparados (nota completa, não repetidos) sem a checagem.
+        const semChecagem = escolherAlternativas(referencia, todos).comparados;
         const nome = nomeDaCategoria(categoria);
         resposta = {
           status: 'ok',
           ...(nome && { categoria: nome }),
           referencia: referencia.nota,
           comparados,
-          ignorados: [...suspeitos].filter((b) => b !== referencia.barcode).length,
+          ignorados: Math.max(0, semChecagem - comparados),
+          incompleta: false,
           alternativas,
         };
         if (nivel >= 1 && alternativas.length > 0) break;
       }
+
+      if (!resposta) throw primeiroErro;
+      // Uma busca falhou (antes ou depois da que respondeu): a lista pode estar incompleta.
+      resposta.incompleta = primeiroErro !== undefined;
       return resposta;
     },
   };

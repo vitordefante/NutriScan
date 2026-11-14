@@ -260,19 +260,25 @@ maior. As regras (código em `api/src/modules/alternativas/`):
    suspeito. Quando o cadastro informa a porção, ela confirma: se energia × 100 ÷ porção der um
    valor normal para a categoria, foi a porção digitada no lugar de 100 g (39 × 100 ÷ 12 g =
    325 kcal, uma maionese comum) e o produto não é sugerido; se continuar baixo, o valor é real
-   (batata congelada: 116 kcal, porção de 85 g) e o produto continua valendo. A tela informa
-   quantos cadastros ficaram de fora.
+   (batata congelada: 116 kcal, porção de 85 g) e o produto continua valendo. Produtos com
+   0 kcal (chá, água, refrigerante zero) nunca são suspeitos. A mediana é a de cada categoria
+   buscada. A tela informa quantos cadastros ficaram de fora.
 8. **Até 5 alternativas**, da maior nota para a menor. A tela mostra quantos produtos foram
    comparados. Sem nota de referência (faltam dados do produto escaneado), a lista vira
    **Mais bem avaliados**, sem afirmar que são melhores.
 
 O Open Food Facts limita as buscas (cerca de 10 por minuto). Por isso cada categoria fica em cache
-no banco por 7 dias, e se a base estiver fora do ar vale a última busca guardada.
+no banco por 7 dias, e se a base estiver fora do ar vale a última busca guardada. Se uma das
+buscas falhar mesmo assim, a lista sai com o que as outras acharam e a tela avisa que pode estar
+incompleta, com a opção de tentar de novo.
 
 ## 8. Limitações conhecidas
 
 - As alternativas dependem das categorias cadastradas no OFF: produto sem categoria não tem
   alternativas, e categorias atribuídas errado levam a comparações erradas.
+- A "categoria de cima" é a tag anterior na lista de categorias do OFF, que normalmente é a
+  categoria-mãe, mas nem sempre (a lista pode misturar ramos da taxonomia). Nesses casos a
+  comparação pode incluir uma categoria vizinha.
 
 - A nota depende da qualidade dos dados do OFF. Valores claramente errados (ex.: biscoito recheado
   com 1 g de gordura saturada por 100 g) distorcem o resultado.
