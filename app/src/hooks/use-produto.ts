@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import {
   aindaValido,
   assinarMemoria,
+  envioDaSessao,
   guardarNaMemoria,
+  type ItemMemoria,
   itemNaMemoria,
 } from '@/lib/memoria-produtos';
 import { buscarProduto, ErroProduto, type TipoErroProduto } from '@/services/api-produtos';
@@ -28,6 +30,7 @@ export function useProduto(barcode: string) {
   const [resposta, setResposta] = useState<Resposta | null>(null);
   // Re-renderiza quando outra tela guarda uma versão nova deste produto.
   const salvo = useSyncExternalStore(assinarMemoria, () => itemNaMemoria(barcode));
+  const enviado = useSyncExternalStore(assinarMemoria, () => envioDaSessao(barcode));
 
   useEffect(() => {
     if (aindaValido(itemNaMemoria(barcode))) return;
@@ -49,15 +52,18 @@ export function useProduto(barcode: string) {
 
   const tentarDeNovo = useCallback(() => setTentativa((t) => t + 1), []);
 
-  // O estado é derivado: a resposta só vale se for deste código e desta tentativa, e se não
-  // houver uma versão mais nova guardada na memória.
+  // O estado é derivado: vale a informação mais nova entre a resposta desta busca (deste código
+  // e desta tentativa), a memória curta e o envio de foto do rótulo feito nesta sessão.
   const atual = resposta?.barcode === barcode && resposta.tentativa === tentativa ? resposta : null;
-  const memoria = aindaValido(salvo) ? salvo : undefined;
+  const guardados = [aindaValido(salvo) ? salvo : undefined, enviado].filter(
+    (i): i is ItemMemoria => i !== undefined,
+  );
+  const guardado = guardados.sort((a, b) => b.em - a.em)[0];
   let estado: EstadoProduto;
-  if (atual && !(memoria && memoria.em > atual.em)) {
+  if (atual && !(guardado && guardado.em > atual.em)) {
     const r = atual.resultado;
     estado = r.ok ? { status: 'pronto', dados: r.dados } : { status: 'erro', tipo: r.tipo };
-  } else if (memoria) estado = { status: 'pronto', dados: memoria.dados };
+  } else if (guardado) estado = { status: 'pronto', dados: guardado.dados };
   else estado = { status: 'carregando' };
 
   return { estado, tentarDeNovo };

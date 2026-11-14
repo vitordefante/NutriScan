@@ -168,11 +168,17 @@ export function criarServicoProdutos({
       return montar(resultado, desatualizado);
     }
 
-    // Com o rótulo lido por foto, as bases abertas são só um complemento (nome, marca, foto):
-    // se estiverem fora do ar, a análise sai mesmo assim, pela leitura.
+    return montarComLeitura(barcode, lido);
+  }
+
+  /**
+   * Com o rótulo lido por foto, as bases abertas são só um complemento (nome, marca, foto):
+   * se estiverem fora do ar, a análise sai mesmo assim, pela leitura.
+   */
+  async function montarComLeitura(barcode: string, lido: RotuloLido): Promise<ProductResult> {
     try {
       const { resultado, desatualizado } = await consultarBases(barcode);
-      return montarComRotulo(barcode, resultado.dados, lido, desatualizado);
+      return montarComRotulo(barcode, resultado, lido, desatualizado);
     } catch (err) {
       if (!(err instanceof FonteIndisponivelError)) throw err;
       log.warn({ err, barcode }, 'Fonte indisponível; produto montado só com o rótulo lido');
@@ -189,9 +195,9 @@ export function criarServicoProdutos({
       if (!leitura.ok) return leitura;
 
       const anterior = await rotulos.buscar(barcode);
-      await rotulos.salvar(barcode, combinarLeituras(anterior, leitura.lido), agora());
-      // Acabou de ser salvo: a consulta sempre encontra o produto.
-      return { ok: true, resultado: (await consultar(barcode))! };
+      const lido = combinarLeituras(anterior, leitura.lido);
+      await rotulos.salvar(barcode, lido, agora());
+      return { ok: true, resultado: await montarComLeitura(barcode, lido) };
     },
   };
 }
@@ -212,6 +218,7 @@ function montar({ fonte, dados }: ResultadoFontes, desatualizado: boolean): Prod
       analise: analisarCosmetico(paraDadosCosmetico(dados)),
       desatualizado,
       fonte,
+      rotuloPorFoto: false,
     };
   }
   return {
@@ -219,5 +226,6 @@ function montar({ fonte, dados }: ResultadoFontes, desatualizado: boolean): Prod
     analise: analisarAlimento(paraDadosAlimento(dados)),
     desatualizado,
     fonte,
+    rotuloPorFoto: false,
   };
 }

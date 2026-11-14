@@ -20,7 +20,11 @@ public class LeitorRotuloModule: Module {
         return
       }
 
+      // O Vision pode avisar um erro pelo retorno do pedido E pelo `perform` lançando: a promessa
+      // só pode ser resolvida uma vez.
+      var respondido = false
       let pedido = VNRecognizeTextRequest { pedido, erro in
+        respondido = true
         if let erro {
           promise.reject("ERR_OCR", erro.localizedDescription)
           return
@@ -51,7 +55,7 @@ public class LeitorRotuloModule: Module {
       do {
         try manipulador.perform([pedido])
       } catch {
-        promise.reject("ERR_OCR", error.localizedDescription)
+        if !respondido { promise.reject("ERR_OCR", error.localizedDescription) }
       }
     }
   }

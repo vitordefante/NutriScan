@@ -42,7 +42,7 @@ export function lerTabelaNutricional(linhas: readonly LabelLine[]): TabelaLida |
 
   // Cabeçalho do modelo novo: "100 g | 30 g | %VD*". Sem a coluna de 100 (ex.: suplementos),
   // os valores são da porção e são convertidos para 100.
-  const cem = /\b100\s*(g|ml)\b/.exec(textoTodo);
+  const cem = cabecalhoDe100(uteis);
   const porcao = lerPorcao(textoTodo);
   if (!cem && !porcao) return null;
   const unidade = ((cem?.[1] ?? porcao?.unidade) === 'ml' ? 'ml' : 'g') as 'g' | 'ml';
@@ -68,6 +68,8 @@ type Lido = { campo: Campo; valor: number; rotulo: string };
 /** Qual nutriente esta linha nomeia (texto normalizado), se for um dos que a nota usa. */
 function campoDaLinha(norm: string): Campo | undefined {
   const campo = LINHAS.find(([, padrao]) => padrao.test(norm))?.[0];
+  // Linha só em kJ ("Valor energético (kJ)"): a nota usa kcal.
+  if (campo === 'energiaKcal' && /\bkj\b/.test(norm) && !/kcal/.test(norm)) return undefined;
   if (campo === 'acucares' && /adicionad/.test(norm)) return undefined;
   if (campo === 'gorduraSaturada' && /trans|totais/.test(norm)) return undefined;
   return campo;
@@ -165,7 +167,9 @@ function lerPelaColuna(linhas: readonly LabelLine[], coluna: Coluna): Lido[] {
     const campo = campoDaLinha(rotulo);
     if (!campo) continue;
     const celula = comValor.get(nome);
-    const valor = celula ? primeiroNumero(normalizar(celula.texto)) : valorNaLinha(rotulo, campo);
+    const textoCelula = celula && normalizar(celula.texto);
+    if (campo === 'energiaKcal' && textoCelula && /kj/.test(textoCelula)) continue;
+    const valor = textoCelula ? primeiroNumero(textoCelula) : valorNaLinha(rotulo, campo);
     if (valor !== undefined) lidos.push({ campo, valor, rotulo });
   }
   return lidos;
@@ -245,6 +249,27 @@ type Coluna = {
   /** Fim da última coluna do cabeçalho: o que começa depois disso é outro painel da embalagem. */
   limiteDireito: number;
 };
+
+/**
+ * A tabela tem a coluna "100 g" (modelo novo)? Só conta o "100 g" do cabeçalho: a célula sozinha
+ * ou a linha do cabeçalho inteira ("100 g 30 g %VD*") — não "Peso líquido 100 g" nem
+ * "Porção de 100 g" de uma tabela antiga, que estão em outras partes da foto.
+ */
+function cabecalhoDe100(linhas: readonly LabelLine[]): RegExpExecArray | null {
+  for (const linha of linhas) {
+    const norm = normalizar(linha.texto).trim();
+    const cem = /\b100\s*(g|ml)\b/.exec(norm);
+    if (!cem) continue;
+    if (/^100\s*(g|ml)$/.test(norm)) return cem;
+    if (
+      /%\s*vd|\d+\s*(?:g|ml)\b.*\b\d+\s*(?:g|ml)\b/.test(norm) &&
+      !/peso|conteudo|porcao/.test(norm)
+    ) {
+      return cem;
+    }
+  }
+  return null;
+}
 
 /** Célula de cabeçalho: "100 g", "30 g", "200 ml", "%VD*". */
 const CABECALHO = /^(?:\d+(?:[.,]\d+)?\s*(?:g|ml)|%\s*vd.*)$/;

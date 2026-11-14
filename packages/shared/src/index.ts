@@ -126,8 +126,10 @@ export type ProductResult = {
    * antiga do cache. A análise continua válida, mas os dados do produto podem estar desatualizados.
    */
   desatualizado: boolean;
-  /** De onde vieram os dados do produto: bases abertas ou fotos do rótulo enviadas no app. */
+  /** De onde vieram os dados do produto: a base aberta, ou só as fotos do rótulo. */
   fonte: ProductSource;
+  /** A análise usa a leitura de fotos do rótulo enviadas no app (sozinha ou completando a base). */
+  rotuloPorFoto: boolean;
 };
 
 export type ProductSource = 'open_food_facts' | 'open_beauty_facts' | 'foto';

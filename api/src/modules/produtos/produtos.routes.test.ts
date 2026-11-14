@@ -17,6 +17,7 @@ const RESULTADO: ProductResult = {
   },
   desatualizado: false,
   fonte: 'open_food_facts',
+  rotuloPorFoto: false,
 };
 
 function app(

@@ -1,7 +1,7 @@
 import type { ProductKind } from '@nutriscan/shared';
 import { useState } from 'react';
 
-import { guardarNaMemoria } from '@/lib/memoria-produtos';
+import { guardarEnvio } from '@/lib/memoria-produtos';
 import { enviarRotulo, ErroProduto } from '@/services/api-produtos';
 import { type FotoLida, fotografarELer } from '@/services/leitor-rotulo';
 
@@ -53,7 +53,7 @@ export function useEnvioRotulo(barcode: string, tipoInicial: ProductKind | undef
         ...(fotos.ingredientes && { ingredientes: fotos.ingredientes.linhas }),
         ...(tipo === 'alimento' && fotos.tabela && { tabela: fotos.tabela.linhas }),
       });
-      guardarNaMemoria(barcode, dados);
+      guardarEnvio(barcode, dados);
       return true;
     } catch (err) {
       setAviso(

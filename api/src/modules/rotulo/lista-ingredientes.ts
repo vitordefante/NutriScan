@@ -26,13 +26,24 @@ const FIM =
 export function extrairListaIngredientes(linhas: readonly LabelLine[]): string | undefined {
   const texto = juntarLinhas(linhas.map((l) => l.texto)).normalize('NFC');
   const norm = normalizar(texto);
-  if (norm.length !== texto.length) return limpar(texto); // segurança: sem mapeamento de posições
+  // Segurança: sem mapeamento de posições entre o texto e o normalizado, usa o texto todo.
+  if (norm.length !== texto.length) return pareceLista(norm) ? limpar(texto) : undefined;
 
   const inicio = INICIO.exec(norm);
   const de = inicio ? inicio.index + inicio[0].length : 0;
   const fim = FIM.exec(norm.slice(de));
   const ate = fim ? de + fim.index : texto.length;
+  // Sem o cabeçalho "Ingredientes:", só vale se o texto parecer mesmo uma lista — senão uma foto
+  // da frente da embalagem ou da tabela, tirada no lugar errado, viraria a "lista" do produto
+  // para todo mundo que escanear o código depois.
+  if (!inicio && !pareceLista(norm.slice(de, ate))) return undefined;
   return limpar(texto.slice(de, ate));
+}
+
+/** Lista separada por vírgulas (ao menos 3 itens) e sem cara de tabela nutricional. */
+function pareceLista(norm: string): boolean {
+  const separadores = (norm.match(/[,;]/g) ?? []).length;
+  return separadores >= 2 && !/valor energetico|informacao nutricional|%\s*vd|porcao/.test(norm);
 }
 
 /**

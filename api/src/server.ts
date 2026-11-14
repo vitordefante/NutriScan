@@ -1,5 +1,6 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { buildApp } from './app.js';
 import { loadEnv } from './config/env.js';
@@ -22,14 +23,17 @@ const produtos = criarServicoProdutos({
   rotulos: criarRepositorioRotulosPg(database.db),
   ...(env.OCR_DEBUG_DIR &&
     env.NODE_ENV !== 'production' && {
+      // Diagnóstico: grava em segundo plano e nunca derruba o envio. Caminho relativo à pasta
+      // da API (não ao diretório de onde ela foi iniciada), coberto pelo .gitignore.
       registrarEnvio: (barcode, envio, leitura) => {
-        const pasta = env.OCR_DEBUG_DIR!;
-        mkdirSync(pasta, { recursive: true });
+        const pasta = resolve(dirname(fileURLToPath(import.meta.url)), '..', env.OCR_DEBUG_DIR!);
         const arquivo = join(
           pasta,
           `${barcode}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
         );
-        writeFileSync(arquivo, JSON.stringify({ barcode, envio, leitura }, null, 1));
+        mkdir(pasta, { recursive: true })
+          .then(() => writeFile(arquivo, JSON.stringify({ barcode, envio, leitura }, null, 1)))
+          .catch((err: unknown) => app.log.warn({ err }, 'Falha ao guardar o OCR do envio'));
       },
     }),
   log: { warn: (obj, msg) => app.log.warn(obj, msg) },

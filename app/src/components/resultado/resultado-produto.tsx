@@ -20,8 +20,15 @@ type Props = {
 const NOME_FONTE: Record<ProductResult['fonte'], string> = {
   open_food_facts: 'Open Food Facts',
   open_beauty_facts: 'Open Beauty Facts',
-  foto: 'fotos do rótulo enviadas no app (leitura automática, não revisada)',
+  foto: 'fotos do rótulo enviadas no app',
 };
+
+/** "Open Food Facts + fotos do rótulo enviadas no app (leitura automática, não revisada)". */
+function creditoDosDados({ fonte, rotuloPorFoto }: ProductResult): string {
+  const base = fonte === 'foto' ? NOME_FONTE.foto : NOME_FONTE[fonte];
+  const complemento = fonte !== 'foto' && rotuloPorFoto ? ` + ${NOME_FONTE.foto}` : '';
+  return `${base}${complemento}${rotuloPorFoto ? ' (leitura automática, não revisada)' : ''}`;
+}
 
 /** Conteúdo da tela de resultado (produto + análise), já com os dados carregados. */
 export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto }: Props) {
@@ -97,7 +104,7 @@ export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto }: Props)
       )}
 
       <Texto variante="legenda" style={estilos.rodape}>
-        Dados do produto: {NOME_FONTE[dados.fonte]}.{'\n'}
+        Dados do produto: {creditoDosDados(dados)}.{'\n'}
         Metodologia da nota: NutriScan v1{cosmetico ? ' (cosméticos)' : ''}.
         {dados.desatualizado ? '\nA base estava fora do ar: dados de uma consulta anterior.' : ''}
       </Texto>

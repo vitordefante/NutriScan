@@ -4,6 +4,7 @@ import type { DadosAlimento } from '../analise/dados-alimento.js';
 import { analisarAlimento } from '../analise/nota.js';
 import { analisarCosmetico, type DadosCosmetico } from '../analise-cosmetico/nota.js';
 import type { RotuloLido } from '../rotulo/leitura.js';
+import type { ResultadoFontes } from './produtos.service.js';
 import {
   paraDadosAlimento,
   paraDadosCosmetico,
@@ -18,15 +19,16 @@ import {
  */
 export function montarComRotulo(
   barcode: string,
-  daBase: ProdutoOff | null,
+  base: ResultadoFontes | null,
   lido: RotuloLido,
   desatualizado: boolean,
 ): ProductResult {
-  const base: Product = daBase
+  const daBase = base?.dados ?? null;
+  const doCadastro: Product = daBase
     ? paraProduto(daBase, lido.tipo)
     : { barcode, tipo: lido.tipo, nome: 'Produto sem nome', categorias: [] };
   const produto: Product = {
-    ...base,
+    ...doCadastro,
     ...(lido.nome && { nome: lido.nome }),
     ...(lido.ingredientes && { ingredientes: lido.ingredientes }),
   };
@@ -36,7 +38,15 @@ export function montarComRotulo(
       ? analisarCosmetico(dadosCosmetico(produto.nome, daBase, lido))
       : analisarAlimento(dadosAlimento(produto.nome, daBase, lido));
 
-  return { produto, analise, desatualizado, fonte: 'foto' };
+  // Com cadastro na base aberta, ela continua sendo a fonte (nome, marca, foto — e a atribuição
+  // que a licença dela pede); a leitura da foto entra como complemento.
+  return {
+    produto,
+    analise,
+    desatualizado,
+    fonte: daBase ? base!.fonte : 'foto',
+    rotuloPorFoto: true,
+  };
 }
 
 function dadosAlimento(nome: string, daBase: ProdutoOff | null, lido: RotuloLido): DadosAlimento {
@@ -46,7 +56,9 @@ function dadosAlimento(nome: string, daBase: ProdutoOff | null, lido: RotuloLido
   return {
     ...base,
     nome,
-    ...(lido.ingredientes && { ingredientes: lido.ingredientes }),
+    // Os códigos de aditivos do cadastro vêm da lista antiga: com a lista da foto, valem só os
+    // aditivos escritos nela (o motor os reconhece pelo nome).
+    ...(lido.ingredientes && { ingredientes: lido.ingredientes, aditivos: [] }),
     ...(lido.nutrientes && {
       nutrientes: { ...base.nutrientes, ...lido.nutrientes },
       // A tabela diz se os valores são por 100 g ou 100 ml — é o que decide se é bebida.

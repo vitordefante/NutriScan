@@ -11,6 +11,12 @@ export type ItemMemoria = { dados: ProductResult; em: number };
 const VALIDADE_MS = 10 * 60 * 1000;
 const MAXIMO = 20;
 const memoria = new Map<string, ItemMemoria>();
+/**
+ * Resultados de envios de foto do rótulo nesta sessão: sem validade nem limite de itens (são
+ * poucos), para a tela não voltar a mostrar a resposta antiga (ex.: "não encontrado") quando a
+ * memória curta expirar.
+ */
+const enviados = new Map<string, ItemMemoria>();
 const ouvintes = new Set<() => void>();
 
 /**
@@ -32,6 +38,20 @@ export function guardarNaMemoria(barcode: string, dados: ProductResult) {
   memoria.set(barcode, { dados, em: Date.now() });
   if (memoria.size > MAXIMO) memoria.delete(memoria.keys().next().value!);
   for (const avisar of ouvintes) avisar();
+}
+
+/**
+ * Resultado de um envio de foto do rótulo: vale mesmo "desatualizado" (base aberta fora do ar) —
+ * a leitura foi salva e é a informação mais nova que existe deste produto.
+ */
+export function guardarEnvio(barcode: string, dados: ProductResult) {
+  enviados.set(barcode, { dados, em: Date.now() });
+  guardarNaMemoria(barcode, dados); // a tela "Por que essa nota" também lê daqui
+  for (const avisar of ouvintes) avisar();
+}
+
+export function envioDaSessao(barcode: string): ItemMemoria | undefined {
+  return enviados.get(barcode);
 }
 
 /** Para `useSyncExternalStore`: avisa quando algum produto é guardado. */

@@ -67,10 +67,24 @@ describe('extrairListaIngredientes', () => {
     );
   });
 
-  it('sem o cabeçalho, usa o texto todo (a pessoa fotografou só a lista)', () => {
-    expect(extrairListaIngredientes(paragrafo('Leite integral, fermento lácteo.'))).toBe(
-      'Leite integral, fermento lácteo.',
+  it('sem o cabeçalho, usa o texto todo se parecer uma lista (a pessoa fotografou só ela)', () => {
+    expect(extrairListaIngredientes(paragrafo('Leite integral, fermento lácteo, sal.'))).toBe(
+      'Leite integral, fermento lácteo, sal.',
     );
+    expect(extrairListaIngredientes(paragrafo('Aqua, Glycerin, Parfum, Methylparaben'))).toBe(
+      'Aqua, Glycerin, Parfum, Methylparaben',
+    );
+  });
+
+  it('foto errada (frente da embalagem, tabela) não vira lista de ingredientes', () => {
+    expect(
+      extrairListaIngredientes(paragrafo('BISCOITO RECHEADO', 'Sabor chocolate')),
+    ).toBeUndefined();
+    expect(
+      extrairListaIngredientes(
+        paragrafo('INFORMAÇÃO NUTRICIONAL', 'Porção: 30 g', 'Carboidratos (g) 20, 7', 'Sódio, 93'),
+      ),
+    ).toBeUndefined();
   });
 
   it('foto sem texto útil: undefined', () => {
@@ -305,5 +319,36 @@ describe('fotos reais de tabelas (Apple Vision)', () => {
       proteinas: 76.7,
       gorduraSaturada: 2.7,
     });
+  });
+});
+
+describe('lerTabelaNutricional: armadilhas', () => {
+  it('"Peso líquido 100 g" não transforma a tabela antiga (por porção) em tabela por 100 g', () => {
+    const lida = lerTabelaNutricional(
+      paragrafo(
+        'PESO LÍQUIDO 100 g',
+        'INFORMAÇÃO NUTRICIONAL',
+        'Porção de 25 g (1 pacote)',
+        'Valor energético 125 kcal = 525 kJ 6%',
+        'Proteínas 1,5 g 2%',
+        'Gorduras saturadas 2,5 g 11%',
+        'Sódio 220 mg 9%',
+      ),
+    );
+    expect(lida?.origem).toBe('convertido_da_porcao');
+    expect(lida?.nutrientes.sodioMg).toBe(880);
+  });
+
+  it('linha de energia em kJ não vira kcal', () => {
+    const lida = lerTabelaNutricional(
+      tabela(
+        ['', '100 g', '30 g', '%VD*'],
+        ['Valor energético (kJ)', '2008', '602'],
+        ['Valor energético (kcal)', '480', '144', '7'],
+        ['Açúcares adicionados (g)', '30', '9,0', '18'],
+        ['Sódio (mg)', '310', '93', '5'],
+      ),
+    );
+    expect(lida?.nutrientes.energiaKcal).toBe(480);
   });
 });

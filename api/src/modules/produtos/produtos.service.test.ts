@@ -289,6 +289,40 @@ describe('ServicoProdutos.enviarRotulo (base própria)', () => {
     expect(r?.produto.nome).toBe('Produto sem nome');
   });
 
+  it('lista da foto substitui a do cadastro: aditivos antigos não valem; a base segue como fonte', async () => {
+    const comNitrito: ProdutoOff = {
+      code: '7890000000006',
+      product_name: 'Salsicha',
+      ingredients_text_pt: 'Carne, sal, conservador nitrito de sódio',
+      additives_tags: ['en:e250'],
+    };
+    const { servico } = montar({ off: async () => comNitrito, cache: cacheEmMemoria() });
+
+    const r = await servico.enviarRotulo(comNitrito.code, {
+      tipo: 'alimento',
+      ingredientes: fotoTexto('Ingredientes: carne de frango, água, sal, alho, pimenta.'),
+    });
+
+    if (!r.ok) throw new Error('esperava leitura');
+    expect(r.resultado.analise.alertas.map((a) => a.id)).not.toContain('aditivo-nitritos-nitratos');
+    expect(r.resultado.fonte).toBe('open_food_facts');
+    expect(r.resultado.rotuloPorFoto).toBe(true);
+  });
+
+  it('envio com as bases fora do ar: salva e responde pela leitura', async () => {
+    const rotulos = rotulosEmMemoria();
+    const { servico } = montar({ off: foraDoAr, obf: foraDoAr, cache: cacheEmMemoria(), rotulos });
+
+    const r = await servico.enviarRotulo('7890000000007', {
+      tipo: 'alimento',
+      ingredientes: FOTO_INGREDIENTES,
+    });
+
+    if (!r.ok) throw new Error('esperava leitura');
+    expect(r.resultado).toMatchObject({ fonte: 'foto', rotuloPorFoto: true, desatualizado: true });
+    expect(rotulos.mapa.has('7890000000007')).toBe(true);
+  });
+
   it('cadastro do OFF sem ingredientes: mantém nome e marca, usa a lista da foto', async () => {
     const semLista: ProdutoOff = {
       code: '7890000000002',
