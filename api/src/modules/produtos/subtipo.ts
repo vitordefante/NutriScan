@@ -37,6 +37,7 @@ const NOMES: Record<string, string> = {
   'en:ice-creams': 'Sorvete',
   'en:crisps': 'Salgadinho',
   'en:salty-snacks': 'Salgadinho',
+  'en:chips-and-fries': 'Batata frita e chips',
   'en:honeys': 'Mel',
   'en:sugars': 'Açúcar',
   // Laticínios e ovos

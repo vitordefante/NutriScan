@@ -252,7 +252,17 @@ maior. As regras (código em `api/src/modules/alternativas/`):
 6. **Sem repetir o próprio produto.** Cadastros repetidos (outro tamanho, outra grafia da marca,
    "Nescau" × "Achocolatado em pó Nescau Refil") contam como o mesmo produto. Versões _light_,
    _zero_, _integral_… contam como produtos diferentes.
-7. **Até 5 alternativas**, da maior nota para a menor. A tela mostra quantos produtos foram
+7. **Cadastros fora do padrão ficam de fora.** O erro mais comum no cadastro colaborativo é
+   digitar os valores de uma porção (ex.: 12 g) no campo "por 100 g": tudo fica várias vezes
+   menor e o Nutri-Score sai **A** por engano (caso real: uma maionese com 39 kcal e 3,9 g de
+   gordura por 100 g, quando o mesmo produto em outros cadastros tem 475 kcal). Por isso, um
+   alimento com energia abaixo de **1/3 da mediana da categoria** (com pelo menos 5 produtos) é
+   suspeito. Quando o cadastro informa a porção, ela confirma: se energia × 100 ÷ porção der um
+   valor normal para a categoria, foi a porção digitada no lugar de 100 g (39 × 100 ÷ 12 g =
+   325 kcal, uma maionese comum) e o produto não é sugerido; se continuar baixo, o valor é real
+   (batata congelada: 116 kcal, porção de 85 g) e o produto continua valendo. A tela informa
+   quantos cadastros ficaram de fora.
+8. **Até 5 alternativas**, da maior nota para a menor. A tela mostra quantos produtos foram
    comparados. Sem nota de referência (faltam dados do produto escaneado), a lista vira
    **Mais bem avaliados**, sem afirmar que são melhores.
 

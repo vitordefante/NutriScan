@@ -1,4 +1,4 @@
-import type { Alternative, ProductKind } from '@nutriscan/shared';
+import type { Alternative, AlternativesResult, ProductKind } from '@nutriscan/shared';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -72,20 +72,28 @@ export function SecaoAlternativas({ estado, tipo, onAbrir, onTentarDeNovo }: Pro
                 : 'Nenhum produto da mesma categoria tem dados completos na base para comparar.'}
             </Texto>
           )}
-          <Texto variante="legenda">
-            {legenda(estado.dados.comparados, estado.dados.categoria, BASE[tipo])}
-          </Texto>
+          <Texto variante="legenda">{legenda(estado.dados, BASE[tipo])}</Texto>
         </>
       )}
     </Secao>
   );
 }
 
-/** "Entre 22 produtos da categoria “Maionese” vendidos no Brasil (Open Food Facts)…" */
-function legenda(comparados: number, categoria: string | undefined, base: string): string {
+/**
+ * "Comparados 19 produtos da categoria “Maionese” vendidos no Brasil… 4 cadastros com valores
+ * fora do padrão da categoria ficaram de fora."
+ */
+function legenda(
+  { comparados, categoria, ignorados }: Extract<AlternativesResult, { status: 'ok' }>,
+  base: string,
+): string {
   const daCategoria = categoria ? `da categoria “${categoria}”` : 'da mesma categoria';
   const produtos = comparados === 1 ? 'produto' : 'produtos';
-  return `Comparados ${comparados} ${produtos} ${daCategoria} vendidos no Brasil, com dados completos no ${base}, pela mesma metodologia da nota.`;
+  const fora =
+    ignorados > 0
+      ? ` ${ignorados} ${ignorados === 1 ? 'cadastro' : 'cadastros'} com valores fora do padrão da categoria (provável erro de digitação) ${ignorados === 1 ? 'ficou' : 'ficaram'} de fora.`
+      : '';
+  return `Comparados ${comparados} ${produtos} ${daCategoria} vendidos no Brasil, com dados completos no ${base}, pela mesma metodologia da nota.${fora}`;
 }
 
 function CartaoAlternativa({

@@ -1,6 +1,7 @@
 import type { AlternativesResult, ProductResult } from '@nutriscan/shared';
 
 import { montarResultado } from '../produtos/montar.js';
+import { paraDadosAlimento } from '../produtos/open-food-facts.mapper.js';
 import {
   type ClienteBusca,
   FonteIndisponivelError,
@@ -12,6 +13,10 @@ import type { RepositorioRotulos } from '../rotulo/rotulos.repository.js';
 import type { CacheBuscas } from './buscas.repository.js';
 import { categoriasParaComparar, nomeDaCategoria } from './categorias.js';
 import { escolherAlternativas, type Referencia } from './escolha.js';
+import { cadastrosSuspeitos } from './plausibilidade.js';
+
+/** Candidato analisado + a energia por 100 g usada na checagem de plausibilidade. */
+type Candidato = { resultado: ProductResult; energiaKcal?: number; porcaoG?: number };
 
 export type ServicoAlternativas = {
   /**
@@ -91,7 +96,10 @@ export function criarServicoAlternativas({
   }
 
   /** Cada candidato analisado pelo mesmo motor da nota, com a leitura de foto se houver. */
-  async function analisar(fonte: FonteProduto, { produtos: lista }: ResultadoBusca) {
+  async function analisar(
+    fonte: FonteProduto,
+    { produtos: lista }: ResultadoBusca,
+  ): Promise<Candidato[]> {
     const lidos = await rotulos
       .buscarVarios(lista.map((p) => p.code))
       .catch((err: unknown): Map<string, RotuloLido> => {
@@ -99,8 +107,20 @@ export function criarServicoAlternativas({
         return new Map();
       });
     return lista.flatMap((dados) => {
-      const r = montarResultado({ fonte, dados }, false, lidos.get(dados.code));
-      return r ? [r] : [];
+      const lido = lidos.get(dados.code);
+      const resultado = montarResultado({ fonte, dados }, false, lido);
+      if (!resultado) return [];
+      // A checagem é da tabela do cadastro. Fica de fora: cosmético (não tem tabela) e tabela
+      // lida por foto (já passou pela checagem de coerência da leitura).
+      if (fonte !== 'open_food_facts' || lido?.nutrientes) return [{ resultado }];
+      const energiaKcal = paraDadosAlimento(dados).nutrientes.energiaKcal;
+      return [
+        {
+          resultado,
+          ...(energiaKcal !== undefined && { energiaKcal }),
+          ...(dados.serving_quantity !== undefined && { porcaoG: dados.serving_quantity }),
+        },
+      ];
     });
   }
 
@@ -120,7 +140,7 @@ export function criarServicoAlternativas({
       // que costuma estar a opção menos processada (achocolatado → "cacau e chocolate em pó",
       // onde está o cacau 100%). Mais um nível só se ainda não houver nenhuma alternativa.
       // Se um nível de cima falhar, fica com o que os anteriores acharam.
-      const candidatos = new Map<string, ProductResult>();
+      const candidatos = new Map<string, Candidato>();
       let resposta: AlternativesResult | null = null;
       for (const [nivel, categoria] of categorias.entries()) {
         let encontrados: ResultadoBusca;
@@ -130,12 +150,25 @@ export function criarServicoAlternativas({
           if (resposta && err instanceof FonteIndisponivelError) break;
           throw err;
         }
-        for (const r of await analisar(fonte, encontrados)) {
-          if (!candidatos.has(r.produto.barcode)) candidatos.set(r.produto.barcode, r);
+        for (const c of await analisar(fonte, encontrados)) {
+          const codigo = c.resultado.produto.barcode;
+          if (!candidatos.has(codigo)) candidatos.set(codigo, c);
         }
-        const { comparados, alternativas } = escolherAlternativas(referencia, [
-          ...candidatos.values(),
-        ]);
+        // Valores fora do padrão da categoria (ex.: porção digitada como 100 g) não são
+        // sugeridos: a nota deles não é confiável.
+        const suspeitos = cadastrosSuspeitos(
+          [...candidatos.values()].map((c) => ({
+            barcode: c.resultado.produto.barcode,
+            ...(c.energiaKcal !== undefined && { energiaKcal: c.energiaKcal }),
+            ...(c.porcaoG !== undefined && { porcaoG: c.porcaoG }),
+          })),
+        );
+        const { comparados, alternativas } = escolherAlternativas(
+          referencia,
+          [...candidatos.values()]
+            .map((c) => c.resultado)
+            .filter((r) => !suspeitos.has(r.produto.barcode)),
+        );
         // A categoria mais geral consultada: ela contém as anteriores.
         const nome = nomeDaCategoria(categoria);
         resposta = {
@@ -143,6 +176,7 @@ export function criarServicoAlternativas({
           ...(nome && { categoria: nome }),
           referencia: referencia.nota,
           comparados,
+          ignorados: [...suspeitos].filter((b) => b !== referencia.barcode).length,
           alternativas,
         };
         if (nivel >= 1 && alternativas.length > 0) break;

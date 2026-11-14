@@ -169,6 +169,11 @@ export type AlternativesResult =
       referencia: number | null;
       /** Quantos produtos da categoria, vendidos no Brasil, tinham dados para a nota completa. */
       comparados: number;
+      /**
+       * Cadastros deixados de fora por valores fora do padrão da categoria (ex.: os valores de
+       * uma porção digitados como "por 100 g").
+       */
+      ignorados: number;
       /** Da maior nota para a menor. */
       alternativas: Alternative[];
     };

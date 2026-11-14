@@ -17,6 +17,7 @@ import { criarServicoAlternativas, type ServicoAlternativas } from './alternativ
 import type { BuscaEmCache, CacheBuscas } from './buscas.repository.js';
 import { categoriasParaComparar, nomeDaCategoria } from './categorias.js';
 import { escolherAlternativas, LIMITE_ALTERNATIVAS, type Referencia } from './escolha.js';
+import { cadastrosSuspeitos } from './plausibilidade.js';
 
 const DIA = 24 * 60 * 60 * 1000;
 const AGORA = new Date('2026-11-14T12:00:00Z');
@@ -234,6 +235,45 @@ describe('escolherAlternativas', () => {
       lupa: 0,
       alertas: 0,
     });
+  });
+});
+
+describe('cadastrosSuspeitos', () => {
+  // Energia (kcal/100 g) das maioneses vendidas no Brasil, como estavam no OFF em 14/11/2026.
+  const MAIONESES = [
+    39, 40, 80, 92, 133, 142, 155, 167, 175, 175, 175, 181, 196, 283, 283, 292, 295, 300, 300, 300,
+    304, 304, 304, 307, 308, 308, 308, 317, 317, 333, 475, 475, 534, 592, 625, 633, 633, 633, 667,
+    745,
+  ];
+  const cadastros = MAIONESES.map((energiaKcal, i) => ({ barcode: String(i), energiaKcal }));
+
+  it('energia abaixo de 1/3 da mediana: provável porção digitada como 100 g', () => {
+    // Mediana = 302 kcal → limite ≈ 101 kcal.
+    expect([...cadastrosSuspeitos(cadastros)]).toEqual(['0', '1', '2', '3']);
+  });
+
+  it('uma versão light de verdade continua valendo', () => {
+    expect(cadastrosSuspeitos(cadastros).has('4')).toBe(false); // 133 kcal
+  });
+
+  it('com a porção informada, confirma: porção digitada como 100 g × valor baixo de verdade', () => {
+    const comPorcao = [
+      ...cadastros,
+      { barcode: 'notco', energiaKcal: 39, porcaoG: 12 }, // 39 × 100 ÷ 12 = 325: erro de porção
+      { barcode: 'light', energiaKcal: 60, porcaoG: 30 }, // 60 × 100 ÷ 30 = 200: erro de porção
+      { barcode: 'real', energiaKcal: 70, porcaoG: 85 }, // 70 × 100 ÷ 85 = 82: valor real
+      { barcode: 'cem', energiaKcal: 70, porcaoG: 100 }, // porção de 100 g: valor real
+    ];
+    const suspeitos = cadastrosSuspeitos(comPorcao);
+    expect(suspeitos.has('notco')).toBe(true);
+    expect(suspeitos.has('light')).toBe(true);
+    expect(suspeitos.has('real')).toBe(false);
+    expect(suspeitos.has('cem')).toBe(false);
+  });
+
+  it('com poucos produtos (ou sem tabela), ninguém é descartado', () => {
+    expect(cadastrosSuspeitos(cadastros.slice(0, 4)).size).toBe(0);
+    expect(cadastrosSuspeitos([{ barcode: '1' }, { barcode: '2' }]).size).toBe(0);
   });
 });
 
@@ -520,6 +560,32 @@ describe('ServicoAlternativas', () => {
     await Promise.all([servico.consultar(ACHOCOLATADO.code), servico.consultar(ACHOCOLATADO.code)]);
 
     expect(buscarPorCategoria).toHaveBeenCalledTimes(2); // uma por categoria, não quatro
+  });
+
+  it('não sugere cadastro com valores fora do padrão da categoria', async () => {
+    // Cacau com os valores de uma porção de 10 g no campo "por 100 g": nota inflada.
+    const PORCAO_COMO_100G: ProdutoOff = {
+      ...CACAU,
+      code: '7896000000031',
+      product_name: 'Cacau em pó Sítio',
+      brands: 'Sítio',
+      nutriments: { ...tabela(32, 0.1, 0.8, 0.002), fiber_100g: 3, proteins_100g: 2 },
+    };
+    const outros = Array.from({ length: 4 }, (_, i) => ({
+      ...OUTRO_ACHOCOLATADO,
+      code: `78900000000${i}`,
+      product_name: `Achocolatado ${i}`,
+      brands: `Fabricante ${i}`,
+    }));
+    const { servico } = await montar({
+      categorias: {
+        'en:instant-chocolate-powders': busca(ACHOCOLATADO, ...outros, PORCAO_COMO_100G, CACAU),
+      },
+    });
+
+    const r = await servico.consultar(ACHOCOLATADO.code);
+
+    expect(r).toMatchObject({ ignorados: 1, alternativas: [{ barcode: CACAU.code }] });
   });
 
   it('produto sem categoria: não busca nada', async () => {
