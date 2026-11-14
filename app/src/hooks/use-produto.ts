@@ -9,11 +9,12 @@ import {
   type ItemMemoria,
   itemNaMemoria,
 } from '@/lib/memoria-produtos';
-import { buscarProduto, ErroProduto, type TipoErroProduto } from '@/services/api-produtos';
+import { ErroApi, type TipoErroApi } from '@/services/api';
+import { buscarProduto } from '@/services/api-produtos';
 
 export type EstadoProduto =
   | { status: 'carregando' }
-  | { status: 'erro'; tipo: TipoErroProduto }
+  | { status: 'erro'; tipo: TipoErroApi }
   | { status: 'pronto'; dados: ProductResult };
 
 /** Resposta de uma busca específica (código + tentativa). */
@@ -22,7 +23,7 @@ type Resposta = {
   tentativa: number;
   /** Quando chegou: uma versão mais nova na memória (ex.: depois da foto do rótulo) vence. */
   em: number;
-  resultado: { ok: true; dados: ProductResult } | { ok: false; tipo: TipoErroProduto };
+  resultado: { ok: true; dados: ProductResult } | { ok: false; tipo: TipoErroApi };
 };
 
 export function useProduto(barcode: string) {
@@ -45,7 +46,7 @@ export function useProduto(barcode: string) {
       })
       .catch((err: unknown) => {
         if (controle.signal.aborted) return; // a tela saiu ou o código mudou
-        responder({ ok: false, tipo: err instanceof ErroProduto ? err.tipo : 'inesperado' });
+        responder({ ok: false, tipo: err instanceof ErroApi ? err.tipo : 'inesperado' });
       });
     return () => controle.abort();
   }, [barcode, tentativa]);

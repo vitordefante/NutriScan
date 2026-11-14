@@ -2,7 +2,8 @@ import type { ProductKind } from '@nutriscan/shared';
 import { useState } from 'react';
 
 import { guardarEnvio } from '@/lib/memoria-produtos';
-import { enviarRotulo, ErroProduto } from '@/services/api-produtos';
+import { ErroApi } from '@/services/api';
+import { enviarRotulo } from '@/services/api-produtos';
 import { type FotoLida, fotografarELer } from '@/services/leitor-rotulo';
 
 export type ParteRotulo = 'ingredientes' | 'tabela';
@@ -57,7 +58,7 @@ export function useEnvioRotulo(barcode: string, tipoInicial: ProductKind | undef
       return true;
     } catch (err) {
       setAviso(
-        err instanceof ErroProduto && err.tipo === 'rotulo_ilegivel'
+        err instanceof ErroApi && err.tipo === 'rotulo_ilegivel'
           ? err.message
           : 'Não foi possível enviar agora. Confira a conexão e tente de novo.',
       );
