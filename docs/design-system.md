@@ -47,8 +47,10 @@ escuro para texto, porque as cores claras não têm contraste suficiente como le
 
 ## Componentes
 
-- **Botão:** altura 52, borda 2 px, sombra sólida preta deslocada 6 px. Primário = fundo tinta;
-  secundário = fundo papel. Ao tocar, o botão desce até a sombra (efeito de pressionar).
+- **Botão:** altura 52, borda 2 px, sombra sólida preta deslocada 6 px. Primário = fundo tinta
+  com **borda branca** (separa a face preta da sombra preta); secundário = fundo papel com borda
+  tinta. Ao tocar, o botão desce até a sombra (efeito de pressionar). **Desabilitado:** bloco
+  plano cinza-claro (`vazio`), texto `cinza`, sem sombra.
 - **Botão "?":** quadrado 40 px com sombra preta de 3 px, sempre **à esquerda** da etiqueta da
   faixa; abre "Por que essa nota". A área de toque é maior que o desenho (`hitSlop`).
 - **Etiqueta:** borda 2 px, texto pixel em caixa alta. Tipo e subtipo do produto ficam **sem
