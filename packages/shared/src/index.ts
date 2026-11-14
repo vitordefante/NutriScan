@@ -213,7 +213,12 @@ export type ApiError = {
     | 'produto_nao_encontrado'
     | 'fonte_indisponivel'
     | 'rotulo_invalido'
-    | 'rotulo_ilegivel';
+    | 'rotulo_ilegivel'
+    | 'dados_invalidos'
+    | 'nao_autenticado'
+    | 'email_em_uso'
+    | 'credenciais_invalidas'
+    | 'registro_nao_encontrado';
   mensagem: string;
 };
 
@@ -236,11 +241,66 @@ export type Producer = {
   fotos: string[];
 };
 
+// ---------------------------------------------------------------------------------------------
+// Contas, histórico e log de exposição
+
+export type User = { id: string; email: string };
+
+/** Resposta de POST /contas e POST /contas/entrar. */
+export type AuthResult = { token: string; usuario: User };
+
+/** Um produto escaneado (resumo para a lista do histórico). */
+export type HistoryItem = {
+  barcode: string;
+  tipo: ProductKind;
+  nome: string;
+  marca?: string;
+  imagemUrl?: string;
+  /** null quando o produto não tem nota (faltam dados). */
+  nota: number | null;
+  faixa: ScoreBand | null;
+  /** Data/hora ISO 8601 do último scan. */
+  escaneadoEm: string;
+};
+
+/**
+ * Um consumo (alimento) ou uso (cosmético) registrado pelo usuário. Guarda a análise do momento
+ * do registro: o log mostra o que se sabia do produto quando ele foi consumido.
+ */
 export type LogEntry = {
   id: string;
   barcode: string;
   tipo: ProductKind;
+  nome: string;
+  marca?: string;
+  imagemUrl?: string;
   nota: number | null;
+  faixa: ScoreBand | null;
+  /** Alimentos: grupo NOVA (null se não houve como classificar). */
+  nova: NovaGroup | null;
+  /** Avisos "alto em" da lupa da ANVISA. */
+  altoEm: FrontLabelNutrient[];
+  /** Títulos dos alertas (aditivos; em cosméticos, ingredientes de atenção). */
+  alertas: string[];
   /** Data/hora ISO 8601 do consumo/uso. */
   registradoEm: string;
+};
+
+/** Resposta de GET /registros/resumo: o que o usuário consumiu/usou no período. */
+export type ExposureSummary = {
+  /** Tamanho do período em dias, terminando agora. */
+  dias: number;
+  registros: number;
+  alimentos: number;
+  cosmeticos: number;
+  /** Média das notas dos registros com nota; null se nenhum tem. */
+  notaMedia: number | null;
+  /** Alimentos com grupo NOVA conhecido, e quantos deles são ultraprocessados (NOVA 4). */
+  comNova: number;
+  ultraprocessados: number;
+  /** Quantas vezes cada "alto em" apareceu, do mais frequente para o menos. */
+  altoEm: { nutriente: FrontLabelNutrient; vezes: number }[];
+  /** Alertas mais frequentes (até 5 de cada tipo), do mais frequente para o menos. */
+  aditivos: { titulo: string; vezes: number }[];
+  ingredientesAtencao: { titulo: string; vezes: number }[];
 };

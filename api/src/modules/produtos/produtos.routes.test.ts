@@ -2,6 +2,7 @@ import type { ProductResult } from '@nutriscan/shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import { buildApp } from '../../app.js';
+import { depsDeTeste } from '../../test/deps.js';
 import { FonteIndisponivelError } from './open-food-facts.client.js';
 import type { ServicoProdutos } from './produtos.service.js';
 
@@ -24,11 +25,7 @@ function app(
   consultar: ServicoProdutos['consultar'],
   enviarRotulo: ServicoProdutos['enviarRotulo'] = async () => ({ ok: true, resultado: RESULTADO }),
 ) {
-  return buildApp({
-    pingDb: async () => {},
-    produtos: { consultar, enviarRotulo },
-    alternativas: { consultar: async () => null },
-  });
+  return buildApp(depsDeTeste({ produtos: { consultar, enviarRotulo } }));
 }
 
 describe('GET /produtos/:barcode', () => {

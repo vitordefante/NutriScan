@@ -7,9 +7,14 @@ import { loadEnv } from './config/env.js';
 import { createDb } from './db/client.js';
 import { criarServicoAlternativas } from './modules/alternativas/alternativas.service.js';
 import { criarCacheBuscasPg } from './modules/alternativas/buscas.repository.js';
+import { criarRepositorioContasPg } from './modules/contas/contas.repository.js';
+import { criarServicoContas } from './modules/contas/contas.service.js';
+import { criarRepositorioHistoricoPg } from './modules/historico/historico.repository.js';
 import { criarClienteObf, criarClienteOff } from './modules/produtos/open-food-facts.client.js';
 import { criarCacheProdutosPg } from './modules/produtos/produtos.repository.js';
 import { criarServicoProdutos } from './modules/produtos/produtos.service.js';
+import { criarRepositorioRegistrosPg } from './modules/registros/registros.repository.js';
+import { criarServicoRegistros } from './modules/registros/registros.service.js';
 import { criarRepositorioRotulosPg } from './modules/rotulo/rotulos.repository.js';
 
 const env = loadEnv();
@@ -54,7 +59,26 @@ const alternativas = criarServicoAlternativas({
   log,
 });
 
-const app = buildApp({ pingDb: database.ping, produtos, alternativas }, { logger: true });
+const app = buildApp(
+  {
+    pingDb: database.ping,
+    produtos,
+    alternativas,
+    contas: criarServicoContas(criarRepositorioContasPg(database.db)),
+    historico: criarRepositorioHistoricoPg(database.db),
+    registros: criarServicoRegistros({
+      produtos,
+      registros: criarRepositorioRegistrosPg(database.db),
+    }),
+    jwtSecret: env.JWT_SECRET,
+  },
+  {
+    logger: {
+      // O token de login nunca aparece nos logs.
+      redact: ['req.headers.authorization'],
+    },
+  },
+);
 app.addHook('onClose', () => database.close());
 
 // Encerra com elegância (Ctrl+C ou parada do servidor na nuvem).
