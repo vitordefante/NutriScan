@@ -37,7 +37,15 @@ export function Botao({
       rotuloAcessivel={titulo}
       style={style}
     >
-      <View style={[estilos.face, { backgroundColor: primario ? cores.tinta : cores.papel }]}>
+      {/* Face preta sobre sombra preta: a borda branca separa as duas camadas. */}
+      <View
+        style={[
+          estilos.face,
+          primario
+            ? { backgroundColor: cores.tinta, borderColor: cores.papel }
+            : { backgroundColor: cores.papel },
+        ]}
+      >
         {icone && <IconePixel nome={icone} cor={corTexto} />}
         <Texto style={[estilos.titulo, { color: corTexto }]}>{titulo}</Texto>
       </View>

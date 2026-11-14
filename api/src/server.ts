@@ -1,3 +1,6 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { buildApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { createDb } from './db/client.js';
@@ -17,6 +20,18 @@ const produtos = criarServicoProdutos({
   obf: criarClienteObf(),
   cache: criarCacheProdutosPg(database.db),
   rotulos: criarRepositorioRotulosPg(database.db),
+  ...(env.OCR_DEBUG_DIR &&
+    env.NODE_ENV !== 'production' && {
+      registrarEnvio: (barcode, envio, leitura) => {
+        const pasta = env.OCR_DEBUG_DIR!;
+        mkdirSync(pasta, { recursive: true });
+        const arquivo = join(
+          pasta,
+          `${barcode}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
+        );
+        writeFileSync(arquivo, JSON.stringify({ barcode, envio, leitura }, null, 1));
+      },
+    }),
   log: { warn: (obj, msg) => app.log.warn(obj, msg) },
 });
 

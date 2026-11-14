@@ -32,3 +32,4 @@ app/android/
 
 # Dados reais de produtores (pessoais) — nunca vão para o Git, o repositório é público
 api/data/*.local.json
+api/data/ocr/

@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 
 import visionRdc429 from './__fixtures__/vision-rdc429.json' with { type: 'json' };
 import { extrairListaIngredientes, juntarLinhas } from './lista-ingredientes.js';
-import { agruparEmFileiras, lerTabelaNutricional, textoDaFileira } from './tabela-nutricional.js';
+import {
+  agruparEmFileiras,
+  lerTabelaNutricional,
+  textoDaFileira,
+  valoresCoerentes,
+} from './tabela-nutricional.js';
 
 /** Linhas de parágrafo, uma embaixo da outra (como o Vision devolve um bloco de texto). */
 const paragrafo = (...textos: string[]): LabelLine[] =>
@@ -185,6 +190,35 @@ describe('lerTabelaNutricional', () => {
       acucaresAdicionados: 30,
       sodioMg: 310,
     });
+  });
+
+  it('valores que não fecham entre si (colunas trocadas) são recusados', () => {
+    // Caso real (whey): valores da porção de 30 g tomados como base, energia lida como "30".
+    const lida = lerTabelaNutricional(
+      paragrafo(
+        'Porção de 30 g',
+        'Valor energético (kcal) 30',
+        'Proteínas (g) 23',
+        'Açúcares totais (g) 1,0',
+        'Gorduras saturadas (g) 4,0',
+        'Sódio (mg) 2,0',
+      ),
+    );
+    expect(lida).toBeNull();
+  });
+
+  it('valoresCoerentes: aceita alimentos reais, recusa o impossível', () => {
+    // Maionese, whey e refrigerante (valores por 100 g/ml de rótulos reais).
+    expect(
+      valoresCoerentes({ energiaKcal: 330, gorduraSaturada: 5.3, acucares: 1.7, sodioMg: 830 }),
+    ).toBe(true);
+    expect(
+      valoresCoerentes({ energiaKcal: 400, proteinas: 77, acucares: 4, gorduraSaturada: 4 }),
+    ).toBe(true);
+    expect(valoresCoerentes({ energiaKcal: 42, acucares: 10.6, sodioMg: 5 })).toBe(true);
+    // Maionese lida errado: 30 g de gordura saturada com 100 kcal.
+    expect(valoresCoerentes({ energiaKcal: 100, gorduraSaturada: 30, acucares: 6.7 })).toBe(false);
+    expect(valoresCoerentes({ proteinas: 80, acucares: 40 })).toBe(false);
   });
 
   it('sem saber a base (nem 100 g nem porção), não chuta valores', () => {

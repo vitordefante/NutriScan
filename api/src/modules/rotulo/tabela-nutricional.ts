@@ -63,7 +63,27 @@ export function lerTabelaNutricional(linhas: readonly LabelLine[]): TabelaLida |
   }
 
   if (Object.keys(nutrientes).length < MINIMO_NUTRIENTES) return null;
+  if (!valoresCoerentes(nutrientes)) return null;
   return { nutrientes, unidade, origem: cem ? 'coluna_100' : 'convertido_da_porcao' };
+}
+
+/**
+ * Os valores lidos fecham entre si? Pega leituras com colunas trocadas (ex.: valores da porção
+ * tomados como base, ou o "100" do cabeçalho tomado como energia):
+ * - em 100 g, proteínas + açúcares + gordura saturada + fibras não passam de 100 g;
+ * - essas quantidades já somam calorias (4 kcal/g para proteína e açúcar, 9 para gordura) que
+ *   não podem passar da energia declarada (com folga para arredondamentos do rótulo).
+ */
+export function valoresCoerentes(n: Nutrientes): boolean {
+  const g = (v: number | undefined) => v ?? 0;
+  const acucar = n.acucares ?? n.acucaresAdicionados;
+  const massa = g(n.proteinas) + g(acucar) + g(n.gorduraSaturada) + g(n.fibras);
+  if (massa > 105) return false;
+  if (n.sodioMg !== undefined && n.sodioMg > 40_000) return false;
+  if (n.energiaKcal === undefined) return true;
+  if (n.energiaKcal > 950) return false;
+  const kcalMinima = 4 * g(n.proteinas) + 4 * g(acucar) + 9 * g(n.gorduraSaturada);
+  return kcalMinima <= n.energiaKcal * 1.15 + 15;
 }
 
 /**

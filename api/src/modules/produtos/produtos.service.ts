@@ -2,7 +2,13 @@ import type { LabelSubmission, ProductResult } from '@nutriscan/shared';
 
 import { analisarAlimento } from '../analise/nota.js';
 import { analisarCosmetico } from '../analise-cosmetico/nota.js';
-import { combinarLeituras, type FotoRotulo, lerEnvio, type RotuloLido } from '../rotulo/leitura.js';
+import {
+  combinarLeituras,
+  type FotoRotulo,
+  lerEnvio,
+  type ResultadoLeitura,
+  type RotuloLido,
+} from '../rotulo/leitura.js';
 import type { RepositorioRotulos } from '../rotulo/rotulos.repository.js';
 import { montarComRotulo } from './com-rotulo.js';
 import { type ClienteOff, FonteIndisponivelError } from './open-food-facts.client.js';
@@ -54,6 +60,8 @@ type Opcoes = {
   cache: CacheProdutos;
   /** Base própria: rótulos lidos por foto no app. */
   rotulos: RepositorioRotulos;
+  /** Diagnóstico em desenvolvimento: recebe cada envio de rótulo e o que foi lido dele. */
+  registrarEnvio?: (barcode: string, envio: LabelSubmission, leitura: ResultadoLeitura) => void;
   log: Log;
   agora?: () => Date;
   /** Por quanto tempo um produto encontrado é usado sem consultar a fonte de novo. */
@@ -67,6 +75,7 @@ export function criarServicoProdutos({
   obf,
   cache,
   rotulos,
+  registrarEnvio,
   log,
   agora = () => new Date(),
   validadeEncontradoMs = 30 * DIA_MS,
@@ -176,6 +185,7 @@ export function criarServicoProdutos({
 
     async enviarRotulo(barcode, envio) {
       const leitura = lerEnvio(envio);
+      registrarEnvio?.(barcode, envio, leitura);
       if (!leitura.ok) return leitura;
 
       const anterior = await rotulos.buscar(barcode);
