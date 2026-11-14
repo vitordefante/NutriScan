@@ -1,6 +1,9 @@
 import type { LabelLine } from '@nutriscan/shared';
 import { describe, expect, it } from 'vitest';
 
+import iphoneMaionese from './__fixtures__/iphone-maionese.json' with { type: 'json' };
+import iphoneWhey from './__fixtures__/iphone-whey.json' with { type: 'json' };
+import printWhey from './__fixtures__/print-whey.json' with { type: 'json' };
 import visionRdc429 from './__fixtures__/vision-rdc429.json' with { type: 'json' };
 import { extrairListaIngredientes, juntarLinhas } from './lista-ingredientes.js';
 import {
@@ -257,6 +260,50 @@ describe('saída real do Apple Vision', () => {
       gorduraSaturada: 9.5,
       fibras: 2.1,
       sodioMg: 310,
+    });
+  });
+});
+
+describe('fotos reais de tabelas (Apple Vision)', () => {
+  const linhasDe = (f: unknown) => (f as { linhas: LabelLine[] }).linhas;
+
+  it('maionese: coluna de 100 g; o "0" das fibras não foi lido e fica faltando', () => {
+    expect(lerTabelaNutricional(linhasDe(iphoneMaionese))).toEqual({
+      unidade: 'g',
+      origem: 'coluna_100',
+      nutrientes: {
+        energiaKcal: 304,
+        acucares: 2.5,
+        acucaresAdicionados: 2.5,
+        proteinas: 0.6,
+        gorduraSaturada: 4.8,
+        sodioMg: 596,
+      },
+    });
+  });
+
+  it('whey: só a porção de 30 g, foto inclinada e curva, outro painel ao lado', () => {
+    // Rótulo: 124 kcal, 1,7 g de açúcares, 0 de adicionados (não lido), 23 g de proteínas,
+    // 0,8 g de gordura saturada e 46 mg de sódio por 30 g. O "1" de "TOP 1 DE VENDAS", no
+    // painel ao lado, não pode virar açúcar adicionado.
+    expect(lerTabelaNutricional(linhasDe(iphoneWhey))).toEqual({
+      unidade: 'g',
+      origem: 'convertido_da_porcao',
+      nutrientes: {
+        energiaKcal: 413.3,
+        acucares: 5.7,
+        proteinas: 76.7,
+        gorduraSaturada: 2.7,
+        sodioMg: 153.3,
+      },
+    });
+  });
+
+  it('whey em imagem de menor resolução: desvio já grande no topo da tabela', () => {
+    expect(lerTabelaNutricional(linhasDe(printWhey))?.nutrientes).toMatchObject({
+      energiaKcal: 413.3,
+      proteinas: 76.7,
+      gorduraSaturada: 2.7,
     });
   });
 });

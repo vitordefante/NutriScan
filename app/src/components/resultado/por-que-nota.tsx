@@ -81,13 +81,16 @@ function NotaFinal({ nota, faixa, teto }: Omit<Props, 'itens'>) {
           <Texto variante="pixel" cor={cores.papel}>
             NOTA FINAL
           </Texto>
-          <Texto variante="pixel" cor={cores.papel} style={{ fontSize: 26 }}>
-            {teto ? '≤' : ''}
-            {nota}
-            <Texto variante="pixel" cor={cores.textoSobreTinta} style={{ fontSize: 13 }}>
-              /100
+          <View style={estilos.notaFinal}>
+            <IconePixel nome="coracao" cor={faixas.pessimo.preenchimento} />
+            <Texto variante="pixel" cor={cores.papel} style={{ fontSize: 26 }}>
+              {teto ? '≤' : ''}
+              {nota}
+              <Texto variante="pixel" cor={cores.textoSobreTinta} style={{ fontSize: 13 }}>
+                /100
+              </Texto>
             </Texto>
-          </Texto>
+          </View>
         </View>
         <BarraHp valor={nota} cor={faixas[faixa].preenchimento} altura={12} escura />
       </View>
@@ -118,6 +121,7 @@ const estilos = StyleSheet.create({
   topoItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   final: { backgroundColor: cores.tinta, padding: 16 },
   topoFinal: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  notaFinal: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   pontos: {
     borderWidth: espaco.borda,
     borderColor: cores.tinta,

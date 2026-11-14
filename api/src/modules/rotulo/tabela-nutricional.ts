@@ -37,34 +37,151 @@ const MINIMO_NUTRIENTES = 3;
  * melhor nenhum valor do que um valor errado.
  */
 export function lerTabelaNutricional(linhas: readonly LabelLine[]): TabelaLida | null {
-  const fileiras = agruparEmFileiras(linhas);
-  const textoTodo = normalizar(fileiras.map(textoDaFileira).join(' '));
+  const uteis = linhas.filter((l) => l.texto.trim());
+  const textoTodo = normalizar(uteis.map((l) => l.texto).join(' '));
 
-  // Cabeçalho do modelo novo: "100 g | 30 g | %VD*" — a primeira coluna numérica é a de 100.
+  // Cabeçalho do modelo novo: "100 g | 30 g | %VD*". Sem a coluna de 100 (ex.: suplementos),
+  // os valores são da porção e são convertidos para 100.
   const cem = /\b100\s*(g|ml)\b/.exec(textoTodo);
   const porcao = lerPorcao(textoTodo);
   if (!cem && !porcao) return null;
   const unidade = ((cem?.[1] ?? porcao?.unidade) === 'ml' ? 'ml' : 'g') as 'g' | 'ml';
   const fator = cem ? 1 : 100 / porcao!.quantidade;
-  const coluna = cem ? colunaDos100(fileiras) : undefined;
+
+  const coluna = colunaDaBase(uteis, cem ? 100 : porcao!.quantidade);
+  const lidos = coluna ? lerPelaColuna(uteis, coluna) : lerPorFileiras(uteis);
 
   const nutrientes: Nutrientes = {};
-  for (const fileira of fileiras) {
-    const norm = normalizar(textoDaFileira(fileira)).trim();
-    const campo = LINHAS.find(([, padrao]) => padrao.test(norm))?.[0];
-    if (!campo || nutrientes[campo] !== undefined) continue;
-    if (campo === 'acucares' && /adicionad/.test(norm)) continue;
-    if (campo === 'gorduraSaturada' && /trans|totais/.test(norm)) continue;
-
-    const valor = valorDaFileira(fileira, norm, campo, coluna);
-    if (valor === undefined) continue;
-    const convertido = campo === 'sodioMg' && /\(g\)/.test(norm) ? valor * 1000 : valor;
+  for (const { campo, valor, rotulo } of lidos) {
+    if (nutrientes[campo] !== undefined) continue;
+    const convertido = campo === 'sodioMg' && /\(g\)/.test(rotulo) ? valor * 1000 : valor;
     nutrientes[campo] = arredondar(convertido * fator);
   }
 
   if (Object.keys(nutrientes).length < MINIMO_NUTRIENTES) return null;
   if (!valoresCoerentes(nutrientes)) return null;
   return { nutrientes, unidade, origem: cem ? 'coluna_100' : 'convertido_da_porcao' };
+}
+
+type Lido = { campo: Campo; valor: number; rotulo: string };
+
+/** Qual nutriente esta linha nomeia (texto normalizado), se for um dos que a nota usa. */
+function campoDaLinha(norm: string): Campo | undefined {
+  const campo = LINHAS.find(([, padrao]) => padrao.test(norm))?.[0];
+  if (campo === 'acucares' && /adicionad/.test(norm)) return undefined;
+  if (campo === 'gorduraSaturada' && /trans|totais/.test(norm)) return undefined;
+  return campo;
+}
+
+/** Valor escrito na própria linha do nome ("Sódio (mg) 400 120 6", "120 kcal = 504 kJ"). */
+function valorNaLinha(norm: string, campo: Campo): number | undefined {
+  return campo === 'energiaKcal' ? lerKcal(norm) : primeiroNumero(norm);
+}
+
+const centroX = (l: LabelLine) => l.x + l.largura / 2;
+const centroY = (l: LabelLine) => l.y + l.altura / 2;
+const mediana = (v: readonly number[]) => {
+  const o = [...v].sort((a, b) => a - b);
+  return o.length === 0 ? undefined : o[Math.floor(o.length / 2)];
+};
+
+/**
+ * Leitura pela coluna da base, quando o cabeçalho veio em células separadas — o caso comum: o
+ * Vision lê a tabela por coluna (todos os nomes, depois todos os valores), e a posição é o que
+ * liga cada nome ao seu valor.
+ *
+ * Cada nome fica com o valor mais próximo na altura dentro da coluna da base, mas só se a escolha
+ * for mútua (o valor também tem aquele nome como o mais próximo). Assim, quando o OCR pula uma
+ * célula (o Vision costuma ignorar "0" sozinho), o nome fica sem valor em vez de pegar o do
+ * vizinho.
+ */
+function lerPelaColuna(linhas: readonly LabelLine[], coluna: Coluna): Lido[] {
+  const daTabela = linhas.filter((l) => l.x <= coluna.limiteDireito && centroY(l) > coluna.y);
+  const valores = daTabela.filter(
+    (l) =>
+      CELULA_VALOR.test(normalizar(l.texto).trim()) &&
+      centroX(l) >= coluna.centro - coluna.tolerancia,
+  );
+  // Nomes: todo texto à esquerda da coluna (não só os nutrientes da nota — os outros, como
+  // carboidratos ou aminoácidos, também "disputam" os valores e evitam pares errados).
+  const nomes = daTabela.filter(
+    (l) => /\p{L}{3,}/u.test(l.texto) && centroX(l) < coluna.centro - coluna.tolerancia,
+  );
+
+  const alturas = nomes.map(centroY).sort((a, b) => a - b);
+  const passo =
+    mediana(
+      alturas
+        .slice(1)
+        .map((y, i) => y - alturas[i]!)
+        .filter((d) => d > 0.004),
+    ) ?? 0.03;
+
+  // Acompanha a tabela de cima para baixo: o desvio entre a altura do nome e a do valor muda
+  // devagar (foto inclinada, embalagem curva) e cada par seguro atualiza o desvio esperado
+  // para a fileira seguinte.
+  const maisProximo = <T>(itens: readonly T[], y: number, alturaDe: (i: T) => number) =>
+    itens.reduce<T | undefined>(
+      (melhor, i) =>
+        melhor === undefined || Math.abs(alturaDe(i) - y) < Math.abs(alturaDe(melhor) - y)
+          ? i
+          : melhor,
+      undefined,
+    );
+  const comValor = new Map<LabelLine, LabelLine>();
+  const usados = new Set<LabelLine>();
+  // Desvio inicial: mediana do desvio entre os primeiros valores da coluna e o nome mais
+  // próximo de cada um (a foto pode já começar inclinada no topo da tabela).
+  const primeiros = valores
+    .filter((v) => Math.abs(centroX(v) - coluna.centro) <= coluna.tolerancia)
+    .sort((a, b) => centroY(a) - centroY(b))
+    .slice(0, 4);
+  let desvio =
+    mediana(
+      primeiros.flatMap((v) => {
+        const nome = maisProximo(nomes, centroY(v), centroY);
+        return nome ? [centroY(v) - centroY(nome)] : [];
+      }),
+    ) ?? 0;
+  let colunaX = coluna.centro; // a coluna também "anda" na foto (perspectiva)
+  for (const nome of [...nomes].sort((a, b) => centroY(a) - centroY(b))) {
+    const naColuna = valores.filter(
+      (v) => !usados.has(v) && Math.abs(centroX(v) - colunaX) <= coluna.tolerancia,
+    );
+    const esperado = centroY(nome) + desvio;
+    const valor = maisProximo(naColuna, esperado, centroY);
+    if (!valor || Math.abs(centroY(valor) - esperado) > 0.4 * passo) continue;
+    // Mútuo: com o mesmo desvio, nenhum outro nome fica mais perto deste valor.
+    if (maisProximo(nomes, centroY(valor), (n) => centroY(n) + desvio) !== nome) continue;
+    comValor.set(nome, valor);
+    usados.add(valor);
+    desvio = (desvio + centroY(valor) - centroY(nome)) / 2;
+    colunaX = (colunaX + centroX(valor)) / 2;
+  }
+
+  const lidos: Lido[] = [];
+  for (const nome of nomes) {
+    const rotulo = normalizar(nome.texto).trim();
+    const campo = campoDaLinha(rotulo);
+    if (!campo) continue;
+    const celula = comValor.get(nome);
+    const valor = celula ? primeiroNumero(normalizar(celula.texto)) : valorNaLinha(rotulo, campo);
+    if (valor !== undefined) lidos.push({ campo, valor, rotulo });
+  }
+  return lidos;
+}
+
+/**
+ * Leitura por fileiras, quando não há cabeçalho em células (modelo antigo, ou cada fileira lida
+ * numa linha só): o valor é o primeiro número depois do nome.
+ */
+function lerPorFileiras(linhas: readonly LabelLine[]): Lido[] {
+  return agruparEmFileiras(linhas).flatMap((fileira) => {
+    const rotulo = normalizar(textoDaFileira(fileira)).trim();
+    const campo = campoDaLinha(rotulo);
+    const valor = campo && valorNaLinha(rotulo, campo);
+    return campo && valor !== undefined ? [{ campo, valor, rotulo }] : [];
+  });
 }
 
 /**
@@ -87,25 +204,27 @@ export function valoresCoerentes(n: Nutrientes): boolean {
 }
 
 /**
- * Agrupa as linhas do OCR em fileiras da tabela. O Vision lê tabelas por coluna (todos os
- * nomes, depois todos os valores) ou devolve a fileira inteira numa linha só ("Sódio (mg) 400
- * 120 6"); a posição vertical é o que junta cada nome aos seus valores. Linhas cujo centro
- * vertical cai dentro da altura de outra são a mesma fileira; dentro dela, da esquerda para a
- * direita.
+ * Agrupa as linhas do OCR em fileiras (para o modelo antigo e para fileiras lidas numa linha
+ * só). Uma linha entra na fileira se o centro dela estiver perto do centro médio da fileira —
+ * "perto" medido pela menor altura (a caixa de um texto longo e inclinado é mais alta que o
+ * texto); dentro da fileira, da esquerda para a direita.
  */
 export function agruparEmFileiras(linhas: readonly LabelLine[]): LabelLine[][] {
   const ordenadas = [...linhas]
     .filter((l) => l.texto.trim())
-    .sort((a, b) => a.y + a.altura / 2 - (b.y + b.altura / 2));
+    .sort((a, b) => centroY(a) - centroY(b));
 
-  const fileiras: { centro: number; altura: number; linhas: LabelLine[] }[] = [];
+  const fileiras: { soma: number; menorAltura: number; linhas: LabelLine[] }[] = [];
   for (const linha of ordenadas) {
-    const centro = linha.y + linha.altura / 2;
     const atual = fileiras.at(-1);
-    if (atual && Math.abs(centro - atual.centro) < Math.max(atual.altura, linha.altura) * 0.6) {
+    const centro = centroY(linha);
+    const tolerancia = 0.55 * Math.min(atual?.menorAltura ?? Infinity, linha.altura);
+    if (atual && Math.abs(centro - atual.soma / atual.linhas.length) < tolerancia) {
       atual.linhas.push(linha);
+      atual.soma += centro;
+      atual.menorAltura = Math.min(atual.menorAltura, linha.altura);
     } else {
-      fileiras.push({ centro, altura: linha.altura, linhas: [linha] });
+      fileiras.push({ soma: centro, menorAltura: linha.altura, linhas: [linha] });
     }
   }
   return fileiras.map((f) => f.linhas.sort((a, b) => a.x - b.x));
@@ -117,44 +236,43 @@ export const textoDaFileira = (fileira: readonly LabelLine[]) =>
 /** Célula só com um valor: "480", "9,5", "<1", "**", "15 mg". */
 const CELULA_VALOR = /^(\*\*|<?\s*\d+(?:[.,]\d+)?)\s*(?:g|mg|kcal|kj)?$/;
 
-type Coluna = { centro: number; tolerancia: number };
+type Coluna = {
+  centro: number;
+  /** Altura (centro) do cabeçalho: os valores ficam abaixo dele. */
+  y: number;
+  /** Metade da distância até a coluna vizinha do cabeçalho (ex.: a da porção ou a do %VD). */
+  tolerancia: number;
+  /** Fim da última coluna do cabeçalho: o que começa depois disso é outro painel da embalagem. */
+  limiteDireito: number;
+};
+
+/** Célula de cabeçalho: "100 g", "30 g", "200 ml", "%VD*". */
+const CABECALHO = /^(?:\d+(?:[.,]\d+)?\s*(?:g|ml)|%\s*vd.*)$/;
 
 /**
- * Posição horizontal da coluna "100 g", quando o cabeçalho veio em células separadas. A
- * tolerância é metade da distância até a coluna vizinha (ex.: a da porção).
+ * Posição da coluna da base ("100 g", ou a da porção quando não há a de 100), quando o
+ * cabeçalho veio em células separadas.
  */
-function colunaDos100(fileiras: readonly LabelLine[][]): Coluna | undefined {
-  for (const fileira of fileiras) {
-    const i = fileira.findIndex((l) => /^100\s*(g|ml)$/.test(normalizar(l.texto).trim()));
-    if (i === -1) continue;
-    const centroDe = (l: LabelLine) => l.x + l.largura / 2;
-    const centro = centroDe(fileira[i]!);
-    const vizinhas = fileira.filter((_, j) => j !== i).map((l) => Math.abs(centroDe(l) - centro));
-    const tolerancia = vizinhas.length > 0 ? Math.min(...vizinhas) / 2 : 0.06;
-    return { centro, tolerancia };
-  }
-  return undefined;
-}
+function colunaDaBase(linhas: readonly LabelLine[], base: number): Coluna | undefined {
+  const cabecalhos = linhas.filter((l) => CABECALHO.test(normalizar(l.texto).trim()));
+  const daBase = cabecalhos.find((l) => {
+    const m = /^(\d+(?:[.,]\d+)?)\s*(?:g|ml)$/.exec(normalizar(l.texto).trim());
+    return m && numero(m[1]!) === base;
+  });
+  if (!daBase) return undefined;
 
-/**
- * Valor por 100 g/ml de uma fileira. Com as células separadas e a coluna conhecida, vale só o
- * número que está embaixo de "100 g": se o OCR não leu essa célula, o valor fica faltando em
- * vez de pegar o da porção (que está ao lado). Sem isso, o primeiro número depois do nome.
- */
-function valorDaFileira(
-  fileira: readonly LabelLine[],
-  norm: string,
-  campo: Campo,
-  coluna: Coluna | undefined,
-): number | undefined {
-  const celulas = fileira.filter((l) => CELULA_VALOR.test(normalizar(l.texto).trim()));
-  if (coluna && celulas.length > 0 && celulas.length < fileira.length) {
-    const naColuna = celulas.find(
-      (l) => Math.abs(l.x + l.largura / 2 - coluna.centro) <= coluna.tolerancia,
-    );
-    return naColuna ? primeiroNumero(normalizar(naColuna.texto)) : undefined;
-  }
-  return campo === 'energiaKcal' ? lerKcal(norm) : primeiroNumero(norm);
+  // Os outros cabeçalhos da mesma fileira (inclinação pequena: até 1,5 altura de distância).
+  const fileira = cabecalhos.filter(
+    (l) => Math.abs(centroY(l) - centroY(daBase)) < 1.5 * Math.max(l.altura, daBase.altura),
+  );
+  const centro = centroX(daBase);
+  const vizinhas = fileira.filter((l) => l !== daBase).map((l) => Math.abs(centroX(l) - centro));
+  return {
+    centro,
+    y: centroY(daBase),
+    tolerancia: vizinhas.length > 0 ? Math.min(...vizinhas) / 2 : 0.06,
+    limiteDireito: Math.max(...fileira.map((l) => l.x + l.largura)) + 0.05,
+  };
 }
 
 /** "Porção de 30 g (1 xícara)", "Porção: 200 ml (1 copo)", "porções por embalagem: 13 · porção: 30 g". */

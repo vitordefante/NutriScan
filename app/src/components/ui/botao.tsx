@@ -28,7 +28,7 @@ export function Botao({
   style,
 }: Props) {
   const primario = variante === 'primario';
-  const corTexto = primario ? cores.papel : cores.tinta;
+  const corTexto = desabilitado ? cores.cinza : primario ? cores.papel : cores.tinta;
   return (
     <ComSombra
       deslocamento={espaco.sombraBotao}
@@ -37,13 +37,16 @@ export function Botao({
       rotuloAcessivel={titulo}
       style={style}
     >
-      {/* Face preta sobre sombra preta: a borda branca separa as duas camadas. */}
+      {/* Face preta sobre sombra preta: a borda branca separa as duas camadas.
+          Desabilitado: bloco plano e cinza, sem sombra (não "afunda" ao tocar). */}
       <View
         style={[
           estilos.face,
-          primario
-            ? { backgroundColor: cores.tinta, borderColor: cores.papel }
-            : { backgroundColor: cores.papel },
+          desabilitado
+            ? { backgroundColor: cores.vazio, borderColor: cores.vazio }
+            : primario
+              ? { backgroundColor: cores.tinta, borderColor: cores.papel }
+              : { backgroundColor: cores.papel },
         ]}
       >
         {icone && <IconePixel nome={icone} cor={corTexto} />}
@@ -110,12 +113,11 @@ function ComSombra({
             style={[
               estilos.sombra,
               { left: deslocamento, top: deslocamento },
-              pressed && estilos.oculta,
+              (pressed || desabilitado) && estilos.oculta,
             ]}
           />
           <View
             style={[
-              desabilitado && estilos.desabilitado,
               pressed && {
                 transform: [{ translateX: deslocamento }, { translateY: deslocamento }],
               },
@@ -132,7 +134,6 @@ function ComSombra({
 const estilos = StyleSheet.create({
   sombra: { position: 'absolute', right: 0, bottom: 0, backgroundColor: cores.tinta },
   oculta: { opacity: 0 },
-  desabilitado: { opacity: 0.5 },
   face: {
     height: 52,
     paddingHorizontal: 20,

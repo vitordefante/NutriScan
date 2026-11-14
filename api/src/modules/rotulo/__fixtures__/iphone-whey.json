@@ -1,0 +1,782 @@
+{
+  "descricao": "Whey Growth 7898786020083: foto da tabela tirada no app (iPhone 13 mini), 14/11/2026. Só coluna da porção (30 g), pacote curvo e foto inclinada; texto de outro painel ao lado.",
+  "linhas": [
+    {
+      "texto": "00000",
+      "x": 0.3443,
+      "y": 0.0571,
+      "largura": 0.1237,
+      "altura": 0.0182
+    },
+    {
+      "texto": "INFORMAÇÃO NUTRICIONAL",
+      "x": 0.282,
+      "y": 0.101,
+      "largura": 0.3106,
+      "altura": 0.0339
+    },
+    {
+      "texto": "Porções por embalagem: Cerca de 33",
+      "x": 0.242,
+      "y": 0.1321,
+      "largura": 0.3339,
+      "altura": 0.0237
+    },
+    {
+      "texto": "Porção: 30 g (2 + 1/2 dosadores)",
+      "x": 0.2461,
+      "y": 0.151,
+      "largura": 0.2946,
+      "altura": 0.0206
+    },
+    {
+      "texto": "30 g",
+      "x": 0.5157,
+      "y": 0.1792,
+      "largura": 0.0459,
+      "altura": 0.0217
+    },
+    {
+      "texto": "%VD*",
+      "x": 0.5736,
+      "y": 0.186,
+      "largura": 0.0523,
+      "altura": 0.0145
+    },
+    {
+      "texto": "Valor energético (kcal)",
+      "x": 0.2543,
+      "y": 0.1943,
+      "largura": 0.1984,
+      "altura": 0.0291
+    },
+    {
+      "texto": "124",
+      "x": 0.5252,
+      "y": 0.2035,
+      "largura": 0.0329,
+      "altura": 0.0131
+    },
+    {
+      "texto": "6",
+      "x": 0.595,
+      "y": 0.2078,
+      "largura": 0.0155,
+      "altura": 0.0131
+    },
+    {
+      "texto": "Carboidratos (g)",
+      "x": 0.26,
+      "y": 0.2201,
+      "largura": 0.1447,
+      "altura": 0.0264
+    },
+    {
+      "texto": "3,4",
+      "x": 0.531,
+      "y": 0.2238,
+      "largura": 0.0271,
+      "altura": 0.016
+    },
+    {
+      "texto": "1",
+      "x": 0.5988,
+      "y": 0.2267,
+      "largura": 0.0136,
+      "altura": 0.0145
+    },
+    {
+      "texto": "Açúcares totais (g)",
+      "x": 0.2697,
+      "y": 0.2396,
+      "largura": 0.17,
+      "altura": 0.0311
+    },
+    {
+      "texto": "1,7",
+      "x": 0.5329,
+      "y": 0.2442,
+      "largura": 0.0271,
+      "altura": 0.0174
+    },
+    {
+      "texto": "Açúcares adicionados (g)",
+      "x": 0.2835,
+      "y": 0.2592,
+      "largura": 0.2275,
+      "altura": 0.0327
+    },
+    {
+      "texto": "Proteínas (g)",
+      "x": 0.2719,
+      "y": 0.2915,
+      "largura": 0.107,
+      "altura": 0.0217
+    },
+    {
+      "texto": "23",
+      "x": 0.5407,
+      "y": 0.2863,
+      "largura": 0.0252,
+      "altura": 0.0145
+    },
+    {
+      "texto": "46",
+      "x": 0.6047,
+      "y": 0.2863,
+      "largura": 0.0252,
+      "altura": 0.0131
+    },
+    {
+      "texto": "L-Alanina (mg)",
+      "x": 0.2817,
+      "y": 0.3124,
+      "largura": 0.1285,
+      "altura": 0.0232
+    },
+    {
+      "texto": "1134",
+      "x": 0.5349,
+      "y": 0.3067,
+      "largura": 0.0446,
+      "altura": 0.0131
+    },
+    {
+      "texto": "603",
+      "x": 0.5426,
+      "y": 0.327,
+      "largura": 0.0368,
+      "altura": 0.0145
+    },
+    {
+      "texto": "Arginina (mg)",
+      "x": 0.2855,
+      "y": 0.3351,
+      "largura": 0.1154,
+      "altura": 0.0242
+    },
+    {
+      "texto": "2566",
+      "x": 0.5407,
+      "y": 0.3488,
+      "largura": 0.0465,
+      "altura": 0.0145
+    },
+    {
+      "texto": "Aspartato (mg)",
+      "x": 0.2895,
+      "y": 0.3572,
+      "largura": 0.1283,
+      "altura": 0.0224
+    },
+    {
+      "texto": "713",
+      "x": 0.5484,
+      "y": 0.3692,
+      "largura": 0.0368,
+      "altura": 0.016
+    },
+    {
+      "texto": "L-Cisteína (mg)",
+      "x": 0.2922,
+      "y": 0.381,
+      "largura": 0.131,
+      "altura": 0.0175
+    },
+    {
+      "texto": "Ácido L-Glutâmico (mg)",
+      "x": 0.2977,
+      "y": 0.3965,
+      "largura": 0.205,
+      "altura": 0.023
+    },
+    {
+      "texto": "4117",
+      "x": 0.5437,
+      "y": 0.3905,
+      "largura": 0.0483,
+      "altura": 0.0161
+    },
+    {
+      "texto": "446",
+      "x": 0.5543,
+      "y": 0.4128,
+      "largura": 0.0349,
+      "altura": 0.0145
+    },
+    {
+      "texto": "Glicina (mg)",
+      "x": 0.3004,
+      "y": 0.4243,
+      "largura": 0.1008,
+      "altura": 0.0147
+    },
+    {
+      "texto": "440",
+      "x": 0.5543,
+      "y": 0.4346,
+      "largura": 0.0368,
+      "altura": 0.0145
+    },
+    {
+      "texto": "L-Histidina (mg)",
+      "x": 0.3022,
+      "y": 0.4444,
+      "largura": 0.1341,
+      "altura": 0.016
+    },
+    {
+      "texto": "1449",
+      "x": 0.5523,
+      "y": 0.4564,
+      "largura": 0.0465,
+      "altura": 0.0145
+    },
+    {
+      "texto": "L-Isoleucina (mg)",
+      "x": 0.3059,
+      "y": 0.4646,
+      "largura": 0.1441,
+      "altura": 0.017
+    },
+    {
+      "texto": "2436",
+      "x": 0.5511,
+      "y": 0.476,
+      "largura": 0.051,
+      "altura": 0.0175
+    },
+    {
+      "texto": "L-Leucina (mg)",
+      "x": 0.3081,
+      "y": 0.4869,
+      "largura": 0.126,
+      "altura": 0.0146
+    },
+    {
+      "texto": "2061",
+      "x": 0.5543,
+      "y": 0.4985,
+      "largura": 0.0465,
+      "altura": 0.0145
+    },
+    {
+      "texto": "Lisina (mg)",
+      "x": 0.312,
+      "y": 0.5087,
+      "largura": 0.0911,
+      "altura": 0.0146
+    },
+    {
+      "texto": "646",
+      "x": 0.562,
+      "y": 0.5203,
+      "largura": 0.0368,
+      "altura": 0.0131
+    },
+    {
+      "texto": "L-Metionina (mg)",
+      "x": 0.3159,
+      "y": 0.5275,
+      "largura": 0.1415,
+      "altura": 0.0146
+    },
+    {
+      "texto": "L-Fenilalanina (mg)",
+      "x": 0.3213,
+      "y": 0.5439,
+      "largura": 0.1559,
+      "altura": 0.0176
+    },
+    {
+      "texto": "750",
+      "x": 0.564,
+      "y": 0.5407,
+      "largura": 0.0368,
+      "altura": 0.0145
+    },
+    {
+      "texto": "L-Prolina (mg)",
+      "x": 0.3253,
+      "y": 0.5635,
+      "largura": 0.113,
+      "altura": 0.0162
+    },
+    {
+      "texto": "1376",
+      "x": 0.5614,
+      "y": 0.561,
+      "largura": 0.0478,
+      "altura": 0.0149
+    },
+    {
+      "texto": "L-Serina (mg)",
+      "x": 0.3253,
+      "y": 0.5824,
+      "largura": 0.1132,
+      "altura": 0.0172
+    },
+    {
+      "texto": "1227",
+      "x": 0.564,
+      "y": 0.5814,
+      "largura": 0.0446,
+      "altura": 0.0131
+    },
+    {
+      "texto": "L-Treonina (mg)",
+      "x": 0.3293,
+      "y": 0.6029,
+      "largura": 0.1284,
+      "altura": 0.0153
+    },
+    {
+      "texto": "1605",
+      "x": 0.5659,
+      "y": 0.6003,
+      "largura": 0.0446,
+      "altura": 0.0145
+    },
+    {
+      "texto": "Triptofano (mg)",
+      "x": 0.3349,
+      "y": 0.6205,
+      "largura": 0.1211,
+      "altura": 0.0152
+    },
+    {
+      "texto": "293",
+      "x": 0.5716,
+      "y": 0.6219,
+      "largura": 0.0371,
+      "altura": 0.0121
+    },
+    {
+      "texto": "L-Tirosina (mg)",
+      "x": 0.3369,
+      "y": 0.6382,
+      "largura": 0.1209,
+      "altura": 0.0155
+    },
+    {
+      "texto": "708",
+      "x": 0.5736,
+      "y": 0.641,
+      "largura": 0.0349,
+      "altura": 0.0131
+    },
+    {
+      "texto": "L-Valina (mg)",
+      "x": 0.3386,
+      "y": 0.6562,
+      "largura": 0.1078,
+      "altura": 0.0166
+    },
+    {
+      "texto": "1390",
+      "x": 0.5696,
+      "y": 0.6595,
+      "largura": 0.0469,
+      "altura": 0.0138
+    },
+    {
+      "texto": "Gorduras totais (g)",
+      "x": 0.335,
+      "y": 0.6754,
+      "largura": 0.1458,
+      "altura": 0.0152
+    },
+    {
+      "texto": "2",
+      "x": 0.5872,
+      "y": 0.6802,
+      "largura": 0.0136,
+      "altura": 0.0131
+    },
+    {
+      "texto": "Gorduras saturadas (g)",
+      "x": 0.3466,
+      "y": 0.6911,
+      "largura": 0.1809,
+      "altura": 0.017
+    },
+    {
+      "texto": "0,8",
+      "x": 0.5814,
+      "y": 0.6977,
+      "largura": 0.0291,
+      "altura": 0.0145
+    },
+    {
+      "texto": "4",
+      "x": 0.655,
+      "y": 0.6991,
+      "largura": 0.0155,
+      "altura": 0.0131
+    },
+    {
+      "texto": "Gorduras trans (g)",
+      "x": 0.3505,
+      "y": 0.7088,
+      "largura": 0.1439,
+      "altura": 0.0166
+    },
+    {
+      "texto": "Fibras alimentares (g)",
+      "x": 0.343,
+      "y": 0.7267,
+      "largura": 0.1686,
+      "altura": 0.0161
+    },
+    {
+      "texto": "Sódio (mg)",
+      "x": 0.3446,
+      "y": 0.7441,
+      "largura": 0.0898,
+      "altura": 0.0158
+    },
+    {
+      "texto": "46",
+      "x": 0.5911,
+      "y": 0.7529,
+      "largura": 0.0233,
+      "altura": 0.0116
+    },
+    {
+      "texto": "2",
+      "x": 0.6589,
+      "y": 0.7558,
+      "largura": 0.0136,
+      "altura": 0.0131
+    },
+    {
+      "texto": "*Percentual de valores diários fornecidos pela porção.",
+      "x": 0.3481,
+      "y": 0.7548,
+      "largura": 0.3409,
+      "altura": 0.0304
+    },
+    {
+      "texto": "Ingredientes: proteína de soro do leite concentrada,",
+      "x": 0.3484,
+      "y": 0.7819,
+      "largura": 0.3406,
+      "altura": 0.028
+    },
+    {
+      "texto": "maltodextrina, cacau em pó, canela em po, extrato de",
+      "x": 0.3523,
+      "y": 0.796,
+      "largura": 0.3498,
+      "altura": 0.0229
+    },
+    {
+      "texto": "levegura, emulsificante lecitina, aromatizantes,",
+      "x": 0.3521,
+      "y": 0.8072,
+      "largura": 0.2955,
+      "altura": 0.0212
+    },
+    {
+      "texto": "silício.",
+      "x": 0.3492,
+      "y": 0.8261,
+      "largura": 0.0462,
+      "altura": 0.0177
+    },
+    {
+      "texto": "edulcorante sucralose e antiumectante dióxido de",
+      "x": 0.3501,
+      "y": 0.8163,
+      "largura": 0.3249,
+      "altura": 0.0273
+    },
+    {
+      "texto": "ALERGICOS: CONTÉM DERIVADOS DE SOJA",
+      "x": 0.3535,
+      "y": 0.8567,
+      "largura": 0.3467,
+      "altura": 0.0317
+    },
+    {
+      "texto": "E LEITE. CONTÉM LACTOSE.",
+      "x": 0.3575,
+      "y": 0.8669,
+      "largura": 0.2202,
+      "altura": 0.0386
+    },
+    {
+      "texto": "NÃO CONTÉM GLÚTEN.",
+      "x": 0.3596,
+      "y": 0.8793,
+      "largura": 0.1783,
+      "altura": 0.0464
+    },
+    {
+      "texto": "Por empresa independente responsável",
+      "x": 0.4248,
+      "y": 0.9444,
+      "largura": 0.2894,
+      "altura": 0.0336
+    },
+    {
+      "texto": "estão de comentários no e-commerce.",
+      "x": 0.4167,
+      "y": 0.9498,
+      "largura": 0.2783,
+      "altura": 0.0497
+    },
+    {
+      "texto": "ESTE É UM PRODUTO COM",
+      "x": 0.7005,
+      "y": 0.1395,
+      "largura": 0.2985,
+      "altura": 0.0326
+    },
+    {
+      "texto": "100% WHEY PROT",
+      "x": 0.7965,
+      "y": 0.1701,
+      "largura": 0.2016,
+      "altura": 0.0204
+    },
+    {
+      "texto": "WHEY PROTEIN MAIS AVALIA",
+      "x": 0.7265,
+      "y": 0.232,
+      "largura": 0.2721,
+      "altura": 0.0213
+    },
+    {
+      "texto": "TOP 1 DE VEND",
+      "x": 0.8499,
+      "y": 0.262,
+      "largura": 0.1487,
+      "altura": 0.0209
+    },
+    {
+      "texto": "OMESC",
+      "x": 0.7222,
+      "y": 0.3167,
+      "largura": 0.1722,
+      "altura": 0.0417
+    },
+    {
+      "texto": "MELHORES EMPRESAS EM",
+      "x": 0.7361,
+      "y": 0.3573,
+      "largura": 0.1597,
+      "altura": 0.0149
+    },
+    {
+      "texto": "SATISFAÇÃO DO CLIENTE.",
+      "x": 0.7399,
+      "y": 0.3688,
+      "largura": 0.1617,
+      "altura": 0.0152
+    },
+    {
+      "texto": "EMPRESAS",
+      "x": 0.938,
+      "y": 0.3125,
+      "largura": 0.0329,
+      "altura": 0.0058
+    },
+    {
+      "texto": "2025",
+      "x": 0.938,
+      "y": 0.3212,
+      "largura": 0.0407,
+      "altura": 0.016
+    },
+    {
+      "texto": "..**.",
+      "x": 0.9399,
+      "y": 0.3532,
+      "largura": 0.0407,
+      "altura": 0.0087
+    },
+    {
+      "texto": "MESC",
+      "x": 0.9477,
+      "y": 0.359,
+      "largura": 0.031,
+      "altura": 0.0087
+    },
+    {
+      "texto": "Produto indicado para o grupo p",
+      "x": 0.7725,
+      "y": 0.4105,
+      "largura": 0.2263,
+      "altura": 0.0222
+    },
+    {
+      "texto": "ESTE PRODUTO NÃO E UM ME",
+      "x": 0.7743,
+      "y": 0.4222,
+      "largura": 0.2247,
+      "altura": 0.0246
+    },
+    {
+      "texto": "EXCEDER A RECOMENDAÇAO",
+      "x": 0.7781,
+      "y": 0.4371,
+      "largura": 0.2211,
+      "altura": 0.0242
+    },
+    {
+      "texto": "INDICADA NA EMBALAGEM. I",
+      "x": 0.778,
+      "y": 0.4508,
+      "largura": 0.2212,
+      "altura": 0.0248
+    },
+    {
+      "texto": "ALCANCE DE CRIANÇAS.",
+      "x": 0.7819,
+      "y": 0.4664,
+      "largura": 0.1956,
+      "altura": 0.024
+    },
+    {
+      "texto": "Instruções de conservação: O",
+      "x": 0.7855,
+      "y": 0.498,
+      "largura": 0.2143,
+      "altura": 0.0292
+    },
+    {
+      "texto": "do calor e da umidade. Após a",
+      "x": 0.7875,
+      "y": 0.5124,
+      "largura": 0.2122,
+      "altura": 0.0286
+    },
+    {
+      "texto": "dias. Após o consumo, manter",
+      "x": 0.7911,
+      "y": 0.5268,
+      "largura": 0.2086,
+      "altura": 0.0282
+    },
+    {
+      "texto": "fechada.",
+      "x": 0.7921,
+      "y": 0.5543,
+      "largura": 0.0706,
+      "altura": 0.0132
+    },
+    {
+      "texto": "Sugestão de preparo: Dissolver",
+      "x": 0.7951,
+      "y": 0.5747,
+      "largura": 0.2054,
+      "altura": 0.0345
+    },
+    {
+      "texto": "do pó em 200 mL de água, prefer",
+      "x": 0.7984,
+      "y": 0.5894,
+      "largura": 0.2024,
+      "altura": 0.0362
+    },
+    {
+      "texto": "a quantidade de líquido são suges",
+      "x": 0.7986,
+      "y": 0.605,
+      "largura": 0.2024,
+      "altura": 0.0381
+    },
+    {
+      "texto": "consumidor.",
+      "x": 0.8003,
+      "y": 0.6333,
+      "largura": 0.0967,
+      "altura": 0.0236
+    },
+    {
+      "texto": "Recomendação de d",
+      "x": 0.8007,
+      "y": 0.6612,
+      "largura": 0.1645,
+      "altura": 0.0306
+    },
+    {
+      "texto": "SAIBA O POR",
+      "x": 0.8814,
+      "y": 0.7063,
+      "largura": 0.0891,
+      "altura": 0.0274
+    },
+    {
+      "texto": "DE A GROWTH",
+      "x": 0.8821,
+      "y": 0.7178,
+      "largura": 0.0895,
+      "altura": 0.0312
+    },
+    {
+      "texto": "TER QUALIDADE",
+      "x": 0.8831,
+      "y": 0.7273,
+      "largura": 0.0951,
+      "altura": 0.0376
+    },
+    {
+      "texto": "INTERNACIONAL",
+      "x": 0.8834,
+      "y": 0.7405,
+      "largura": 0.0938,
+      "altura": 0.0382
+    },
+    {
+      "texto": "COMPROVADA.",
+      "x": 0.8857,
+      "y": 0.7563,
+      "largura": 0.0864,
+      "altura": 0.0352
+    },
+    {
+      "texto": "Growth",
+      "x": 0.7987,
+      "y": 0.8492,
+      "largura": 0.1016,
+      "altura": 0.0243
+    },
+    {
+      "texto": "UPPLEMENTS",
+      "x": 0.8017,
+      "y": 0.8649,
+      "largura": 0.0922,
+      "altura": 0.0129
+    },
+    {
+      "texto": "eureciclo",
+      "x": 0.7868,
+      "y": 0.9564,
+      "largura": 0.0484,
+      "altura": 0.0087
+    },
+    {
+      "texto": "a cada",
+      "x": 0.8731,
+      "y": 0.9381,
+      "largura": 0.0369,
+      "altura": 0.0116
+    },
+    {
+      "texto": "produto",
+      "x": 0.8685,
+      "y": 0.9451,
+      "largura": 0.0437,
+      "altura": 0.0137
+    },
+    {
+      "texto": "vendido",
+      "x": 0.8673,
+      "y": 0.9538,
+      "largura": 0.0428,
+      "altura": 0.0125
+    }
+  ]
+}
