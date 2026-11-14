@@ -6,10 +6,11 @@ const produtos = {
   consultar: async () => null,
   enviarRotulo: async () => ({ ok: false as const, ilegiveis: [] }),
 };
+const alternativas = { consultar: async () => null };
 
 describe('GET /health', () => {
   it('responde 200 quando o banco está acessível', async () => {
-    const app = buildApp({ pingDb: async () => {}, produtos });
+    const app = buildApp({ pingDb: async () => {}, produtos, alternativas });
 
     const response = await app.inject({ method: 'GET', url: '/health' });
 
@@ -23,6 +24,7 @@ describe('GET /health', () => {
         throw new Error('conexão recusada');
       },
       produtos,
+      alternativas,
     });
 
     const response = await app.inject({ method: 'GET', url: '/health' });

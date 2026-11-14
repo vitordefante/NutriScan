@@ -44,6 +44,8 @@ export const produtoOffSchema = z.object({
   ingredients_text_en: texto,
   nova_group: z.union([z.number(), z.string()]).optional().catch(undefined),
   nutriscore_grade: texto,
+  /** Tamanho da porção em g/ml (ex.: 12 para "12g"). */
+  serving_quantity: z.coerce.number().positive().optional().catch(undefined),
   nutriments: z.record(z.string(), z.unknown()).optional().catch(undefined),
 });
 

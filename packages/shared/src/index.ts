@@ -134,6 +134,55 @@ export type ProductResult = {
 
 export type ProductSource = 'open_food_facts' | 'open_beauty_facts' | 'foto';
 
+/** Um produto da mesma categoria com nota maior (resumo para a lista de alternativas). */
+export type Alternative = {
+  barcode: string;
+  tipo: ProductKind;
+  nome: string;
+  marca?: string;
+  imagemUrl?: string;
+  nota: number;
+  faixa: ScoreBand;
+  /** Alimentos: os pilares da nota, para mostrar em que a alternativa é melhor. */
+  nova: NovaGroup | null;
+  nutriScore: NutriScoreLetter | null;
+  /** Quantos avisos "alto em" (lupa da ANVISA). */
+  lupa: number;
+  /** Quantos alertas (aditivos; em cosméticos, ingredientes de atenção). */
+  alertas: number;
+};
+
+/** Resposta de GET /produtos/:barcode/alternativas. */
+export type AlternativesResult =
+  | {
+      /** O cadastro do produto não tem categoria: não há com o que comparar. */
+      status: 'sem_categoria';
+    }
+  | {
+      status: 'ok';
+      /** Nome da categoria comparada (ex.: "Maionese"); ausente quando não há um nome confiável. */
+      categoria?: string;
+      /**
+       * Nota do produto escaneado usada como referência; null quando ele não tem nota — aí a
+       * lista traz os mais bem avaliados da categoria, sem afirmar que são melhores.
+       */
+      referencia: number | null;
+      /** Quantos produtos da categoria, vendidos no Brasil, tinham dados para a nota completa. */
+      comparados: number;
+      /**
+       * Cadastros deixados de fora por valores fora do padrão da categoria (ex.: os valores de
+       * uma porção digitados como "por 100 g").
+       */
+      ignorados: number;
+      /**
+       * Uma das buscas falhou (base fora do ar): a lista pode estar incompleta. O app não a
+       * guarda, para buscar de novo da próxima vez.
+       */
+      incompleta: boolean;
+      /** Da maior nota para a menor. */
+      alternativas: Alternative[];
+    };
+
 /**
  * Uma linha de texto lida (OCR) na foto de um rótulo, no próprio aparelho.
  * Posição normalizada (0–1) com origem no canto superior esquerdo da foto em pé.

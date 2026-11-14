@@ -24,7 +24,11 @@ function app(
   consultar: ServicoProdutos['consultar'],
   enviarRotulo: ServicoProdutos['enviarRotulo'] = async () => ({ ok: true, resultado: RESULTADO }),
 ) {
-  return buildApp({ pingDb: async () => {}, produtos: { consultar, enviarRotulo } });
+  return buildApp({
+    pingDb: async () => {},
+    produtos: { consultar, enviarRotulo },
+    alternativas: { consultar: async () => null },
+  });
 }
 
 describe('GET /produtos/:barcode', () => {

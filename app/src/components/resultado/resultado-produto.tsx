@@ -1,4 +1,5 @@
 import type { ProductResult } from '@nutriscan/shared';
+import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Texto } from '@/components/ui/texto';
@@ -15,6 +16,8 @@ type Props = {
   onPorQue: () => void;
   /** Dados incompletos: oferece fotografar o rótulo (só onde o aparelho lê texto). */
   onCompletarComFoto?: () => void;
+  /** Seção de alternativas (carregada à parte, depois da análise). */
+  alternativas?: ReactNode;
 };
 
 const NOME_FONTE: Record<ProductResult['fonte'], string> = {
@@ -31,7 +34,7 @@ function creditoDosDados({ fonte, rotuloPorFoto }: ProductResult): string {
 }
 
 /** Conteúdo da tela de resultado (produto + análise), já com os dados carregados. */
-export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto }: Props) {
+export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto, alternativas }: Props) {
   const { produto, analise } = dados;
   // Cosméticos não têm NOVA, Nutri-Score nem lupa: a nota vem só dos ingredientes de atenção,
   // que chegam como alertas (do nível alto para o baixo).
@@ -93,6 +96,8 @@ export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto }: Props)
           </View>
         </Secao>
       )}
+
+      {alternativas}
 
       {/* Primeiro os fatos encontrados; o que faltou fica no fim, para quem rolar até aqui. */}
       {analise.status === 'parcial' && (

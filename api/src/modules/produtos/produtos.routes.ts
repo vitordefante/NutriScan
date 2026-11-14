@@ -1,16 +1,13 @@
-import type { ApiError } from '@nutriscan/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
+import { erro, paramsBarcode } from '../../http/respostas.js';
 import { FonteIndisponivelError } from './open-food-facts.client.js';
 import type { ServicoProdutos } from './produtos.service.js';
 
 export type ProdutosDeps = {
   produtos: ServicoProdutos;
 };
-
-/** EAN-8, UPC-A (12), EAN-13 ou GTIN-14: só dígitos. */
-const paramsSchema = z.object({ barcode: z.string().regex(/^\d{8,14}$/) });
 
 /** Linhas do OCR feito no aparelho. Limites folgados para um rótulo, apertados para abuso. */
 const linhasSchema = z
@@ -38,7 +35,7 @@ const NOME_FOTO = { ingredientes: 'a lista de ingredientes', tabela: 'a tabela n
 
 export const produtosRoutes: FastifyPluginAsync<ProdutosDeps> = async (app, { produtos }) => {
   app.get('/produtos/:barcode', async (request, reply) => {
-    const params = paramsSchema.safeParse(request.params);
+    const params = paramsBarcode.safeParse(request.params);
     if (!params.success) {
       return reply
         .code(400)
@@ -75,7 +72,7 @@ export const produtosRoutes: FastifyPluginAsync<ProdutosDeps> = async (app, { pr
   });
 
   app.post('/produtos/:barcode/rotulo', async (request, reply) => {
-    const params = paramsSchema.safeParse(request.params);
+    const params = paramsBarcode.safeParse(request.params);
     if (!params.success) {
       return reply
         .code(400)
@@ -101,5 +98,3 @@ export const produtosRoutes: FastifyPluginAsync<ProdutosDeps> = async (app, { pr
     return r.resultado;
   });
 };
-
-const erro = (codigo: ApiError['erro'], mensagem: string): ApiError => ({ erro: codigo, mensagem });
