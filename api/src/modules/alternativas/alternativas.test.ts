@@ -2,6 +2,7 @@ import type { Analysis, ProductResult } from '@nutriscan/shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import { buildApp } from '../../app.js';
+import { depsDeTeste } from '../../test/deps.js';
 import { faixaDaNota } from '../analise/nota.js';
 import {
   type ClienteBusca,
@@ -677,14 +678,7 @@ describe('ServicoAlternativas', () => {
 
 describe('GET /produtos/:barcode/alternativas', () => {
   const app = (consultar: ServicoAlternativas['consultar']) =>
-    buildApp({
-      pingDb: async () => {},
-      produtos: {
-        consultar: async () => null,
-        enviarRotulo: async () => ({ ok: false, ilegiveis: [] }),
-      },
-      alternativas: { consultar },
-    });
+    buildApp(depsDeTeste({ alternativas: { consultar } }));
 
   it('200 com as alternativas', async () => {
     const corpo = { status: 'sem_categoria' as const };

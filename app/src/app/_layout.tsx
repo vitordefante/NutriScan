@@ -10,6 +10,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { carregarSessao } from '@/lib/sessao';
+import { sincronizarHistorico } from '@/lib/sincronizacao';
 import { cores } from '@/theme/tokens';
 
 // A splash fica na tela até as fontes carregarem (evita o texto "piscar" com a fonte do sistema).
@@ -31,6 +33,11 @@ export default function RootLayout() {
   useEffect(() => {
     if (pronto) void SplashScreen.hideAsync();
   }, [pronto]);
+
+  // Login guardado no Keychain e, com conta, o histórico em dia com a API.
+  useEffect(() => {
+    void carregarSessao().then(sincronizarHistorico);
+  }, []);
 
   if (!pronto) return null;
 

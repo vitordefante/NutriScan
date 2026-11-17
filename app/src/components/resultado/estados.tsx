@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Botao } from '@/components/ui/botao';
 import { IconePixel, type NomeIconePixel } from '@/components/ui/icone-pixel';
 import { Texto } from '@/components/ui/texto';
-import type { TipoErroProduto } from '@/services/api-produtos';
+import type { TipoErroApi } from '@/services/api';
 import { cores, espaco } from '@/theme/tokens';
 
 const BLOCOS_CARREGANDO = 10;
@@ -47,7 +47,8 @@ type Conteudo = {
   repetir: boolean;
 };
 
-const ERROS: Record<TipoErroProduto, Conteudo> = {
+/** Os erros de conta (login, registros) não acontecem nesta tela: caem em "inesperado". */
+const ERROS: Partial<Record<TipoErroApi, Conteudo>> & Record<'inesperado', Conteudo> = {
   produto_nao_encontrado: {
     icone: 'lupa',
     titulo: 'Produto não encontrado',
@@ -106,7 +107,7 @@ const ERROS: Record<TipoErroProduto, Conteudo> = {
 };
 
 type PropsErro = {
-  tipo: TipoErroProduto;
+  tipo: TipoErroApi;
   barcode: string;
   onTentarDeNovo: () => void;
   onEscanearOutro: () => void;
@@ -121,7 +122,7 @@ export function EstadoErro({
   onEscanearOutro,
   onFotografar,
 }: PropsErro) {
-  const erro = ERROS[tipo];
+  const erro = ERROS[tipo] ?? ERROS.inesperado;
   const fotografar = tipo === 'produto_nao_encontrado' ? onFotografar : undefined;
   return (
     <View style={estilos.centro}>

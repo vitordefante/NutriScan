@@ -1,12 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
 
 import { SecaoAlternativas } from '@/components/resultado/alternativas';
 import { EstadoCarregando, EstadoErro } from '@/components/resultado/estados';
+import { RegistrarConsumo } from '@/components/resultado/registrar-consumo';
 import { ResultadoProduto } from '@/components/resultado/resultado-produto';
 import { CabecalhoTela } from '@/components/ui/cabecalho-tela';
 import { Tela } from '@/components/ui/tela';
 import { useAlternativas } from '@/hooks/use-alternativas';
 import { useProduto } from '@/hooks/use-produto';
+import { guardarScan, itemDoResultado } from '@/lib/historico-local';
+import { enviarPendentes } from '@/lib/sincronizacao';
 import { podeLerRotulo } from '@/services/leitor-rotulo';
 
 /** Tela de resultado: busca o produto pelo código e mostra a análise (ou o estado de erro). */
@@ -15,6 +19,17 @@ export default function TelaResultado() {
   const { estado, tentarDeNovo } = useProduto(barcode);
   const produto = estado.status === 'pronto' ? estado.dados.produto : undefined;
   const analise = estado.status === 'pronto' ? estado.dados.analise : undefined;
+  const dados = estado.status === 'pronto' ? estado.dados : undefined;
+
+  // Todo produto aberto entra no histórico do aparelho (e, com conta, sobe para ela; baixar a
+  // lista da conta fica para a abertura do app e a aba Histórico).
+  useEffect(() => {
+    if (!dados) return;
+    void guardarScan(itemDoResultado(dados, new Date()))
+      .then(enviarPendentes)
+      .catch(() => {});
+  }, [dados]);
+
   const alternativas = useAlternativas(
     barcode,
     analise && analise.status !== 'dados_insuficientes' ? analise.nota : null,
@@ -54,6 +69,7 @@ export default function TelaResultado() {
             router.push({ pathname: '/produto/[barcode]/por-que', params: { barcode } })
           }
           onCompletarComFoto={fotografar}
+          acoes={<RegistrarConsumo barcode={barcode} tipo={estado.dados.produto.tipo} />}
           alternativas={
             <SecaoAlternativas
               estado={alternativas.estado}

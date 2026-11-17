@@ -14,6 +14,11 @@ const envSchema = z.object({
    * guardado em JSON, para reproduzir leituras que deram errado. Fora do Git.
    */
   OCR_DEBUG_DIR: z.string().optional(),
+  /**
+   * Segredo que assina os tokens de login (JWT). Longo e aleatório; nunca vai para o Git.
+   * Gerar com: node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+   */
+  JWT_SECRET: z.string().min(32, 'deve ter pelo menos 32 caracteres'),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -61,6 +61,14 @@ escuro para texto, porque as cores claras não têm contraste suficiente como le
   e o nome do grupo usam a **mesma cor**, a do grupo — reforçam o grupo, não mostram escala.
 - **Títulos de seção:** pixel, caixa alta, com a fonte separada por "·"
   (ex.: `NÍVEL DE PROCESSAMENTO · NOVA (USP)`).
+- **Seletor segmentado:** borda 2 px; a opção escolhida fica cheia (tinta, texto papel), as
+  outras só com a borda. Texto pixel em caixa alta. Usado em Entrar/Criar conta,
+  Escaneados/Meu consumo e 7/30 dias.
+- **Campo de texto:** altura 52 (a mesma do botão), borda 2 px tinta, rótulo em cima.
+- **Linha de produto (listas):** foto 44 px, nome, linha de apoio e a nota num bloco pixel
+  com a cor de preenchimento da faixa.
+- **Texto de ação destrutiva** (ex.: "Excluir minha conta"): vermelho de texto da faixa
+  péssimo (`#C62F2F`) — o coral não tem contraste suficiente como letra.
 - **Viewfinder do scanner:** cantos e linha de leitura brancos sobre a câmera.
 
 ## Em aberto

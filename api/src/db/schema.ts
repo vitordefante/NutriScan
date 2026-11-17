@@ -3,7 +3,16 @@
  * Depois de mudar este arquivo: `npm run db:generate -w @nutriscan/api` (gera a migração SQL)
  * e `npm run db:migrate -w @nutriscan/api` (aplica no banco).
  */
-import { integer, jsonb, pgTable, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 /**
  * Cache das respostas do Open Food Facts (alimentos) e do Open Beauty Facts (cosméticos),
@@ -55,4 +64,61 @@ export const buscasCategoria = pgTable(
     atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.fonte, t.categoria] })],
+);
+
+/** Contas do app (e-mail + senha). A senha só existe como hash argon2id. */
+export const usuarios = pgTable('usuarios', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  /** Sempre em minúsculas e sem espaços nas pontas. */
+  email: text('email').notNull().unique(),
+  senhaHash: text('senha_hash').notNull(),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
+});
+
+/**
+ * Histórico de scans sincronizado com a conta: uma linha por produto (o último scan vale).
+ * Guarda o resumo que a lista mostra; a análise completa vem de GET /produtos/:barcode.
+ */
+export const historico = pgTable(
+  'historico',
+  {
+    usuarioId: uuid('usuario_id')
+      .notNull()
+      .references(() => usuarios.id, { onDelete: 'cascade' }),
+    barcode: text('barcode').notNull(),
+    tipo: text('tipo').notNull(),
+    nome: text('nome').notNull(),
+    marca: text('marca'),
+    imagemUrl: text('imagem_url'),
+    nota: integer('nota'),
+    faixa: text('faixa'),
+    escaneadoEm: timestamp('escaneado_em', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.usuarioId, t.barcode] })],
+);
+
+/**
+ * Log de exposição: cada consumo (alimento) ou uso (cosmético) registrado. Guarda a análise do
+ * momento do registro (nota, NOVA, "alto em", títulos dos alertas) — o resumo do período sai daqui.
+ */
+export const registros = pgTable(
+  'registros',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    usuarioId: uuid('usuario_id')
+      .notNull()
+      .references(() => usuarios.id, { onDelete: 'cascade' }),
+    barcode: text('barcode').notNull(),
+    tipo: text('tipo').notNull(),
+    nome: text('nome').notNull(),
+    marca: text('marca'),
+    imagemUrl: text('imagem_url'),
+    nota: integer('nota'),
+    faixa: text('faixa'),
+    nova: integer('nova'),
+    altoEm: jsonb('alto_em').notNull(),
+    alertas: jsonb('alertas').notNull(),
+    registradoEm: timestamp('registrado_em', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('registros_usuario_data').on(t.usuarioId, t.registradoEm)],
 );

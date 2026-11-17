@@ -18,6 +18,8 @@ type Props = {
   onCompletarComFoto?: () => void;
   /** Seção de alternativas (carregada à parte, depois da análise). */
   alternativas?: ReactNode;
+  /** Ações logo abaixo da nota (ex.: "Registrar consumo"). */
+  acoes?: ReactNode;
 };
 
 const NOME_FONTE: Record<ProductResult['fonte'], string> = {
@@ -34,7 +36,13 @@ function creditoDosDados({ fonte, rotuloPorFoto }: ProductResult): string {
 }
 
 /** Conteúdo da tela de resultado (produto + análise), já com os dados carregados. */
-export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto, alternativas }: Props) {
+export function ResultadoProduto({
+  dados,
+  onPorQue,
+  onCompletarComFoto,
+  alternativas,
+  acoes,
+}: Props) {
   const { produto, analise } = dados;
   // Cosméticos não têm NOVA, Nutri-Score nem lupa: a nota vem só dos ingredientes de atenção,
   // que chegam como alertas (do nível alto para o baixo).
@@ -52,11 +60,14 @@ export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto, alternat
       <CabecalhoProduto produto={produto} />
 
       {analise.status === 'dados_insuficientes' ? (
-        <AvisoFaltando
-          faltando={analise.faltando}
-          texto="Sem esses dados não dá para calcular uma nota honesta para este produto."
-          onCompletarComFoto={onCompletarComFoto}
-        />
+        <>
+          <AvisoFaltando
+            faltando={analise.faltando}
+            texto="Sem esses dados não dá para calcular uma nota honesta para este produto."
+            onCompletarComFoto={onCompletarComFoto}
+          />
+          {acoes}
+        </>
       ) : (
         <>
           <CartaoNota
@@ -66,6 +77,7 @@ export function ResultadoProduto({ dados, onPorQue, onCompletarComFoto, alternat
             resumo={resumo}
             onPorQue={onPorQue}
           />
+          {acoes}
 
           {analise.destaques.lupa.length > 0 && (
             <Secao titulo="Rótulo frontal · ANVISA">

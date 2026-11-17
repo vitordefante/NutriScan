@@ -1,16 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildApp } from '../../app.js';
-
-const produtos = {
-  consultar: async () => null,
-  enviarRotulo: async () => ({ ok: false as const, ilegiveis: [] }),
-};
-const alternativas = { consultar: async () => null };
+import { depsDeTeste } from '../../test/deps.js';
 
 describe('GET /health', () => {
   it('responde 200 quando o banco está acessível', async () => {
-    const app = buildApp({ pingDb: async () => {}, produtos, alternativas });
+    const app = buildApp(depsDeTeste());
 
     const response = await app.inject({ method: 'GET', url: '/health' });
 
@@ -19,13 +14,13 @@ describe('GET /health', () => {
   });
 
   it('responde 503 quando o banco não responde', async () => {
-    const app = buildApp({
-      pingDb: async () => {
-        throw new Error('conexão recusada');
-      },
-      produtos,
-      alternativas,
-    });
+    const app = buildApp(
+      depsDeTeste({
+        pingDb: async () => {
+          throw new Error('conexão recusada');
+        },
+      }),
+    );
 
     const response = await app.inject({ method: 'GET', url: '/health' });
 

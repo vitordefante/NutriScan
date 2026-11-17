@@ -51,7 +51,9 @@
           "photosPermission": "O NutriScan abre a foto do rótulo que você escolher para ler os ingredientes. A foto não sai do aparelho.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
