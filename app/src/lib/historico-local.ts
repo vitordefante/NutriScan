@@ -89,8 +89,9 @@ export function itemDoResultado({ produto, analise }: ProductResult, quando: Dat
   return {
     barcode: produto.barcode,
     tipo: produto.tipo,
-    nome: produto.nome,
-    ...(produto.marca && { marca: produto.marca }),
+    // Os mesmos limites da API (cadastros do OFF às vezes têm nomes enormes).
+    nome: produto.nome.slice(0, 200),
+    ...(produto.marca && { marca: produto.marca.slice(0, 120) }),
     // A API só aceita imagem https (as do Open Food Facts são).
     ...(produto.imagemUrl?.startsWith('https://') && { imagemUrl: produto.imagemUrl }),
     nota: comNota ? analise.nota : null,

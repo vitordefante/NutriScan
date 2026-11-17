@@ -1,4 +1,4 @@
-import type { AuthResult, ExposureSummary, HistoryItem, LogEntry, User } from '@nutriscan/shared';
+import type { AuthResult, HistoryItem, LogEntry, LogPeriod } from '@nutriscan/shared';
 
 import { chamarApi } from './api';
 
@@ -12,24 +12,19 @@ export function entrar(email: string, senha: string): Promise<AuthResult> {
   return chamarApi('/contas/entrar', { metodo: 'POST', corpo: { email, senha } });
 }
 
-/** GET /contas/eu — confere se o token ainda vale (nao_autenticado se não). */
-export function buscarEu(token: string): Promise<User> {
-  return chamarApi('/contas/eu', { token });
-}
-
 /** DELETE /contas/eu — apaga a conta, o histórico e o log na API. */
 export function excluirConta(token: string): Promise<void> {
   return chamarApi('/contas/eu', { metodo: 'DELETE', token });
 }
 
-/** POST /historico — envia os scans do aparelho e recebe o histórico da conta já juntado. */
-export function sincronizarHistorico(token: string, itens: HistoryItem[]): Promise<HistoryItem[]> {
+/** POST /historico — envia os scans feitos no aparelho (itens inválidos a API descarta). */
+export function enviarHistorico(token: string, itens: HistoryItem[]): Promise<void> {
   return chamarApi('/historico', { metodo: 'POST', corpo: { itens }, token });
 }
 
-/** DELETE /historico. */
-export function limparHistoricoDaConta(token: string): Promise<void> {
-  return chamarApi('/historico', { metodo: 'DELETE', token });
+/** GET /historico — o histórico da conta (inclui o de outros aparelhos). */
+export function baixarHistorico(token: string): Promise<HistoryItem[]> {
+  return chamarApi('/historico', { token });
 }
 
 /** POST /registros — registra o consumo/uso agora. */
@@ -37,22 +32,13 @@ export function registrar(token: string, barcode: string): Promise<LogEntry> {
   return chamarApi('/registros', { metodo: 'POST', corpo: { barcode }, token });
 }
 
-/** GET /registros — os registros dos últimos `dias` dias. */
-export function listarRegistros(
+/** GET /registros — o resumo e os registros dos últimos `dias` dias. */
+export function buscarPeriodo(
   token: string,
   dias: number,
   signal?: AbortSignal,
-): Promise<LogEntry[]> {
+): Promise<LogPeriod> {
   return chamarApi(`/registros?dias=${dias}`, { token, signal });
-}
-
-/** GET /registros/resumo — o resumo dos últimos `dias` dias. */
-export function buscarResumo(
-  token: string,
-  dias: number,
-  signal?: AbortSignal,
-): Promise<ExposureSummary> {
-  return chamarApi(`/registros/resumo?dias=${dias}`, { token, signal });
 }
 
 /** DELETE /registros/:id. */

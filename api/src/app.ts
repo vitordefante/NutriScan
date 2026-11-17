@@ -1,6 +1,8 @@
+import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyServerOptions } from 'fastify';
 
 import { registrarAutenticacao } from './http/autenticacao.js';
+import { erro } from './http/respostas.js';
 import {
   type AlternativasDeps,
   alternativasRoutes,
@@ -31,6 +33,18 @@ export type AppDeps = HealthDeps &
  */
 export function buildApp(deps: AppDeps, options: FastifyServerOptions = {}) {
   const app = Fastify(options);
+
+  // Limite de pedidos só nas rotas que pedem (login e cadastro: cada um roda um argon2).
+  app.register(rateLimit, {
+    global: false,
+    errorResponseBuilder: (_req, contexto) => ({
+      statusCode: 429,
+      ...erro(
+        'muitas_tentativas',
+        `Muitas tentativas seguidas. Espere ${Math.ceil(contexto.ttl / 1000)} segundos e tente de novo.`,
+      ),
+    }),
+  });
 
   // Antes das rotas: `exigirConta` e `gerarToken` precisam existir quando elas são registradas.
   registrarAutenticacao(app, deps.jwtSecret, async (id) => (await deps.contas.buscar(id)) !== null);

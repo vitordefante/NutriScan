@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@fastify/jwt": "^10.2.7",
+    "@fastify/rate-limit": "^11.2.2",
     "@node-rs/argon2": "^2.2.2",
     "@nutriscan/shared": "^0.1.0",
     "drizzle-orm": "^0.45.4",

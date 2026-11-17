@@ -102,4 +102,19 @@ describe('contas', () => {
     const depois = await app.inject({ method: 'GET', url: '/contas/eu', headers: auth });
     expect(depois.statusCode).toBe(401);
   });
+
+  it('limita as tentativas de login: a 11ª em um minuto recebe 429', async () => {
+    const app = buildApp(depsDeTeste());
+    const tentar = () =>
+      app.inject({
+        method: 'POST',
+        url: '/contas/entrar',
+        payload: { email: 'ana@exemplo.com', senha: 'chute-12345' },
+      });
+    for (let i = 0; i < 10; i++) expect((await tentar()).statusCode).toBe(401);
+
+    const r = await tentar();
+    expect(r.statusCode).toBe(429);
+    expect(r.json()).toMatchObject({ erro: 'muitas_tentativas' });
+  });
 });

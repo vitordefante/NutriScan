@@ -10,7 +10,7 @@ import { Tela } from '@/components/ui/tela';
 import { useAlternativas } from '@/hooks/use-alternativas';
 import { useProduto } from '@/hooks/use-produto';
 import { guardarScan, itemDoResultado } from '@/lib/historico-local';
-import { sincronizarHistorico } from '@/lib/sincronizacao';
+import { enviarPendentes } from '@/lib/sincronizacao';
 import { podeLerRotulo } from '@/services/leitor-rotulo';
 
 /** Tela de resultado: busca o produto pelo código e mostra a análise (ou o estado de erro). */
@@ -21,11 +21,12 @@ export default function TelaResultado() {
   const analise = estado.status === 'pronto' ? estado.dados.analise : undefined;
   const dados = estado.status === 'pronto' ? estado.dados : undefined;
 
-  // Todo produto aberto entra no histórico do aparelho (e, com conta, vai para ela).
+  // Todo produto aberto entra no histórico do aparelho (e, com conta, sobe para ela; baixar a
+  // lista da conta fica para a abertura do app e a aba Histórico).
   useEffect(() => {
     if (!dados) return;
     void guardarScan(itemDoResultado(dados, new Date()))
-      .then(sincronizarHistorico)
+      .then(enviarPendentes)
       .catch(() => {});
   }, [dados]);
 

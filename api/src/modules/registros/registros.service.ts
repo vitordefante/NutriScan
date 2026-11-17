@@ -1,4 +1,4 @@
-import type { ExposureSummary, LogEntry, ProductResult } from '@nutriscan/shared';
+import type { LogEntry, LogPeriod, ProductResult } from '@nutriscan/shared';
 
 import type { ServicoProdutos } from '../produtos/produtos.service.js';
 import type { NovoRegistro, RepositorioRegistros } from './registros.repository.js';
@@ -12,9 +12,8 @@ export type ServicoRegistros = {
    * existe. Lança FonteIndisponivelError se a base estiver fora do ar e o produto fora do cache.
    */
   registrar: (usuarioId: string, barcode: string) => Promise<LogEntry | null>;
-  /** Registros dos últimos `dias` dias. */
-  listar: (usuarioId: string, dias: number) => Promise<LogEntry[]>;
-  resumo: (usuarioId: string, dias: number) => Promise<ExposureSummary>;
+  /** Registros dos últimos `dias` dias e o resumo deles. */
+  periodo: (usuarioId: string, dias: number) => Promise<LogPeriod>;
   excluir: (usuarioId: string, id: string) => Promise<boolean>;
 };
 
@@ -37,10 +36,9 @@ export function criarServicoRegistros({
       return registros.criar(usuarioId, paraRegistro(resultado, agora()));
     },
 
-    listar: (usuarioId, dias) => registros.listar(usuarioId, desde(dias)),
-
-    async resumo(usuarioId, dias) {
-      return resumir(await registros.listar(usuarioId, desde(dias)), dias);
+    async periodo(usuarioId, dias) {
+      const lista = await registros.listar(usuarioId, desde(dias));
+      return { resumo: resumir(lista, dias), registros: lista };
     },
 
     excluir: (usuarioId, id) => registros.excluir(usuarioId, id),

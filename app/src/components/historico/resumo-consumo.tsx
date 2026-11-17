@@ -12,14 +12,6 @@ const NUTRIENTE: Record<FrontLabelNutrient, string> = {
   sodio: 'sódio',
 };
 
-function faixaDe(nota: number) {
-  if (nota >= 80) return faixas.excelente;
-  if (nota >= 60) return faixas.bom;
-  if (nota >= 40) return faixas.regular;
-  if (nota >= 20) return faixas.ruim;
-  return faixas.pessimo;
-}
-
 /** Resumo do período: nota média, ultraprocessados, "alto em" e alertas mais frequentes. */
 export function ResumoConsumo({ resumo: r }: { resumo: ExposureSummary }) {
   const titulo = `Últimos ${r.dias} dias · ${r.registros} ${r.registros === 1 ? 'registro' : 'registros'}`;
@@ -31,19 +23,9 @@ export function ResumoConsumo({ resumo: r }: { resumo: ExposureSummary }) {
         {titulo.toLocaleUpperCase('pt-BR')}
       </Texto>
 
-      {r.notaMedia !== null && (
-        <View style={{ gap: 8 }}>
-          <View style={estilos.linha}>
-            <Texto variante="apoio" style={{ flex: 1 }}>
-              Nota média
-            </Texto>
-            <Texto style={[estilos.numero, { color: faixaDe(r.notaMedia).texto }]}>
-              {r.notaMedia}
-            </Texto>
-          </View>
-          <BarraHp valor={r.notaMedia} cor={faixaDe(r.notaMedia).preenchimento} altura={10} />
-        </View>
-      )}
+      {/* Médias separadas: alimentos e cosméticos são avaliados por réguas diferentes. */}
+      {r.mediaAlimentos && <Media titulo="Nota média dos alimentos" media={r.mediaAlimentos} />}
+      {r.mediaCosmeticos && <Media titulo="Nota média dos cosméticos" media={r.mediaCosmeticos} />}
 
       {pct !== null && (
         <View style={estilos.linha}>
@@ -76,6 +58,27 @@ export function ResumoConsumo({ resumo: r }: { resumo: ExposureSummary }) {
         Cada registro guarda a análise do momento em que foi feito (mesma metodologia da nota).
       </Texto>
     </CartaoEmPilha>
+  );
+}
+
+function Media({
+  titulo,
+  media,
+}: {
+  titulo: string;
+  media: NonNullable<ExposureSummary['mediaAlimentos']>;
+}) {
+  const cor = faixas[media.faixa];
+  return (
+    <View style={{ gap: 8 }}>
+      <View style={estilos.linha}>
+        <Texto variante="apoio" style={{ flex: 1 }}>
+          {titulo}
+        </Texto>
+        <Texto style={[estilos.numero, { color: cor.texto }]}>{media.nota}</Texto>
+      </View>
+      <BarraHp valor={media.nota} cor={cor.preenchimento} altura={10} />
+    </View>
   );
 }
 

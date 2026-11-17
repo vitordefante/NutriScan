@@ -67,10 +67,23 @@ export async function criarConta(email: string, senha: string): Promise<void> {
   await guardar(await apiConta.cadastrar(email, senha));
 }
 
+/**
+ * "Sair" tocado pelo usuário: encerra a sessão e apaga do aparelho os dados ligados à conta
+ * (o histórico — pode ser um celular compartilhado).
+ */
 export async function sair(): Promise<void> {
+  await esquecerLogin();
+  for (const limpar of aoSair) await limpar().catch(() => {});
+}
+
+/**
+ * O token deixou de valer (venceu, ou a conta foi excluída em outro aparelho): volta a ser
+ * anônimo SEM apagar nada — scans ainda não enviados continuam no aparelho e sobem no próximo
+ * login.
+ */
+async function esquecerLogin(): Promise<void> {
   await SecureStore.deleteItemAsync(CHAVE).catch(() => {});
   definir({ status: 'anonimo' });
-  for (const limpar of aoSair) await limpar().catch(() => {});
 }
 
 /** Apaga a conta na API (com histórico e log) e sai. */
@@ -86,7 +99,7 @@ export function quandoSair(limpar: () => Promise<void>): void {
 
 /**
  * Chama a API com o token da sessão. Sem login, ou com o token vencido/recusado, lança
- * ErroApi('nao_autenticado') — e, no segundo caso, encerra a sessão guardada.
+ * ErroApi('nao_autenticado') — e, no segundo caso, esquece o login guardado (sem apagar dados).
  */
 export async function comConta<T>(chamar: (token: string) => Promise<T>): Promise<T> {
   if (atual.status !== 'conectado') {
@@ -95,7 +108,7 @@ export async function comConta<T>(chamar: (token: string) => Promise<T>): Promis
   try {
     return await chamar(atual.token);
   } catch (err) {
-    if (err instanceof ErroApi && err.tipo === 'nao_autenticado') await sair();
+    if (err instanceof ErroApi && err.tipo === 'nao_autenticado') await esquecerLogin();
     throw err;
   }
 }

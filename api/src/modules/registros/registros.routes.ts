@@ -41,20 +41,13 @@ export const registrosRoutes: FastifyPluginAsync<RegistrosDeps> = async (app, { 
     }
   });
 
+  /** O período (padrão: 7 dias): resumo + registros, numa consulta só. */
   app.get('/registros', async (request, reply) => {
     const periodo = periodoSchema.safeParse(request.query);
     if (!periodo.success) {
       return reply.code(400).send(erro('dados_invalidos', 'Período inválido (1 a 365 dias).'));
     }
-    return registros.listar(request.user.sub, periodo.data.dias);
-  });
-
-  app.get('/registros/resumo', async (request, reply) => {
-    const periodo = periodoSchema.safeParse(request.query);
-    if (!periodo.success) {
-      return reply.code(400).send(erro('dados_invalidos', 'Período inválido (1 a 365 dias).'));
-    }
-    return registros.resumo(request.user.sub, periodo.data.dias);
+    return registros.periodo(request.user.sub, periodo.data.dias);
   });
 
   app.delete('/registros/:id', async (request, reply) => {

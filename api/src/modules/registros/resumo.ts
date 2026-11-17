@@ -1,5 +1,7 @@
 import type { ExposureSummary, FrontLabelNutrient, LogEntry } from '@nutriscan/shared';
 
+import { faixaDaNota } from '../analise/nota.js';
+
 /** Quantos alertas de cada tipo o resumo lista. */
 export const MAIS_FREQUENTES = 5;
 
@@ -11,7 +13,6 @@ export const MAIS_FREQUENTES = 5;
 export function resumir(registros: readonly LogEntry[], dias: number): ExposureSummary {
   const alimentos = registros.filter((r) => r.tipo === 'alimento');
   const cosmeticos = registros.filter((r) => r.tipo === 'cosmetico');
-  const notas = registros.flatMap((r) => (r.nota === null ? [] : [r.nota]));
   const comNova = alimentos.filter((r) => r.nova !== null);
 
   return {
@@ -19,7 +20,8 @@ export function resumir(registros: readonly LogEntry[], dias: number): ExposureS
     registros: registros.length,
     alimentos: alimentos.length,
     cosmeticos: cosmeticos.length,
-    notaMedia: notas.length ? Math.round(notas.reduce((a, b) => a + b, 0) / notas.length) : null,
+    mediaAlimentos: media(alimentos),
+    mediaCosmeticos: media(cosmeticos),
     comNova: comNova.length,
     ultraprocessados: comNova.filter((r) => r.nova === 4).length,
     altoEm: contar(alimentos.flatMap((r) => r.altoEm)).map(([nutriente, vezes]) => ({
@@ -29,6 +31,13 @@ export function resumir(registros: readonly LogEntry[], dias: number): ExposureS
     aditivos: maisFrequentes(alimentos),
     ingredientesAtencao: maisFrequentes(cosmeticos),
   };
+}
+
+function media(registros: readonly LogEntry[]): ExposureSummary['mediaAlimentos'] {
+  const notas = registros.flatMap((r) => (r.nota === null ? [] : [r.nota]));
+  if (notas.length === 0) return null;
+  const nota = Math.round(notas.reduce((a, b) => a + b, 0) / notas.length);
+  return { nota, faixa: faixaDaNota(nota) };
 }
 
 function maisFrequentes(registros: readonly LogEntry[]) {

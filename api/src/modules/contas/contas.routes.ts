@@ -16,9 +16,15 @@ const credenciaisSchema = z.object({
   senha: z.string().min(8).max(200),
 });
 
+/**
+ * Por endereço: 10 tentativas por minuto. Para uma pessoa digitando é folgado; para quem tenta
+ * adivinhar senhas (ou sobrecarregar a API com argon2), não.
+ */
+const LIMITE = { rateLimit: { max: 10, timeWindow: '1 minute' } };
+
 export const contasRoutes: FastifyPluginAsync<ContasDeps> = async (app, { contas }) => {
   /** Cria a conta e já devolve o token (o usuário entra direto). */
-  app.post('/contas', async (request, reply) => {
+  app.post('/contas', { config: LIMITE }, async (request, reply) => {
     const corpo = credenciaisSchema.safeParse(request.body);
     if (!corpo.success) {
       return reply
@@ -37,7 +43,7 @@ export const contasRoutes: FastifyPluginAsync<ContasDeps> = async (app, { contas
     return reply.code(201).send(resposta);
   });
 
-  app.post('/contas/entrar', async (request, reply) => {
+  app.post('/contas/entrar', { config: LIMITE }, async (request, reply) => {
     const corpo = credenciaisSchema.safeParse(request.body);
     const usuario = corpo.success ? await contas.entrar(corpo.data.email, corpo.data.senha) : null;
     if (!usuario) {

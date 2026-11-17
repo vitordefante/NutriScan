@@ -218,6 +218,7 @@ export type ApiError = {
     | 'nao_autenticado'
     | 'email_em_uso'
     | 'credenciais_invalidas'
+    | 'muitas_tentativas'
     | 'registro_nao_encontrado';
   mensagem: string;
 };
@@ -286,15 +287,19 @@ export type LogEntry = {
   registradoEm: string;
 };
 
-/** Resposta de GET /registros/resumo: o que o usuário consumiu/usou no período. */
+/** Resumo do que o usuário consumiu/usou no período. */
 export type ExposureSummary = {
   /** Tamanho do período em dias, terminando agora. */
   dias: number;
   registros: number;
   alimentos: number;
   cosmeticos: number;
-  /** Média das notas dos registros com nota; null se nenhum tem. */
-  notaMedia: number | null;
+  /**
+   * Média das notas de alimentos e, à parte, de cosméticos (metodologias diferentes: uma média
+   * única misturaria as duas réguas); null se não há registro com nota daquele tipo.
+   */
+  mediaAlimentos: { nota: number; faixa: ScoreBand } | null;
+  mediaCosmeticos: { nota: number; faixa: ScoreBand } | null;
   /** Alimentos com grupo NOVA conhecido, e quantos deles são ultraprocessados (NOVA 4). */
   comNova: number;
   ultraprocessados: number;
@@ -304,3 +309,6 @@ export type ExposureSummary = {
   aditivos: { titulo: string; vezes: number }[];
   ingredientesAtencao: { titulo: string; vezes: number }[];
 };
+
+/** Resposta de GET /registros: o resumo do período e os registros (os mais recentes primeiro). */
+export type LogPeriod = { resumo: ExposureSummary; registros: LogEntry[] };

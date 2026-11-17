@@ -1,8 +1,9 @@
-import type { FrontLabelNutrient, LogEntry, NovaGroup, ScoreBand } from '@nutriscan/shared';
+import type { FrontLabelNutrient, LogEntry, NovaGroup } from '@nutriscan/shared';
 import { and, desc, eq, gte } from 'drizzle-orm';
 import { z } from 'zod';
 
 import type { Database } from '../../db/client.js';
+import { ehUuid, paraFaixa } from '../../db/conversoes.js';
 import { registros } from '../../db/schema.js';
 
 export type NovoRegistro = Omit<LogEntry, 'id'>;
@@ -15,11 +16,8 @@ export type RepositorioRegistros = {
   excluir: (usuarioId: string, id: string) => Promise<boolean>;
 };
 
-const FAIXAS: readonly ScoreBand[] = ['excelente', 'bom', 'regular', 'ruim', 'pessimo'];
 const LUPA: readonly FrontLabelNutrient[] = ['acucar_adicionado', 'gordura_saturada', 'sodio'];
 const textos = z.array(z.string()).catch([]);
-
-const ehUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
 
 export function criarRepositorioRegistrosPg(db: Database['db']): RepositorioRegistros {
   return {
@@ -58,7 +56,7 @@ export function criarRepositorioRegistrosPg(db: Database['db']): RepositorioRegi
         ...(l.marca && { marca: l.marca }),
         ...(l.imagemUrl && { imagemUrl: l.imagemUrl }),
         nota: l.nota,
-        faixa: FAIXAS.find((f) => f === l.faixa) ?? null,
+        faixa: paraFaixa(l.faixa),
         nova:
           l.nova === 1 || l.nova === 2 || l.nova === 3 || l.nova === 4
             ? (l.nova as NovaGroup)

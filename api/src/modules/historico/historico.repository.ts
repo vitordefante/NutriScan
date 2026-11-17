@@ -1,7 +1,8 @@
-import type { HistoryItem, ProductKind, ScoreBand } from '@nutriscan/shared';
+import type { HistoryItem, ProductKind } from '@nutriscan/shared';
 import { desc, eq, sql } from 'drizzle-orm';
 
 import type { Database } from '../../db/client.js';
+import { paraFaixa } from '../../db/conversoes.js';
 import { historico } from '../../db/schema.js';
 
 export type RepositorioHistorico = {
@@ -9,10 +10,7 @@ export type RepositorioHistorico = {
   listar: (usuarioId: string, limite: number) => Promise<HistoryItem[]>;
   /** Guarda os scans; de um produto já guardado, vale o scan mais recente. */
   salvar: (usuarioId: string, itens: readonly HistoryItem[]) => Promise<void>;
-  limpar: (usuarioId: string) => Promise<void>;
 };
-
-const FAIXAS: readonly ScoreBand[] = ['excelente', 'bom', 'regular', 'ruim', 'pessimo'];
 
 export function criarRepositorioHistoricoPg(db: Database['db']): RepositorioHistorico {
   return {
@@ -30,7 +28,7 @@ export function criarRepositorioHistoricoPg(db: Database['db']): RepositorioHist
         ...(l.marca && { marca: l.marca }),
         ...(l.imagemUrl && { imagemUrl: l.imagemUrl }),
         nota: l.nota,
-        faixa: FAIXAS.find((f) => f === l.faixa) ?? null,
+        faixa: paraFaixa(l.faixa),
         escaneadoEm: l.escaneadoEm.toISOString(),
       }));
     },
@@ -74,10 +72,6 @@ export function criarRepositorioHistoricoPg(db: Database['db']): RepositorioHist
           // Um scan antigo (de outro aparelho, sincronizado depois) não apaga um mais novo.
           setWhere: sql`excluded.escaneado_em > ${historico.escaneadoEm}`,
         });
-    },
-
-    async limpar(usuarioId) {
-      await db.delete(historico).where(eq(historico.usuarioId, usuarioId));
     },
   };
 }

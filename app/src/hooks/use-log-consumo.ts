@@ -3,7 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { comConta, useSessao } from '@/lib/sessao';
-import { buscarResumo, excluirRegistro, listarRegistros } from '@/services/api-conta';
+import { buscarPeriodo, excluirRegistro } from '@/services/api-conta';
 
 export type EstadoLog =
   | { status: 'sem_conta' }
@@ -30,13 +30,10 @@ export function useLogConsumo(dias: number) {
     useCallback(() => {
       if (!usuario) return;
       const controle = new AbortController();
-      comConta((token) =>
-        Promise.all([
-          buscarResumo(token, dias, controle.signal),
-          listarRegistros(token, dias, controle.signal),
-        ]),
-      )
-        .then(([resumo, registros]) => setResposta({ usuario, chave, ok: true, resumo, registros }))
+      comConta((token) => buscarPeriodo(token, dias, controle.signal))
+        .then(({ resumo, registros }) =>
+          setResposta({ usuario, chave, ok: true, resumo, registros }),
+        )
         .catch(() => {
           if (!controle.signal.aborted) setResposta({ usuario, chave, ok: false });
         });

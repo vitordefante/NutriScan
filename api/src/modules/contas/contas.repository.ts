@@ -2,6 +2,7 @@ import type { User } from '@nutriscan/shared';
 import { eq } from 'drizzle-orm';
 
 import type { Database } from '../../db/client.js';
+import { ehUuid } from '../../db/conversoes.js';
 import { usuarios } from '../../db/schema.js';
 
 export type RepositorioContas = {
@@ -33,7 +34,7 @@ export function criarRepositorioContasPg(db: Database['db']): RepositorioContas 
 
     async buscarPorId(id) {
       // Um id que não é UUID nem chega ao banco (o Postgres recusaria com erro).
-      if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+      if (!ehUuid(id)) return null;
       const [linha] = await db
         .select({ id: usuarios.id, email: usuarios.email })
         .from(usuarios)

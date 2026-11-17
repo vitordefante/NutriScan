@@ -51,9 +51,6 @@ export function historicoEmMemoria(): RepositorioHistorico {
       }
       porUsuario.set(usuarioId, meus);
     },
-    async limpar(usuarioId) {
-      porUsuario.delete(usuarioId);
-    },
   };
 }
 

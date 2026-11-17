@@ -1,4 +1,4 @@
-import type { AuthResult, ExposureSummary, LogEntry } from '@nutriscan/shared';
+import type { AuthResult, ExposureSummary, LogEntry, LogPeriod } from '@nutriscan/shared';
 import { describe, expect, it } from 'vitest';
 
 import { buildApp } from '../../app.js';
@@ -116,19 +116,15 @@ describe('log de exposição (registros)', () => {
     const { id } = (await registrar()).json<LogEntry>();
     await registrar();
 
-    const lista = await app.inject({ method: 'GET', url: '/registros?dias=7', headers: auth });
-    expect(lista.json<LogEntry[]>()).toHaveLength(2);
-
-    const resumo = await app.inject({ method: 'GET', url: '/registros/resumo', headers: auth });
-    expect(resumo.json<ExposureSummary>()).toMatchObject({
-      dias: 7,
-      registros: 2,
-      ultraprocessados: 2,
+    const periodo = await app.inject({ method: 'GET', url: '/registros?dias=7', headers: auth });
+    expect(periodo.json<LogPeriod>()).toMatchObject({
+      resumo: { dias: 7, registros: 2, ultraprocessados: 2 },
     });
+    expect(periodo.json<LogPeriod>().registros).toHaveLength(2);
 
     // Outra conta não vê nem apaga.
     const daOutra = await app.inject({ method: 'GET', url: '/registros', headers: outra });
-    expect(daOutra.json()).toEqual([]);
+    expect(daOutra.json<LogPeriod>().registros).toEqual([]);
     const apagarAlheio = await app.inject({
       method: 'DELETE',
       url: `/registros/${id}`,
@@ -139,14 +135,24 @@ describe('log de exposição (registros)', () => {
     const apagar = await app.inject({ method: 'DELETE', url: `/registros/${id}`, headers: auth });
     expect(apagar.statusCode).toBe(204);
     const depois = await app.inject({ method: 'GET', url: '/registros', headers: auth });
-    expect(depois.json<LogEntry[]>()).toHaveLength(1);
+    expect(depois.json<LogPeriod>().registros).toHaveLength(1);
+  });
+
+  it('id que não é UUID (mesmo com 36 caracteres): 404, sem chegar ao banco', async () => {
+    const app = montar();
+    const r = await app.inject({
+      method: 'DELETE',
+      url: `/registros/${'-'.repeat(36)}`,
+      headers: await entrar(app),
+    });
+    expect(r.statusCode).toBe(404);
   });
 
   it('período inválido: 400', async () => {
     const app = montar();
     const r = await app.inject({
       method: 'GET',
-      url: '/registros/resumo?dias=0',
+      url: '/registros?dias=0',
       headers: await entrar(app),
     });
     expect(r.statusCode).toBe(400);
@@ -190,7 +196,9 @@ describe('resumir', () => {
       registros: 5,
       alimentos: 4,
       cosmeticos: 1,
-      notaMedia: 46, // (5 + 28 + 90 + 60) / 4
+      // Alimentos e cosméticos em médias separadas (réguas diferentes).
+      mediaAlimentos: { nota: 41, faixa: 'regular' }, // (5 + 28 + 90) / 3
+      mediaCosmeticos: { nota: 60, faixa: 'bom' },
       comNova: 3,
       ultraprocessados: 2,
       altoEm: [
@@ -206,6 +214,11 @@ describe('resumir', () => {
   });
 
   it('período vazio', () => {
-    expect(resumir([], 30)).toMatchObject({ registros: 0, notaMedia: null, ultraprocessados: 0 });
+    expect(resumir([], 30)).toMatchObject({
+      registros: 0,
+      mediaAlimentos: null,
+      mediaCosmeticos: null,
+      ultraprocessados: 0,
+    });
   });
 });

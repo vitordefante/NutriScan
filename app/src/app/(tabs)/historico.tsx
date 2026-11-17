@@ -1,6 +1,6 @@
 import type { LogEntry } from '@nutriscan/shared';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { LinhaProduto, quando } from '@/components/historico/linha-produto';
@@ -13,6 +13,7 @@ import { Texto } from '@/components/ui/texto';
 import { useLogConsumo } from '@/hooks/use-log-consumo';
 import { useHistoricoLocal } from '@/lib/historico-local';
 import { useSessao } from '@/lib/sessao';
+import { sincronizarHistorico } from '@/lib/sincronizacao';
 import { cores, espaco, fontes } from '@/theme/tokens';
 
 type Aba = 'escaneados' | 'consumo';
@@ -46,6 +47,12 @@ export default function TelaHistorico() {
 
 function Escaneados() {
   const itens = useHistoricoLocal();
+  // Ao abrir a aba, traz também o que foi escaneado em outros aparelhos da conta.
+  useFocusEffect(
+    useCallback(() => {
+      void sincronizarHistorico();
+    }, []),
+  );
   const sessao = useSessao();
   if (itens === null) return null;
   return (
