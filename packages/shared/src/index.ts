@@ -219,27 +219,89 @@ export type ApiError = {
     | 'email_em_uso'
     | 'credenciais_invalidas'
     | 'muitas_tentativas'
-    | 'registro_nao_encontrado';
+    | 'registro_nao_encontrado'
+    | 'produtor_nao_encontrado';
   mensagem: string;
 };
 
+// ---------------------------------------------------------------------------------------------
+// Produtores rurais (mapa)
+
 export type ProducerCategory =
-  'laticinios' | 'carnes' | 'ovos' | 'aves' | 'hortifruti' | 'mel' | 'graos' | 'outros';
+  | 'hortalicas'
+  | 'frutas'
+  | 'ovos'
+  | 'laticinios'
+  | 'carnes'
+  | 'pescados'
+  | 'mel'
+  | 'graos'
+  | 'artesanais'
+  | 'cosmeticos';
+
+/**
+ * Como o produtor diz que produz. Só `organico_certificado` tem selo (SisOrg/OPAC/OCS); os
+ * outros são declarados pelo produtor e o app mostra assim.
+ */
+export type ProducerFarming = 'organico_certificado' | 'agroecologico' | 'convencional';
+
+/** Um lugar onde o produtor vende (um pino no mapa). */
+export type ProducerPlace = {
+  tipo: 'feira' | 'loja' | 'propriedade';
+  nome?: string;
+  endereco?: string;
+  cidade: string;
+  latitude: number;
+  longitude: number;
+  /** `aproximada`: a posição foi arredondada (~1 km) a pedido do produtor; sem endereço. */
+  precisao: 'exata' | 'aproximada';
+  /** Dias e horário, em texto livre ("Sábado, 7h às 12h"). */
+  horario?: string;
+};
 
 export type Producer = {
   id: string;
   nome: string;
+  responsavel?: string;
   descricao?: string;
   categorias: ProducerCategory[];
   produtos: string[];
-  /** Pode ser o ponto de venda (feira) ou uma localização aproximada. */
-  local: {
-    descricao: string;
-    latitude: number;
-    longitude: number;
+  cultivo?: ProducerFarming;
+  /** Selo/certificadora, quando `cultivo` é `organico_certificado`. */
+  certificacao?: string;
+  /** Se e onde entrega, em texto livre. */
+  entrega?: string;
+  contato: {
+    /** Só dígitos, com DDI e DDD (5547999999999). */
+    whatsapp?: string;
+    /** Sem o @. */
+    instagram?: string;
   };
-  whatsapp?: string;
-  fotos: string[];
+  locais: ProducerPlace[];
+  /** Data (AAAA-MM-DD) da visita do autor; ausente quando veio só do formulário. */
+  visitadoEm?: string;
+};
+
+/** Resposta de GET /produtos/:barcode/produtores: quem vende o que substitui o produto. */
+export type ProducersForProduct = {
+  /** null quando o produto não corresponde a nenhuma categoria de produtor. */
+  categoria: ProducerCategory | null;
+  produtores: Producer[];
+};
+
+/** Corpo de POST /produtores/pedidos ("Quero aparecer no mapa"). */
+export type ProducerRequest = {
+  nome: string;
+  categorias: ProducerCategory[];
+  /** O que vende, em texto livre. */
+  produtos: string;
+  /** Onde vende (feira, loja, cidade), em texto livre: o autor confere antes de aprovar. */
+  local: string;
+  whatsapp: string;
+  instagram?: string;
+  mensagem?: string;
+  /** O produtor autoriza publicar nome, produtos, local de venda e contato. */
+  autorizaPublicar: true;
 };
 
 // ---------------------------------------------------------------------------------------------

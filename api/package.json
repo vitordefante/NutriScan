@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "produtores:importar": "tsx --env-file=.env src/scripts/importar-produtores.ts",
+    "produtores:pedidos": "tsx --env-file=.env src/scripts/pedidos-produtores.ts"
   },
   "dependencies": {
     "@fastify/jwt": "^10.2.7",

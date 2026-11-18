@@ -122,3 +122,24 @@ export const registros = pgTable(
   },
   (t) => [index('registros_usuario_data').on(t.usuarioId, t.registradoEm)],
 );
+
+/**
+ * Produtores do mapa: o conteúdo de `api/data/produtores.local.json` já tratado para publicar
+ * (ver `paraPublicar`). Substituídos por inteiro a cada importação.
+ */
+export const produtores = pgTable('produtores', {
+  id: text('id').primaryKey(),
+  /** O `Producer` como o app recebe. */
+  dados: jsonb('dados').notNull(),
+  atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull(),
+});
+
+/** Pedidos do formulário "Quero aparecer no mapa": nada é publicado sem a aprovação do autor. */
+export const pedidosProdutor = pgTable('pedidos_produtor', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  /** O `ProducerRequest` enviado. */
+  dados: jsonb('dados').notNull(),
+  /** pendente | aprovado (recusado = apagado). */
+  status: text('status').notNull().default('pendente'),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
+});

@@ -49,6 +49,8 @@ export default function RootLayout() {
         <Stack.Screen name="produto/[barcode]/index" />
         <Stack.Screen name="produto/[barcode]/por-que" />
         <Stack.Screen name="produto/[barcode]/rotulo" />
+        <Stack.Screen name="produtor/[id]" />
+        <Stack.Screen name="quero-aparecer" />
         <Stack.Screen
           name="digitar-codigo"
           options={{

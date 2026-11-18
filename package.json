@@ -14,7 +14,9 @@
     "format": "prettier --write .",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:migrate": "npm run db:migrate -w @nutriscan/api"
+    "db:migrate": "npm run db:migrate -w @nutriscan/api",
+    "produtores:importar": "npm run produtores:importar -w @nutriscan/api --",
+    "produtores:pedidos": "npm run produtores:pedidos -w @nutriscan/api --"
   },
   "devDependencies": {
     "prettier": "^3.9.10"

@@ -69,6 +69,14 @@ escuro para texto, porque as cores claras não têm contraste suficiente como le
   com a cor de preenchimento da faixa.
 - **Texto de ação destrutiva** (ex.: "Excluir minha conta"): vermelho de texto da faixa
   péssimo (`#C62F2F`) — o coral não tem contraste suficiente como letra.
+- **Ícone de categoria (produtores):** ícone pixel 12×12 num quadrado menta (`destaque`) com
+  borda tinta. No mapa vira o pino, com a sombra sólida de 3 px e, quando vários produtores
+  vendem no mesmo ponto (feira), um contador preto no canto. Pino escolhido: quadrado invertido.
+- **Filtro de categorias:** linha que rola para o lado, com ícone + rótulo pixel; a escolhida
+  fica cheia (tinta), como no seletor segmentado.
+- **Cartão de produtor:** ícone da categoria procurada, nome, o que vende, distância e local; o
+  cultivo (agroecológico, orgânico certificado) em pixel verde. O convencional não aparece.
+- **Caixa de aviso:** fundo amarelo-claro (`avisoClaro`), borda tinta e ícone de alerta.
 - **Viewfinder do scanner:** cantos e linha de leitura brancos sobre a câmera.
 
 ## Em aberto
