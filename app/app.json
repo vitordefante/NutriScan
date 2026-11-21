@@ -39,7 +39,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "O NutriScan usa a câmera para ler o código de barras e fotografar rótulos de produtos.",
+          "cameraPermission": "O NutriScan usa a câmera para ler o código de barras, fotografar rótulos e, se você for produtor, fotografar os itens do seu catálogo.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
@@ -47,8 +47,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "O NutriScan usa a câmera para ler o código de barras e fotografar rótulos de produtos.",
-          "photosPermission": "O NutriScan abre a foto do rótulo que você escolher para ler os ingredientes. A foto não sai do aparelho.",
+          "cameraPermission": "O NutriScan usa a câmera para ler o código de barras, fotografar rótulos e, se você for produtor, fotografar os itens do seu catálogo.",
+          "photosPermission": "O NutriScan abre a foto que você escolher: a de um rótulo, para ler os ingredientes (ela fica no aparelho), ou a de um item do seu catálogo de produtor (enviada para aparecer no mapa).",
           "microphonePermission": false
         }
       ],
