@@ -6,10 +6,12 @@ import { describe, expect, it } from 'vitest';
 
 import { buildApp } from '../../app.js';
 import { depsDeTeste, produtoresEmMemoria } from '../../test/deps.js';
+import { comCatalogo } from './catalogo.js';
 import { categoriaDoProduto } from './categoria-do-produto.js';
 import { LADO_MAXIMO, prepararFoto } from './fotos.js';
 import {
   arquivoLocalSchema,
+  itensDoArquivo,
   paraPublicar,
   pedidoSchema,
   produtorLocalSchema,
@@ -133,10 +135,15 @@ describe('arquivo local de produtores', () => {
   });
 });
 
-describe('catálogo do produtor', () => {
+describe('catálogo do produtor (arquivo local)', () => {
   const autorizacao = { publicar: true, fotos: true, data: '2026-11-19' };
   const catalogo = [
-    { nome: 'Leite orgânico', descricao: 'Garrafa de 1 L', preco: 'R$ 9', foto: 'faz/leite.jpg' },
+    {
+      nome: 'Leite orgânico',
+      descricao: 'Garrafa de 1 L',
+      preco: { valor: 9.9, unidade: 'litro' },
+      foto: 'faz/leite.jpg',
+    },
     { nome: 'Kefir' },
   ];
 
@@ -148,6 +155,16 @@ describe('catálogo do produtor', () => {
     expect(r.success).toBe(true);
   });
 
+  it('preço em reais com unidade da lista; vira centavos', async () => {
+    const [p] = (await exemplo()).produtores;
+    const local = produtorLocalSchema.parse({ ...p, catalogo, autorizacao });
+    expect(local.catalogo?.[0]?.preco).toEqual({ centavos: 990, unidade: 'litro' });
+    for (const preco of [{ valor: 9, unidade: 'tonelada' }, { valor: 0, unidade: 'kg' }, 'R$ 9']) {
+      const r = produtorLocalSchema.safeParse({ ...p, catalogo: [{ nome: 'X', preco }] });
+      expect(r.success, JSON.stringify(preco)).toBe(false);
+    }
+  });
+
   it('foto de item também exige a autorização das fotos', async () => {
     const [p] = (await exemplo()).produtores;
     expect(produtorLocalSchema.safeParse({ ...p, catalogo }).success).toBe(false);
@@ -157,24 +174,31 @@ describe('catálogo do produtor', () => {
     );
   });
 
-  it('para publicar: a foto preparada entra no item e os nomes completam os produtos', async () => {
+  it('o catálogo vai à parte, com a foto preparada; sem "catalogo" no arquivo, undefined', async () => {
     const [p] = (await exemplo()).produtores;
-    const local = produtorLocalSchema.parse({
-      ...p,
-      produtos: ['queijo colonial', 'kefir'],
-      catalogo,
-      autorizacao,
-    });
+    const local = produtorLocalSchema.parse({ ...p, catalogo, autorizacao });
     const foto = { id: 'b'.repeat(32), largura: 800, altura: 800 };
-    const publicado = paraPublicar(local, new Map([['faz/leite.jpg', foto]]));
+    const preparadas = new Map([['faz/leite.jpg', foto]]);
 
-    expect(publicado.catalogo).toEqual([
-      { nome: 'Leite orgânico', descricao: 'Garrafa de 1 L', preco: 'R$ 9', foto },
+    expect(paraPublicar(local, preparadas)).not.toHaveProperty('catalogo');
+    expect(itensDoArquivo(local, preparadas)).toEqual([
+      {
+        nome: 'Leite orgânico',
+        descricao: 'Garrafa de 1 L',
+        preco: { centavos: 990, unidade: 'litro' },
+        foto,
+      },
       { nome: 'Kefir' },
     ]);
-    // "Kefir" já estava na lista (sem diferenciar maiúsculas): não repete.
-    expect(publicado.produtos).toEqual(['queijo colonial', 'kefir', 'Leite orgânico']);
-    expect(JSON.stringify(publicado)).not.toContain('faz/leite.jpg');
+    expect(itensDoArquivo(produtorLocalSchema.parse(p))).toBeUndefined();
+  });
+
+  it('na leitura, os nomes do catálogo completam os produtos sem repetir', () => {
+    const p = { ...LISTA[0]!, produtos: ['queijo colonial', 'kefir'] };
+    const r = comCatalogo(p, [{ nome: 'Kefir' }, { nome: 'Leite orgânico' }]);
+    expect(r.produtos).toEqual(['queijo colonial', 'kefir', 'Leite orgânico']);
+    expect(r.catalogo).toHaveLength(2);
+    expect(comCatalogo(p, [])).toBe(p);
   });
 });
 

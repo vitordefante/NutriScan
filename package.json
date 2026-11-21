@@ -16,7 +16,9 @@
     "db:down": "docker compose down",
     "db:migrate": "npm run db:migrate -w @nutriscan/api",
     "produtores:importar": "npm run produtores:importar -w @nutriscan/api --",
-    "produtores:pedidos": "npm run produtores:pedidos -w @nutriscan/api --"
+    "produtores:pedidos": "npm run produtores:pedidos -w @nutriscan/api --",
+    "produtores:contas": "npm run produtores:contas -w @nutriscan/api --",
+    "produtores:itens": "npm run produtores:itens -w @nutriscan/api --"
   },
   "devDependencies": {
     "prettier": "^3.9.10"

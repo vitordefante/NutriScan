@@ -8,6 +8,8 @@ import type {
 } from '@nutriscan/shared';
 import { z } from 'zod';
 
+import { descricaoItem, MAXIMO_ITENS, nomeItem, precoSchema, UNIDADES } from './catalogo.js';
+
 /** Na ordem em que aparecem no filtro do mapa. */
 export const CATEGORIAS = [
   'hortalicas',
@@ -71,7 +73,6 @@ const localSchema = z.object({
 });
 
 export const MAXIMO_FOTOS = 8;
-export const MAXIMO_ITENS = 30;
 
 /** Caminho dentro de `api/data/fotos/`, ex.: "sitio-boa-vista/banca.jpg". */
 const arquivoDeFoto = texto(200).refine(
@@ -82,9 +83,14 @@ const arquivoDeFoto = texto(200).refine(
 const fotoSchema = z.object({ arquivo: arquivoDeFoto, legenda: texto(120).optional() });
 
 const itemSchema = z.object({
-  nome: texto(60),
-  descricao: texto(120).optional(),
-  preco: texto(40).optional(),
+  nome: nomeItem,
+  descricao: descricaoItem.optional(),
+  /** No arquivo, em reais: { "valor": 9.5, "unidade": "litro" }. */
+  preco: z
+    .object({ valor: z.number().positive(), unidade: z.enum(UNIDADES) })
+    .transform(({ valor, unidade }) => ({ centavos: Math.round(valor * 100), unidade }))
+    .pipe(precoSchema)
+    .optional(),
   foto: arquivoDeFoto.optional(),
 });
 
@@ -98,8 +104,11 @@ export const produtorLocalSchema = z
     categorias: z.array(z.enum(CATEGORIAS)).min(1),
     /** Opcional quando há catálogo: os nomes dos itens entram na lista. */
     produtos: z.array(texto(60)).min(1).max(30).optional(),
-    /** Itens com foto, descrição e preço ("O que vende"). */
-    catalogo: z.array(itemSchema).min(1).max(MAXIMO_ITENS).optional(),
+    /**
+     * Itens com foto, descrição e preço ("O que vende"). Só vale para produtor sem conta no app
+     * (quem tem conta cuida do catálogo pelo app). Ausente = o catálogo no banco fica como está.
+     */
+    catalogo: z.array(itemSchema).max(MAXIMO_ITENS).optional(),
     cultivo: z.enum(['organico_certificado', 'agroecologico', 'convencional']).optional(),
     certificacao: texto(120).optional(),
     entrega: texto(200).optional(),
@@ -121,7 +130,7 @@ export const produtorLocalSchema = z
     message: 'Orgânico certificado precisa da certificação (selo/certificadora)',
     path: ['certificacao'],
   })
-  .refine((p) => p.produtos || p.catalogo, {
+  .refine((p) => p.produtos || p.catalogo?.length, {
     message: 'Informe os produtos ou o catálogo',
     path: ['produtos'],
   })
@@ -160,10 +169,10 @@ export type FotosPreparadas = ReadonlyMap<string, FotoPublicada>;
 /**
  * O que vai para o banco (e para o app): sem a autorização, e os locais aproximados com a
  * posição arredondada e sem endereço — a posição exata não sai do arquivo local. Os caminhos das
- * fotos viram as fotos preparadas; os nomes do catálogo que faltam em `produtos` entram no fim.
+ * fotos viram as fotos preparadas. O catálogo vai à parte (ver `itensDoArquivo`).
  */
 export function paraPublicar(
-  { autorizacao: _, fotos: galeria = [], catalogo: itens, produtos = [], ...p }: ProdutorLocal,
+  { autorizacao: _, fotos: galeria = [], catalogo: __, produtos = [], ...p }: ProdutorLocal,
   preparadas: FotosPreparadas = new Map(),
 ): Producer {
   const locais = p.locais.map(({ endereco, ...l }): ProducerPlace =>
@@ -175,24 +184,18 @@ export function paraPublicar(
     const f = preparadas.get(arquivo);
     return f ? [{ ...f, ...(legenda && { legenda }) }] : [];
   });
-  const catalogo = itens?.map(({ foto, ...item }): ProducerItem => {
+  return { ...p, produtos, locais, ...(fotos.length > 0 && { fotos }) };
+}
+
+/** O catálogo do arquivo, com as fotos preparadas; undefined = o arquivo não fala do catálogo. */
+export function itensDoArquivo(
+  p: ProdutorLocal,
+  preparadas: FotosPreparadas = new Map(),
+): ProducerItem[] | undefined {
+  return p.catalogo?.map(({ foto, ...item }): ProducerItem => {
     const f = foto && preparadas.get(foto);
     return { ...item, ...(f && { foto: { ...f } }) };
   });
-  const jaListados = new Set(produtos.map((n) => n.toLocaleLowerCase('pt-BR')));
-  const todos = [
-    ...produtos,
-    ...(catalogo ?? [])
-      .map((i) => i.nome)
-      .filter((n) => !jaListados.has(n.toLocaleLowerCase('pt-BR'))),
-  ];
-  return {
-    ...p,
-    produtos: todos,
-    ...(catalogo && { catalogo }),
-    locais,
-    ...(fotos.length > 0 && { fotos }),
-  };
 }
 
 /** Corpo de POST /produtores/pedidos. */

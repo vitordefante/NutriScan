@@ -4,6 +4,7 @@
  * e `npm run db:migrate -w @nutriscan/api` (aplica no banco).
  */
 import {
+  boolean,
   customType,
   index,
   integer,
@@ -156,5 +157,91 @@ const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () =>
 export const fotosProdutor = pgTable('fotos_produtor', {
   id: text('id').primaryKey(),
   bytes: bytea('bytes').notNull(),
+  /**
+   * false = enviada pelo produtor no app e ainda não aprovada: só o próprio produtor vê
+   * (GET /produtor/fotos/:id); a rota pública não serve.
+   */
+  publica: boolean('publica').notNull().default(true),
+  /** Produtor que enviou pelo app (null = veio da importação do autor). */
+  enviadaPor: text('enviada_por'),
+  /** Preenchidas nas fotos enviadas pelo app (as importadas guardam no `Producer`). */
+  largura: integer('largura'),
+  altura: integer('altura'),
   criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
 });
+
+/** Foto guardada num item ou numa proposta (o mesmo formato do `ProducerPhoto`, sem legenda). */
+type FotoGuardada = { id: string; largura: number; altura: number };
+
+/**
+ * Conta do app ligada a um produtor do mapa (por um código de convite do autor). Uma conta por
+ * produtor e um produtor por conta. Excluir a conta desfaz a ligação; o catálogo continua.
+ */
+export const contasProdutor = pgTable('contas_produtor', {
+  usuarioId: uuid('usuario_id')
+    .primaryKey()
+    .references(() => usuarios.id, { onDelete: 'cascade' }),
+  produtorId: text('produtor_id')
+    .notNull()
+    .unique()
+    .references(() => produtores.id, { onDelete: 'cascade' }),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
+});
+
+/** Códigos de convite (só o hash: o código em si vai pelo WhatsApp e não fica guardado). */
+export const convitesProdutor = pgTable('convites_produtor', {
+  codigoHash: text('codigo_hash').primaryKey(),
+  produtorId: text('produtor_id')
+    .notNull()
+    .references(() => produtores.id, { onDelete: 'cascade' }),
+  expiraEm: timestamp('expira_em', { withTimezone: true }).notNull(),
+});
+
+/**
+ * Catálogo publicado ("O que vende"). Vem da importação (produtor sem conta) ou de propostas
+ * aprovadas; o preço o produtor muda direto pelo app.
+ */
+export const itensCatalogo = pgTable(
+  'itens_catalogo',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    produtorId: text('produtor_id')
+      .notNull()
+      .references(() => produtores.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    descricao: text('descricao'),
+    precoCentavos: integer('preco_centavos'),
+    unidade: text('unidade'),
+    precoAtualizadoEm: timestamp('preco_atualizado_em', { withTimezone: true }),
+    foto: jsonb('foto').$type<FotoGuardada>(),
+    /** Ordem de exibição (importação: a do arquivo; aprovados no app: no fim). */
+    ordem: integer('ordem').notNull(),
+    criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('itens_catalogo_produtor').on(t.produtorId, t.ordem)],
+);
+
+/** Itens novos e mudanças enviados pelo produtor, à espera da conferência do autor. */
+export const propostasItem = pgTable(
+  'propostas_item',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    produtorId: text('produtor_id')
+      .notNull()
+      .references(() => produtores.id, { onDelete: 'cascade' }),
+    /** null = item novo; senão, a mudança desse item (uma por item: a nova substitui). */
+    itemId: uuid('item_id')
+      .unique()
+      .references(() => itensCatalogo.id, { onDelete: 'cascade' }),
+    nome: text('nome').notNull(),
+    descricao: text('descricao'),
+    precoCentavos: integer('preco_centavos'),
+    unidade: text('unidade'),
+    foto: jsonb('foto').$type<FotoGuardada>(),
+    /** em_analise | recusada */
+    situacao: text('situacao').notNull().default('em_analise'),
+    motivo: text('motivo'),
+    enviadaEm: timestamp('enviada_em', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('propostas_item_produtor').on(t.produtorId)],
+);

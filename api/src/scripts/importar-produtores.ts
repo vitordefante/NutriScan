@@ -18,6 +18,7 @@ import {
   arquivoLocalSchema,
   arquivosDeFoto,
   type FotoPublicada,
+  itensDoArquivo,
   paraPublicar,
 } from '../modules/produtores/produtores.schema.js';
 
@@ -73,6 +74,12 @@ if (problemas.length > 0) {
   process.exit(1);
 }
 const lista = lido.data.produtores.map((p) => paraPublicar(p, preparadas));
+const catalogos = new Map(
+  lido.data.produtores.flatMap((p) => {
+    const itens = itensDoArquivo(p, preparadas);
+    return itens ? [[p.id, itens] as const] : [];
+  }),
+);
 const url = process.env.DATABASE_URL;
 if (!url) {
   console.error('DATABASE_URL não definida (confira o api/.env).');
@@ -80,7 +87,11 @@ if (!url) {
 }
 const banco = createDb(url, { onConnectionError: (err) => console.error(err) });
 try {
-  await criarRepositorioProdutoresPg(banco.db).substituir(lista, binarios);
+  const { ignorados } = await criarRepositorioProdutoresPg(banco.db).substituir(
+    lista,
+    binarios,
+    catalogos,
+  );
   const locais = lista.reduce((n, p) => n + p.locais.length, 0);
   const kb = Math.round([...binarios.values()].reduce((n, b) => n + b.length, 0) / 1024);
   console.log(
@@ -89,9 +100,16 @@ try {
   for (const p of lista) {
     const extras = [
       p.fotos?.length && `${p.fotos.length} foto(s)`,
-      p.catalogo?.length && `${p.catalogo.length} item(ns) no catálogo`,
+      catalogos.has(p.id) &&
+        !ignorados.includes(p.id) &&
+        `${catalogos.get(p.id)!.length} item(ns) no catálogo`,
     ].filter(Boolean);
     console.log(`  · ${p.nome} — ${[p.categorias.join(', '), ...extras].join(' — ')}`);
+  }
+  for (const id of ignorados) {
+    console.warn(
+      `Aviso: ${id} tem conta no app e cuida do catálogo por lá — o "catalogo" do arquivo foi ignorado.`,
+    );
   }
 } finally {
   await banco.close();

@@ -34,3 +34,4 @@ app/android/
 api/data/*.local.json
 api/data/ocr/
 api/data/fotos/
+api/data/revisao/

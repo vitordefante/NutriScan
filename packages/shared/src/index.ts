@@ -221,7 +221,15 @@ export type ApiError = {
     | 'muitas_tentativas'
     | 'registro_nao_encontrado'
     | 'produtor_nao_encontrado'
-    | 'foto_nao_encontrada';
+    | 'foto_nao_encontrada'
+    | 'nao_e_produtor'
+    | 'convite_invalido'
+    | 'produtor_ja_vinculado'
+    | 'conta_ja_vinculada'
+    | 'item_nao_encontrado'
+    | 'proposta_nao_encontrada'
+    | 'limite_itens'
+    | 'foto_invalida';
   mensagem: string;
 };
 
@@ -258,14 +266,73 @@ export type ProducerPhoto = {
   legenda?: string;
 };
 
+/** Unidades de venda do catálogo (lista fechada: os preços ficam padronizados). */
+export type PriceUnit =
+  | 'unidade'
+  | 'kg'
+  | 'litro'
+  | 'duzia'
+  | 'bandeja'
+  | 'pacote'
+  | 'pote'
+  | 'garrafa'
+  | 'maco'
+  | 'caixa';
+
+/** Preço de um item: valor em centavos (sem arredondamento de ponto flutuante) por unidade. */
+export type ProducerPrice = { centavos: number; unidade: PriceUnit };
+
 /** Um item do catálogo do produtor ("O que vende"). */
 export type ProducerItem = {
   nome: string;
-  /** Embalagem, quantidade, como é feito ("Garrafa de 1 L, vidro retornável"). */
+  /** Embalagem, quantidade, como é feito ("Garrafa de vidro de 1 L, retornável"). */
   descricao?: string;
-  /** Em texto livre, como o produtor informou ("R$ 12 a dúzia"): pode mudar. */
-  preco?: string;
+  preco?: ProducerPrice;
+  /** Data (AAAA-MM-DD) da última mudança de preço feita pelo produtor no app. */
+  precoAtualizadoEm?: string;
   foto?: ProducerPhoto;
+};
+
+/**
+ * Item novo, ou mudança de nome/descrição/foto de um item, enviado pelo produtor: só entra no
+ * mapa depois de o autor do app conferir.
+ */
+export type ItemProposal = {
+  id: string;
+  nome: string;
+  descricao?: string;
+  preco?: ProducerPrice;
+  foto?: ProducerPhoto;
+  situacao: 'em_analise' | 'recusada';
+  /** Por que foi recusada (escrito pelo autor). */
+  motivo?: string;
+  /** Data e hora ISO. */
+  enviadaEm: string;
+};
+
+/** Um item publicado, como o dono vê: com a mudança que ele mandou, se houver. */
+export type MyCatalogItem = ProducerItem & { id: string; alteracao?: ItemProposal };
+
+/** Resposta de GET /produtor/catalogo (área do produtor no Perfil). */
+export type MyCatalog = {
+  produtor: { id: string; nome: string };
+  itens: MyCatalogItem[];
+  /** Itens novos ainda não publicados (em análise ou recusados). */
+  novos: ItemProposal[];
+  /** Quantos itens (publicados + novos) o catálogo comporta. */
+  limite: number;
+};
+
+/** Corpo de POST /produtor/catalogo/propostas. */
+export type ItemProposalInput = {
+  /** Presente = mudança de um item publicado; ausente = item novo. */
+  itemId?: string;
+  nome: string;
+  descricao?: string;
+  /** Só para item novo (o preço de um item publicado muda na hora, em outra rota). */
+  preco?: ProducerPrice;
+  /** Id devolvido por POST /produtor/fotos (ou a foto que o item já tem). */
+  fotoId?: string;
 };
 
 /** Um lugar onde o produtor vende (um pino no mapa). */
