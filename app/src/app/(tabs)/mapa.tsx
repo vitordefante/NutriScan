@@ -108,12 +108,13 @@ export default function TelaMapa() {
         <MapView
           ref={mapa}
           style={StyleSheet.absoluteFill}
-          // Região inicial: Joinville, até os produtores carregarem.
+          // Região inicial: Jaraguá do Sul, até os produtores carregarem (depois o mapa
+          // enquadra os pinos).
           initialRegion={{
-            latitude: -26.3,
-            longitude: -48.85,
-            latitudeDelta: 0.4,
-            longitudeDelta: 0.4,
+            latitude: -26.4853,
+            longitude: -49.0714,
+            latitudeDelta: 0.3,
+            longitudeDelta: 0.3,
           }}
           showsUserLocation={posicao !== null}
           showsPointsOfInterests={false}

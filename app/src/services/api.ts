@@ -23,6 +23,11 @@ function urlDaApiEmDesenvolvimento(): string {
   return local ? `http://${hostUri}/api` : `https://${host}/api`;
 }
 
+/** Endereço completo de um recurso da API (ex.: uma foto) para quem baixa sozinho, como <Image>. */
+export function urlDaApi(caminho: string): string | null {
+  return API_URL ? `${API_URL}${caminho}` : null;
+}
+
 export type TipoErroApi =
   ApiError['erro'] | 'sem_conexao' | 'tempo_esgotado' | 'servidor_fora' | 'inesperado';
 

@@ -220,7 +220,8 @@ export type ApiError = {
     | 'credenciais_invalidas'
     | 'muitas_tentativas'
     | 'registro_nao_encontrado'
-    | 'produtor_nao_encontrado';
+    | 'produtor_nao_encontrado'
+    | 'foto_nao_encontrada';
   mensagem: string;
 };
 
@@ -245,6 +246,28 @@ export type ProducerCategory =
  */
 export type ProducerFarming = 'organico_certificado' | 'agroecologico' | 'convencional';
 
+/**
+ * Foto do produtor (banca, produtos, plantação, criação), servida em GET /produtores/fotos/:id.
+ * Reduzida e sem metadados (o EXIF do celular pode ter a posição GPS da casa do produtor).
+ */
+export type ProducerPhoto = {
+  /** Hash do conteúdo: a mesma foto tem sempre o mesmo id (cache eterno no app). */
+  id: string;
+  largura: number;
+  altura: number;
+  legenda?: string;
+};
+
+/** Um item do catálogo do produtor ("O que vende"). */
+export type ProducerItem = {
+  nome: string;
+  /** Embalagem, quantidade, como é feito ("Garrafa de 1 L, vidro retornável"). */
+  descricao?: string;
+  /** Em texto livre, como o produtor informou ("R$ 12 a dúzia"): pode mudar. */
+  preco?: string;
+  foto?: ProducerPhoto;
+};
+
 /** Um lugar onde o produtor vende (um pino no mapa). */
 export type ProducerPlace = {
   tipo: 'feira' | 'loja' | 'propriedade';
@@ -265,7 +288,10 @@ export type Producer = {
   responsavel?: string;
   descricao?: string;
   categorias: ProducerCategory[];
+  /** Lista curta do que vende (cartão da lista e busca); inclui os nomes do catálogo. */
   produtos: string[];
+  /** Itens com foto, descrição e preço, na ordem escolhida pelo autor. */
+  catalogo?: ProducerItem[];
   cultivo?: ProducerFarming;
   /** Selo/certificadora, quando `cultivo` é `organico_certificado`. */
   certificacao?: string;
@@ -278,6 +304,8 @@ export type Producer = {
     instagram?: string;
   };
   locais: ProducerPlace[];
+  /** Na ordem escolhida pelo autor; a primeira é a capa. */
+  fotos?: ProducerPhoto[];
   /** Data (AAAA-MM-DD) da visita do autor; ausente quando veio só do formulário. */
   visitadoEm?: string;
 };

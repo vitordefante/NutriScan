@@ -8,6 +8,7 @@ type Props = {
   categoria: ProducerCategory;
   /** Lado do quadrado, em pontos. */
   tamanho?: number;
+  /** Pino escolhido: face preta com borda branca (como o botão primário), para a sombra aparecer. */
   invertido?: boolean;
 };
 
@@ -18,7 +19,7 @@ export function IconeCategoria({ categoria, tamanho = 44, invertido = false }: P
       style={[
         estilos.quadro,
         { width: tamanho, height: tamanho },
-        invertido && { backgroundColor: cores.tinta },
+        invertido && { backgroundColor: cores.tinta, borderColor: cores.papel },
       ]}
     >
       <IconePixel

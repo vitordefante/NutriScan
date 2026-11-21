@@ -4,6 +4,7 @@
  * e `npm run db:migrate -w @nutriscan/api` (aplica no banco).
  */
 import {
+  customType,
   index,
   integer,
   jsonb,
@@ -141,5 +142,19 @@ export const pedidosProdutor = pgTable('pedidos_produtor', {
   dados: jsonb('dados').notNull(),
   /** pendente | aprovado (recusado = apagado). */
   status: text('status').notNull().default('pendente'),
+  criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
+});
+
+/** bytea do Postgres como Buffer (o driver pg já devolve Buffer). */
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => 'bytea' });
+
+/**
+ * Fotos dos produtores, já reduzidas e sem metadados (ver `prepararFoto`). O id é o hash do
+ * conteúdo; o `Producer` guarda só os ids. Ficam no banco para o deploy não precisar de um
+ * armazenamento de arquivos à parte (são poucas e pequenas).
+ */
+export const fotosProdutor = pgTable('fotos_produtor', {
+  id: text('id').primaryKey(),
+  bytes: bytea('bytes').notNull(),
   criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
 });

@@ -2,6 +2,8 @@ import type { Producer, ProducerPlace } from '@nutriscan/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { CatalogoProdutor } from '@/components/produtores/catalogo-produtor';
+import { GaleriaFotos } from '@/components/produtores/galeria-fotos';
 import { IconeCategoria } from '@/components/produtores/icone-categoria';
 import { Secao } from '@/components/resultado/secoes';
 import { Botao } from '@/components/ui/botao';
@@ -49,9 +51,14 @@ function Detalhe({ produtor: p }: { produtor: Producer }) {
   const localizacao = useLocalizacao();
   const posicao = localizacao.status === 'ok' ? localizacao.posicao : null;
   const cultivo = p.cultivo ? CULTIVO[p.cultivo] : null;
+  // A API acrescenta os nomes do catálogo em `produtos`: aqui só o que não tem cartão.
+  const noCatalogo = new Set(p.catalogo?.map((i) => i.nome.toLocaleLowerCase('pt-BR')));
+  const foraDoCatalogo = p.produtos.filter((n) => !noCatalogo.has(n.toLocaleLowerCase('pt-BR')));
 
   return (
     <ScrollView contentContainerStyle={estilos.conteudo} contentInsetAdjustmentBehavior="never">
+      {p.fotos && <GaleriaFotos fotos={p.fotos} nomeProdutor={p.nome} />}
+
       <View style={estilos.topo}>
         <IconeCategoria categoria={p.categorias[0]!} tamanho={56} />
         <View style={{ flex: 1, gap: 4 }}>
@@ -101,7 +108,19 @@ function Detalhe({ produtor: p }: { produtor: Producer }) {
       </View>
 
       <Secao titulo="O que vende">
-        <Texto>{p.produtos.join(' · ')}</Texto>
+        {p.catalogo ? (
+          <View style={{ gap: 14 }}>
+            <CatalogoProdutor itens={p.catalogo} categoria={p.categorias[0]!} />
+            {foraDoCatalogo.length > 0 && (
+              <Texto>
+                <Texto style={estilos.negrito}>Também: </Texto>
+                {foraDoCatalogo.join(' · ')}
+              </Texto>
+            )}
+          </View>
+        ) : (
+          <Texto>{p.produtos.join(' · ')}</Texto>
+        )}
       </Secao>
 
       <Secao titulo="Onde comprar">
@@ -187,6 +206,7 @@ const estilos = StyleSheet.create({
   local: { borderWidth: espaco.borda, borderColor: cores.tinta, padding: 14, gap: 4 },
   linha: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   distancia: { fontFamily: fontes.textoNegrito, fontSize: 14 },
+  negrito: { fontFamily: fontes.textoNegrito },
   link: {
     fontFamily: fontes.textoNegrito,
     fontSize: 14,

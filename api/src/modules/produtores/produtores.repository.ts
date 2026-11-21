@@ -3,12 +3,14 @@ import { asc, eq, notInArray } from 'drizzle-orm';
 
 import type { Database } from '../../db/client.js';
 import { ehUuid } from '../../db/conversoes.js';
-import { pedidosProdutor, produtores } from '../../db/schema.js';
+import { fotosProdutor, pedidosProdutor, produtores } from '../../db/schema.js';
 
 /** O que as rotas usam. */
 export type RepositorioProdutores = {
   listar: () => Promise<Producer[]>;
   buscar: (id: string) => Promise<Producer | null>;
+  /** O JPEG de uma foto publicada, ou null. */
+  foto: (id: string) => Promise<Buffer | null>;
   /** Grava um pedido pendente e devolve o id. */
   criarPedido: (pedido: ProducerRequest) => Promise<string>;
 };
@@ -17,8 +19,11 @@ export type Pedido = { id: string; dados: ProducerRequest; status: string; criad
 
 /** O que os scripts do autor usam (importar, aprovar e recusar pedidos). */
 export type AdminProdutores = {
-  /** Substitui todos os produtores pelos da lista (quem saiu do arquivo sai do mapa). */
-  substituir: (lista: readonly Producer[]) => Promise<void>;
+  /**
+   * Substitui todos os produtores pelos da lista (quem saiu do arquivo sai do mapa) e as fotos
+   * pelas do mapa id → JPEG (foto que ninguém mais usa é apagada).
+   */
+  substituir: (lista: readonly Producer[], fotos?: ReadonlyMap<string, Buffer>) => Promise<void>;
   pedidosPendentes: () => Promise<Pedido[]>;
   /** false se o pedido não existe. */
   aprovarPedido: (id: string) => Promise<boolean>;
@@ -44,6 +49,14 @@ export function criarRepositorioProdutoresPg(
       return linha ? comoProdutor(linha.dados) : null;
     },
 
+    async foto(id) {
+      const [linha] = await db
+        .select({ bytes: fotosProdutor.bytes })
+        .from(fotosProdutor)
+        .where(eq(fotosProdutor.id, id));
+      return linha?.bytes ?? null;
+    },
+
     async criarPedido(pedido) {
       const [linha] = await db
         .insert(pedidosProdutor)
@@ -52,9 +65,21 @@ export function criarRepositorioProdutoresPg(
       return linha!.id;
     },
 
-    async substituir(lista) {
+    async substituir(lista, fotos = new Map()) {
       const agora = new Date();
       await db.transaction(async (tx) => {
+        const idsFotos = [...fotos.keys()];
+        await (idsFotos.length > 0
+          ? tx.delete(fotosProdutor).where(notInArray(fotosProdutor.id, idsFotos))
+          : tx.delete(fotosProdutor));
+        for (const [id, bytes] of fotos) {
+          // Mesmo id = mesmo conteúdo: a foto que já está no banco fica como está.
+          await tx
+            .insert(fotosProdutor)
+            .values({ id, bytes, criadoEm: agora })
+            .onConflictDoNothing({ target: fotosProdutor.id });
+        }
+
         const ids = lista.map((p) => p.id);
         await (ids.length > 0
           ? tx.delete(produtores).where(notInArray(produtores.id, ids))

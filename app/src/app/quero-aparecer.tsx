@@ -88,7 +88,7 @@ function Formulario({ f }: { f: ReturnType<typeof usePedidoProdutor> }) {
       />
       <CampoTexto
         rotulo="Onde vende (feira, loja, na propriedade) e cidade"
-        placeholder="Ex.: Feira do bairro, Joinville"
+        placeholder="Ex.: Feira do bairro, Jaraguá do Sul"
         value={f.campos.local}
         onChangeText={f.set.setLocal}
         maxLength={300}

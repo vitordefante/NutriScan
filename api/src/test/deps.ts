@@ -86,10 +86,12 @@ export function registrosEmMemoria(): RepositorioRegistros {
 /** Produtores em memória; `pedidos` fica exposto para os testes conferirem o que foi gravado. */
 export function produtoresEmMemoria(
   lista: Producer[] = [],
+  fotos: ReadonlyMap<string, Buffer> = new Map(),
 ): RepositorioProdutores & { pedidos: ProducerRequest[] } {
   const pedidos: ProducerRequest[] = [];
   return {
     pedidos,
+    foto: async (id) => fotos.get(id) ?? null,
     listar: async () => [...lista].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
     buscar: async (id) => lista.find((p) => p.id === id) ?? null,
     async criarPedido(pedido) {

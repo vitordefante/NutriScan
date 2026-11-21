@@ -5,6 +5,7 @@ import { erro, paramsBarcode } from '../../http/respostas.js';
 import { FonteIndisponivelError } from '../produtos/open-food-facts.client.js';
 import type { ServicoProdutos } from '../produtos/produtos.service.js';
 import { categoriaDoProduto } from './categoria-do-produto.js';
+import { ehIdDeFoto } from './fotos.js';
 import type { RepositorioProdutores } from './produtores.repository.js';
 import { pedidoSchema } from './produtores.schema.js';
 
@@ -22,6 +23,22 @@ export const produtoresRoutes: FastifyPluginAsync<ProdutoresDeps> = async (
 ) => {
   /** Todos os produtores do mapa (são poucos: o filtro por categoria e a distância ficam no app). */
   app.get('/produtores', async () => produtores.listar());
+
+  /**
+   * Foto de um produtor. O id é o hash do conteúdo — a foto com esse id nunca muda —, então o
+   * app (e qualquer proxy) pode guardar a cópia para sempre.
+   */
+  app.get('/produtores/fotos/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const bytes = ehIdDeFoto(id) ? await produtores.foto(id) : null;
+    if (!bytes) {
+      return reply.code(404).send(erro('foto_nao_encontrada', 'Essa foto não está mais no mapa.'));
+    }
+    return reply
+      .header('Content-Type', 'image/jpeg')
+      .header('Cache-Control', 'public, max-age=31536000, immutable')
+      .send(bytes);
+  });
 
   app.get('/produtores/:id', async (request, reply) => {
     const { id } = request.params as { id: string };
