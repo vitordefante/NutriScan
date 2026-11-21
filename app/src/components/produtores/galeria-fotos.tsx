@@ -27,7 +27,7 @@ export function GaleriaFotos({ fotos, nomeProdutor }: Props) {
       <View style={estilos.moldura}>
         <FlatList
           data={fotos}
-          keyExtractor={(f) => f.id}
+          keyExtractor={(f, i) => `${i}:${f.id}`}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}

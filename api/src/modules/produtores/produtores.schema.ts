@@ -23,13 +23,35 @@ export const CATEGORIAS = [
 ] as const satisfies readonly ProducerCategory[];
 
 const texto = (max: number) => z.string().trim().min(1).max(max);
+/** Só dígitos, com DDI: "047 99999-9999", "0 15 47 99999-9999" e "0055…" viram "55…". */
+export function normalizarWhatsapp(numero: string): string {
+  const d = numero.replace(/\D/g, '');
+  // 00 + DDI: discagem internacional.
+  if (d.startsWith('00')) return d.slice(2);
+  if (d.startsWith('0')) {
+    const nacional = d.slice(1);
+    // 0 + DDD + número, ou 0 + operadora (2 dígitos) + DDD + número.
+    if (nacional.length === 10 || nacional.length === 11) return `55${nacional}`;
+    if (nacional.length === 12 || nacional.length === 13) return `55${nacional.slice(2)}`;
+    return d;
+  }
+  // Só DDD + número (10 ou 11 dígitos): é do Brasil, falta o 55.
+  return d.length === 10 || d.length === 11 ? `55${d}` : d;
+}
+
 const whatsapp = z
   .string()
-  .transform((s) => s.replace(/\D/g, ''))
-  // Só DDD + número (10 ou 11 dígitos): é do Brasil, falta o 55.
-  .transform((d) => (d.length === 10 || d.length === 11 ? `55${d}` : d))
-  // DDI + DDD + número (12 ou 13 dígitos no Brasil; até 15 pelo padrão internacional).
-  .pipe(z.string().regex(/^\d{12,15}$/, 'WhatsApp com DDD, ex.: (47) 99999-9999'));
+  .transform(normalizarWhatsapp)
+  // DDI + DDD + número: 12 ou 13 dígitos no Brasil (55); até 15 pelo padrão internacional.
+  .pipe(
+    z
+      .string()
+      .regex(/^[1-9]\d{11,14}$/, 'WhatsApp com DDD, ex.: (47) 99999-9999')
+      .refine(
+        (d) => !d.startsWith('55') || d.length <= 13,
+        'WhatsApp com DDD, ex.: (47) 99999-9999',
+      ),
+  );
 const instagram = z
   .string()
   .trim()

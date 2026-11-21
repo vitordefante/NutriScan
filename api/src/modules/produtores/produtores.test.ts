@@ -328,6 +328,19 @@ describe('rotas de produtores', () => {
     }
   });
 
+  it('pedido recusado diz quais campos conferir', async () => {
+    const app = buildApp(depsDeTeste());
+    const r = await app.inject({
+      method: 'POST',
+      url: '/produtores/pedidos',
+      payload: { ...pedido, instagram: 'instagram.com/sitio' },
+    });
+    expect(r.statusCode).toBe(400);
+    expect(r.json().mensagem).toBe(
+      'Confira o Instagram (só o nome do perfil, ex.: @sitioboavista).',
+    );
+  });
+
   it('no máximo 5 pedidos por hora do mesmo endereço', async () => {
     const app = buildApp(depsDeTeste());
     const codigos = [];
@@ -399,5 +412,22 @@ describe('schema do pedido', () => {
       instagram: '@sitio_novo',
     });
     expect(r).toMatchObject({ whatsapp: '5547900000000', instagram: 'sitio_novo' });
+  });
+
+  it.each([
+    ['(47) 99999-9999', '5547999999999'],
+    ['47 9999-9999', '554799999999'],
+    ['047 99999-9999', '5547999999999'],
+    ['0 15 47 99999-9999', '5547999999999'],
+    ['0055 47 99999-9999', '5547999999999'],
+    ['+44 20 7946 0958', '442079460958'],
+  ])('WhatsApp %s vira %s', (entrada, esperado) => {
+    expect(pedidoSchema.parse({ ...pedido, whatsapp: entrada }).whatsapp).toBe(esperado);
+  });
+
+  it('recusa WhatsApp que não forma um número válido', () => {
+    for (const whatsapp of ['9999-9999', '55 47 99999-99999', '0 47 999']) {
+      expect(pedidoSchema.safeParse({ ...pedido, whatsapp }).success, whatsapp).toBe(false);
+    }
   });
 });

@@ -17,16 +17,26 @@ import { distanciaKm, pedirLocalizacao, useLocalizacao } from '@/lib/localizacao
 import { chaveDoPonto, ordenarPorDistancia } from '@/lib/produtores';
 import { cores, espaco, fontes } from '@/theme/tokens';
 
-/** Um pino: um lugar do mapa e os produtores que vendem ali (uma feira pode ter vários). */
-type Ponto = { chave: string; local: ProducerPlace; produtores: Producer[] };
+/**
+ * Um pino: um lugar do mapa e os produtores que vendem ali (uma feira pode ter vários). Cada
+ * produtor leva o próprio local — dois locais aproximados podem cair no mesmo pino, e duas
+ * bancas da mesma feira podem ter nome ou horário diferentes.
+ */
+type Ponto = {
+  chave: string;
+  local: ProducerPlace;
+  produtores: { produtor: Producer; local: ProducerPlace }[];
+};
 
 function pontosDoMapa(lista: readonly Producer[]): Ponto[] {
   const porChave = new Map<string, Ponto>();
-  for (const p of lista) {
-    for (const local of p.locais) {
+  for (const produtor of lista) {
+    for (const local of produtor.locais) {
       const chave = chaveDoPonto(local);
       const ponto = porChave.get(chave) ?? { chave, local, produtores: [] };
-      if (!ponto.produtores.includes(p)) ponto.produtores.push(p);
+      if (!ponto.produtores.some((x) => x.produtor === produtor)) {
+        ponto.produtores.push({ produtor, local });
+      }
       porChave.set(chave, ponto);
     }
   }
@@ -43,16 +53,25 @@ export default function TelaMapa() {
   const posicao = localizacao.status === 'ok' ? localizacao.posicao : null;
   const { height } = useWindowDimensions();
   const mapa = useRef<MapView>(null);
+  // Enquadrar antes de o mapa nativo ficar pronto não faz nada (abertura do app pelo link).
+  const [mapaPronto, setMapaPronto] = useState(false);
 
-  // O filtro pode chegar pela tela do produto ("ver no mapa": /mapa?categoria=ovos).
-  const { categoria: doLink } = useLocalSearchParams<{ categoria?: ProducerCategory }>();
-  const [filtro, setFiltro] = useState<ProducerCategory | null>(doLink ?? null);
-  const [linkAplicado, setLinkAplicado] = useState(doLink);
-  if (doLink !== linkAplicado) {
-    setLinkAplicado(doLink);
-    setFiltro(doLink ?? null);
-  }
+  // O filtro pode chegar pela tela do produto ("ver no mapa": /mapa?categoria=ovos&pedido=…).
+  // `pedido` muda a cada toque: a mesma categoria pedida de novo volta a valer, mesmo depois
+  // de o usuário ter mudado o filtro à mão.
+  const { categoria, pedido } = useLocalSearchParams<{
+    categoria?: ProducerCategory | '';
+    pedido?: string;
+  }>();
+  const doLink = categoria || null;
+  const [filtro, setFiltro] = useState<ProducerCategory | null>(doLink);
   const [selecionado, setSelecionado] = useState<string | null>(null);
+  const [linkAplicado, setLinkAplicado] = useState(pedido);
+  if (pedido !== linkAplicado) {
+    setLinkAplicado(pedido);
+    setFiltro(doLink);
+    setSelecionado(null);
+  }
 
   useEffect(() => {
     void pedirLocalizacao();
@@ -66,10 +85,10 @@ export default function TelaMapa() {
 
   // Com um pino escolhido, a lista mostra quem vende ali (com aquele local); senão, todos.
   const linhas = ponto
-    ? ponto.produtores.map((produtor) => ({
+    ? ponto.produtores.map(({ produtor, local }) => ({
         produtor,
-        local: ponto.local,
-        km: posicao ? distanciaKm(posicao, ponto.local) : null,
+        local,
+        km: posicao ? distanciaKm(posicao, local) : null,
       }))
     : ordenarPorDistancia(filtrados, posicao);
 
@@ -84,14 +103,14 @@ export default function TelaMapa() {
       ...pontos.map(({ local: { latitude, longitude } }) => ({ latitude, longitude })),
       ...(perto ? [perto] : []),
     ];
-    if (coordenadas.length === 0) return;
+    if (!mapaPronto || coordenadas.length === 0) return;
     mapa.current?.fitToCoordinates(coordenadas, {
       edgePadding: { top: 60, right: 50, bottom: 50, left: 50 },
       animated: true,
     });
     // Só quando o conjunto de pinos muda (ou a posição chega), não a cada render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enquadramento, perto?.latitude, perto?.longitude]);
+  }, [mapaPronto, enquadramento, perto?.latitude, perto?.longitude]);
 
   return (
     <Tela comAbas>
@@ -107,6 +126,7 @@ export default function TelaMapa() {
       <View style={[estilos.mapa, { height: Math.round(height * 0.36) }]}>
         <MapView
           ref={mapa}
+          onMapReady={() => setMapaPronto(true)}
           style={StyleSheet.absoluteFill}
           // Região inicial: Jaraguá do Sul, até os produtores carregarem (depois o mapa
           // enquadra os pinos).
@@ -131,10 +151,10 @@ export default function TelaMapa() {
               coordinate={{ latitude: p.local.latitude, longitude: p.local.longitude }}
               onPress={() => setSelecionado(p.chave)}
               tracksViewChanges={false}
-              accessibilityLabel={`${p.local.nome ?? TIPO_LOCAL[p.local.tipo]}: ${p.produtores.map((x) => x.nome).join(', ')}`}
+              accessibilityLabel={`${p.local.nome ?? TIPO_LOCAL[p.local.tipo]}: ${p.produtores.map((x) => x.produtor.nome).join(', ')}`}
             >
               <PinoMapa
-                categoria={filtro ?? p.produtores[0]!.categorias[0]!}
+                categoria={filtro ?? p.produtores[0]!.produtor.categorias[0]!}
                 quantos={p.produtores.length}
                 selecionado={p.chave === selecionado}
               />
@@ -212,7 +232,12 @@ function tituloDaLista(
   quantos: number,
   comDistancia: boolean,
 ): string {
-  if (ponto) return ponto.local.nome ?? TIPO_LOCAL[ponto.local.tipo];
+  if (ponto) {
+    // Um nome só quando todos no pino falam do mesmo lugar; senão, o tipo ("Feira").
+    const nomes = new Set(ponto.produtores.map((x) => x.local.nome));
+    const [nome] = nomes;
+    return nomes.size === 1 && nome ? nome : TIPO_LOCAL[ponto.local.tipo];
+  }
   const de = filtro
     ? NOME_CATEGORIA[filtro]
     : `${quantos} ${quantos === 1 ? 'produtor' : 'produtores'}`;

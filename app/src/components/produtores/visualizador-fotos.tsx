@@ -56,7 +56,8 @@ export function VisualizadorFotos({ fotos, inicial, onFechar }: Props) {
 
           <FlatList
             data={fotos}
-            keyExtractor={(f) => f.id}
+            // A mesma foto pode aparecer duas vezes (dois itens do catálogo).
+            keyExtractor={(f, i) => `${i}:${f.id}`}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}

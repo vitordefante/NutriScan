@@ -27,9 +27,18 @@ const BUSCAS = {
     return lista;
   },
   async produtor(id: string, signal: AbortSignal) {
-    const p = await buscarProdutor(id, signal);
-    lembrar([p]);
-    return p;
+    try {
+      const p = await buscarProdutor(id, signal);
+      lembrar([p]);
+      return p;
+    } catch (err) {
+      // Saiu do mapa (o produtor pediu, ou o autor tirou): esquece a cópia da sessão.
+      if (err instanceof ErroApi && err.tipo === 'produtor_nao_encontrado') {
+        porId.delete(id);
+        ultimaLista = ultimaLista?.filter((p) => p.id !== id) ?? null;
+      }
+      throw err;
+    }
   },
   async doProduto(barcode: string, signal: AbortSignal): Promise<ProducersForProduct> {
     const r = await produtoresDoProduto(barcode, signal);
@@ -38,9 +47,13 @@ const BUSCAS = {
   },
 };
 
+/** Erros que valem mais que a cópia da sessão: o dado não existe mais (não é falha de rede). */
+const DEFINITIVOS: readonly TipoErroApi[] = ['produtor_nao_encontrado'];
+
 /**
  * Busca com cancelamento e "tentar de novo". `chave` null = não buscar ainda. `inicial` é o que
- * já se sabe: aparece na hora e um erro na atualização não o apaga.
+ * já se sabe: aparece na hora e uma falha na atualização (rede, servidor) não o apaga — só um
+ * erro definitivo (ex.: o produtor saiu do mapa).
  */
 function useBusca<T>(
   buscar: (chave: string, signal: AbortSignal) => Promise<T>,
@@ -71,6 +84,7 @@ function useBusca<T>(
   const atual = resposta?.chave === chave ? resposta.estado : null;
   let estado: EstadoBusca<T>;
   if (atual?.status === 'pronto') estado = atual;
+  else if (atual?.status === 'erro' && DEFINITIVOS.includes(atual.tipo)) estado = atual;
   else if (inicial !== undefined) estado = { status: 'pronto', dados: inicial };
   else estado = atual ?? { status: 'carregando' };
   return { estado, tentarDeNovo };

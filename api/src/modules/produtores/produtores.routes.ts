@@ -17,6 +17,26 @@ export type ProdutoresDeps = {
 /** Por endereço: 5 pedidos por hora (o formulário não exige conta). */
 const LIMITE_PEDIDOS = { rateLimit: { max: 5, timeWindow: '1 hour' } };
 
+/** O que dizer de cada campo recusado (a mensagem aparece como está no app). */
+const CAMPOS_DO_PEDIDO: Record<string, string> = {
+  nome: 'o nome',
+  categorias: 'ao menos uma categoria',
+  produtos: 'o que vende (até 300 caracteres)',
+  local: 'onde vende (até 300 caracteres)',
+  whatsapp: 'o WhatsApp com DDD, ex.: (47) 99999-9999',
+  instagram: 'o Instagram (só o nome do perfil, ex.: @sitioboavista)',
+  mensagem: 'a mensagem (até 500 caracteres)',
+  autorizaPublicar: 'a autorização',
+};
+
+/** "Confira: o WhatsApp com DDD…, o Instagram…" — só os campos com problema. */
+export function mensagemDoPedido(issues: readonly { path: readonly PropertyKey[] }[]): string {
+  const campos = [
+    ...new Set(issues.map((i) => CAMPOS_DO_PEDIDO[String(i.path[0])] ?? 'os campos do formulário')),
+  ];
+  return `Confira ${campos.join(', ')}.`;
+}
+
 export const produtoresRoutes: FastifyPluginAsync<ProdutoresDeps> = async (
   app,
   { produtores, produtos },
@@ -55,14 +75,7 @@ export const produtoresRoutes: FastifyPluginAsync<ProdutoresDeps> = async (
   app.post('/produtores/pedidos', { config: LIMITE_PEDIDOS }, async (request, reply) => {
     const corpo = pedidoSchema.safeParse(request.body);
     if (!corpo.success) {
-      return reply
-        .code(400)
-        .send(
-          erro(
-            'dados_invalidos',
-            'Confira os campos: nome, ao menos uma categoria, o que vende, onde vende, WhatsApp com DDD e a autorização.',
-          ),
-        );
+      return reply.code(400).send(erro('dados_invalidos', mensagemDoPedido(corpo.error.issues)));
     }
     const id = await produtores.criarPedido(corpo.data);
     return reply.code(201).send({ id });

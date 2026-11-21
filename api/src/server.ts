@@ -79,6 +79,12 @@ const app = buildApp(
       // O token de login nunca aparece nos logs.
       redact: ['req.headers.authorization'],
     },
+    // O IP real do cliente (limites por endereço) vem do X-Forwarded-For do proxy da nuvem.
+    // Confia só nos N saltos mais próximos (`true` pegaria o primeiro endereço do cabeçalho,
+    // que o próprio cliente pode inventar).
+    ...(env.TRUST_PROXY && {
+      trustProxy: (_endereco: string, salto: number) => salto < env.TRUST_PROXY!,
+    }),
   },
 );
 app.addHook('onClose', () => database.close());

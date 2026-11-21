@@ -26,9 +26,11 @@ export function CatalogoProdutor({ itens, categoria }: Props) {
   const lado = largura - espaco.borda * 2;
   const [aberta, setAberta] = useState<number | null>(null);
 
-  // A tela cheia mostra só as fotos dos itens; o nome do item descreve a foto.
-  const fotos: ProducerPhoto[] = itens.flatMap((i) =>
-    i.foto ? [{ ...i.foto, legenda: i.nome }] : [],
+  // A tela cheia mostra só as fotos dos itens; o nome do item descreve a foto. A posição de
+  // cada item na tela cheia vai pela ordem (dois itens podem usar a mesma foto, com o mesmo id).
+  const fotos: ProducerPhoto[] = [];
+  const indiceDaFoto = itens.map((i) =>
+    i.foto ? fotos.push({ ...i.foto, legenda: i.nome }) - 1 : -1,
   );
 
   return (
@@ -36,7 +38,7 @@ export function CatalogoProdutor({ itens, categoria }: Props) {
       {itens.map((item, i) => {
         // Sem o endereço da API (build sem EXPO_PUBLIC_API_URL), o item fica com o ícone.
         const url = item.foto ? urlFotoProdutor(item.foto.id) : null;
-        const indiceFoto = item.foto ? fotos.findIndex((f) => f.id === item.foto!.id) : -1;
+        const indiceFoto = indiceDaFoto[i]!;
         const foto =
           url && item.foto ? (
             <Image

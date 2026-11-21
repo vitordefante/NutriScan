@@ -19,6 +19,12 @@ const envSchema = z.object({
    * Gerar com: node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
    */
   JWT_SECRET: z.string().min(32, 'deve ter pelo menos 32 caracteres'),
+  /**
+   * Quantos proxies confiáveis ficam na frente da API (o balanceador do provedor de nuvem: 1).
+   * Sem isso, atrás de um proxy todo mundo tem o mesmo IP e divide o mesmo limite de pedidos.
+   * Em desenvolvimento fica vazio: confiar no cabeçalho deixaria qualquer um trocar de IP.
+   */
+  TRUST_PROXY: z.coerce.number().int().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

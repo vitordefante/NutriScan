@@ -89,12 +89,17 @@ export default function TelaResultado() {
               estado={produtores.estado}
               onAbrir={(id) => router.push({ pathname: '/produtor/[id]', params: { id } })}
               onVerNoMapa={() =>
-                produtores.estado.status === 'pronto' && produtores.estado.dados.categoria
-                  ? router.navigate({
-                      pathname: '/mapa',
-                      params: { categoria: produtores.estado.dados.categoria },
-                    })
-                  : router.navigate('/mapa')
+                router.navigate({
+                  pathname: '/mapa',
+                  params: {
+                    categoria:
+                      produtores.estado.status === 'pronto'
+                        ? (produtores.estado.dados.categoria ?? '')
+                        : '',
+                    // Muda a cada toque: o mapa reaplica o filtro mesmo com a mesma categoria.
+                    pedido: String(Date.now()),
+                  },
+                })
               }
             />
           }

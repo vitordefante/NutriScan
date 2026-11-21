@@ -38,7 +38,8 @@ export function criarRepositorioProdutoresPg(
 ): RepositorioProdutores & AdminProdutores {
   return {
     async listar() {
-      const linhas = await db.select().from(produtores).orderBy(asc(produtores.id));
+      // Ordena no JS: o nome está dentro do JSON, e o localeCompare segue a ordem do português.
+      const linhas = await db.select().from(produtores);
       return linhas
         .map((l) => comoProdutor(l.dados))
         .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));

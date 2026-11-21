@@ -69,7 +69,9 @@ export function distanciaKm(a: Posicao, b: Posicao): number {
 
 /** "800 m", "3,2 km", "25 km". */
 export function formatarDistancia(km: number): string {
-  if (km < 1) return `${Math.max(100, Math.round((km * 1000) / 100) * 100)} m`;
+  // Arredonda antes de escolher a unidade: 970 m vira "1 km", não "1000 m".
+  const metros = Math.max(100, Math.round(km * 10) * 100);
+  if (metros < 1000) return `${metros} m`;
   if (km < 10) return `${km.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km`;
   return `${Math.round(km)} km`;
 }
