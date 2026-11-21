@@ -218,7 +218,7 @@ Uma conta liga a um produtor só, e um produtor tem uma conta só.
 
 | Pelo app                                 | Quando aparece no mapa                            |
 | ---------------------------------------- | ------------------------------------------------- |
-| Mudar ou tirar o preço de um item        | Na hora (o cartão mostra "atualizado em 21/11")   |
+| Mudar ou tirar o preço de um item        | Na hora                                           |
 | Tirar um item do catálogo                | Na hora                                           |
 | Item novo                                | Depois da sua aprovação                           |
 | Mudar nome, descrição ou foto de um item | Depois da sua aprovação (até lá, fica o anterior) |

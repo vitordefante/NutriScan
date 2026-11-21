@@ -51,6 +51,3 @@ export function centavosDoTexto(texto: string): number | null {
   const centavos = Math.round(Number(normalizado) * 100);
   return centavos >= 1 && centavos <= MAXIMO_CENTAVOS ? centavos : null;
 }
-
-/** "21/11" (a data em que o produtor atualizou o preço). */
-export const diaMes = (data: string) => `${data.slice(8, 10)}/${data.slice(5, 7)}`;

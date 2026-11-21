@@ -6,11 +6,12 @@ import { Aviso } from '@/components/ui/aviso';
 import { Botao } from '@/components/ui/botao';
 import { CabecalhoTela } from '@/components/ui/cabecalho-tela';
 import { CampoTexto } from '@/components/ui/campo-texto';
+import { Etiqueta } from '@/components/ui/etiqueta';
 import { Seletor } from '@/components/ui/seletor';
 import { Tela } from '@/components/ui/tela';
 import { Texto } from '@/components/ui/texto';
 import { type ModoConta, useFormularioConta } from '@/hooks/use-formulario-conta';
-import { useMeuCatalogo } from '@/hooks/use-meu-catalogo';
+import { type EstadoMeuCatalogo, useMeuCatalogo } from '@/hooks/use-meu-catalogo';
 import { excluirMinhaConta, sair, useSessao } from '@/lib/sessao';
 import { cores, espaco, faixas, fontes } from '@/theme/tokens';
 
@@ -103,6 +104,8 @@ function FormularioConta() {
 
 function Conectado({ email }: { email: string }) {
   const [excluindo, setExcluindo] = useState(false);
+  // Uma busca só para a etiqueta "Produtor" e a Área do produtor.
+  const { estado: catalogo } = useMeuCatalogo();
 
   function confirmarExclusao() {
     Alert.alert(
@@ -129,19 +132,19 @@ function Conectado({ email }: { email: string }) {
   return (
     <>
       <View style={estilos.cartao}>
-        <Texto variante="pixel" style={{ fontSize: 11 }}>
-          CONECTADO COMO
-        </Texto>
+        <View style={estilos.topoCartao}>
+          <Texto variante="pixel" style={{ fontSize: 11 }}>
+            CONECTADO COMO
+          </Texto>
+          {catalogo.status === 'pronto' && <Etiqueta texto="Produtor" fundo={cores.destaque} />}
+        </View>
         <Texto variante="subtitulo" numberOfLines={1}>
           {email}
         </Texto>
-        <Texto variante="apoio">
-          Seu histórico de scans é sincronizado com a conta, e o que você registra como consumido
-          aparece no resumo da aba Histórico.
-        </Texto>
+        <Texto variante="apoio">Seu histórico de scans é sincronizado com sua conta.</Texto>
       </View>
 
-      <AreaProdutor />
+      <AreaProdutor estado={catalogo} />
 
       <Botao titulo="Sair" variante="secundario" onPress={() => void sair()} />
 
@@ -159,8 +162,7 @@ function Conectado({ email }: { email: string }) {
 }
 
 /** Conta ligada a um produtor: atalho para o catálogo. Conta comum: "Sou produtor". */
-function AreaProdutor() {
-  const { estado } = useMeuCatalogo();
+function AreaProdutor({ estado }: { estado: EstadoMeuCatalogo }) {
   if (estado.status === 'nao_e_produtor') {
     return (
       <Pressable
@@ -192,7 +194,7 @@ function AreaProdutor() {
   return (
     <View style={estilos.cartao}>
       <Texto variante="pixel" style={{ fontSize: 11 }}>
-        PRODUTOR
+        ÁREA DO PRODUTOR
       </Texto>
       <Texto variante="subtitulo" numberOfLines={1}>
         {produtor.nome}
@@ -214,6 +216,12 @@ const estilos = StyleSheet.create({
     borderColor: cores.tinta,
     padding: 16,
     gap: 10,
+  },
+  topoCartao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   link: { fontFamily: fontes.textoNegrito, fontSize: 14, textDecorationLine: 'underline' },
   excluir: {

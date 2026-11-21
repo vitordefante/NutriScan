@@ -86,8 +86,10 @@ escuro para texto, porque as cores claras não têm contraste suficiente como le
   preço em negrito no pé do cartão (cartões da mesma linha têm a mesma altura). Item sem foto:
   ícone da categoria sobre `vazio`. Tocar na foto abre a tela cheia da galeria. O que não tem
   cartão vem abaixo, em texto: "**Também:** queijo · nata".
-- **Preço do catálogo:** "R$ 10,50 / litro" em negrito; quando o produtor mudou pelo app, a
-  data abaixo em legenda ("atualizado em 21/11").
+- **Preço do catálogo:** "R$ 10,50 / litro" em negrito, no pé do cartão (sem a data da
+  mudança, por ora: a API guarda `precoAtualizadoEm`).
+- **Perfil:** conta ligada a um produtor leva a etiqueta "PRODUTOR" (fundo `destaque`) no canto
+  superior direito do cartão "Conectado como"; abaixo, o cartão "Área do produtor".
 - **Área do produtor (Meu catálogo):** linha com foto quadrada de 56 px (borda tinta; sem foto:
   "SEM FOTO" pixel em cinza), nome, preço e a marca da situação em pixel: **em análise** (fundo
   `avisoClaro`), **recusado** (fundo `coralClaro`, texto vermelho da faixa péssimo). Publicado

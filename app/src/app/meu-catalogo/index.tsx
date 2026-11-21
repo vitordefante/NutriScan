@@ -71,7 +71,7 @@ function Conteudo({
       </View>
 
       {novos.length > 0 && (
-        <Secao titulo="Enviados">
+        <Secao titulo="Pendentes">
           <View style={estilos.lista}>
             {novos.map((n) => (
               <LinhaItem
