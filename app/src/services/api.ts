@@ -43,7 +43,7 @@ export class ErroApi extends Error {
 }
 
 type Opcoes = {
-  metodo?: 'GET' | 'POST' | 'DELETE';
+  metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   /** Enviado como JSON. */
   corpo?: unknown;
   /** Token de login, para as rotas que exigem conta. */

@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -9,6 +10,7 @@ import { Seletor } from '@/components/ui/seletor';
 import { Tela } from '@/components/ui/tela';
 import { Texto } from '@/components/ui/texto';
 import { type ModoConta, useFormularioConta } from '@/hooks/use-formulario-conta';
+import { useMeuCatalogo } from '@/hooks/use-meu-catalogo';
 import { excluirMinhaConta, sair, useSessao } from '@/lib/sessao';
 import { cores, espaco, faixas, fontes } from '@/theme/tokens';
 
@@ -139,6 +141,8 @@ function Conectado({ email }: { email: string }) {
         </Texto>
       </View>
 
+      <AreaProdutor />
+
       <Botao titulo="Sair" variante="secundario" onPress={() => void sair()} />
 
       <Pressable
@@ -154,6 +158,55 @@ function Conectado({ email }: { email: string }) {
   );
 }
 
+/** Conta ligada a um produtor: atalho para o catálogo. Conta comum: "Sou produtor". */
+function AreaProdutor() {
+  const { estado } = useMeuCatalogo();
+  if (estado.status === 'nao_e_produtor') {
+    return (
+      <Pressable
+        onPress={() => router.push('/sou-produtor')}
+        accessibilityRole="link"
+        hitSlop={8}
+        style={{ gap: 2 }}
+      >
+        <Texto variante="apoio">Você vende no mapa de produtores?</Texto>
+        <Texto style={estilos.link}>Sou produtor e tenho um código</Texto>
+      </Pressable>
+    );
+  }
+  if (estado.status !== 'pronto') return null;
+
+  const { produtor, itens, novos } = estado.dados;
+  const emAnalise =
+    novos.filter((n) => n.situacao === 'em_analise').length +
+    itens.filter((i) => i.alteracao?.situacao === 'em_analise').length;
+  const recusados =
+    novos.filter((n) => n.situacao === 'recusada').length +
+    itens.filter((i) => i.alteracao?.situacao === 'recusada').length;
+  const resumo = [
+    `${itens.length} ${itens.length === 1 ? 'item' : 'itens'} no mapa`,
+    emAnalise > 0 && `${emAnalise} em análise`,
+    recusados > 0 && `${recusados} ${recusados === 1 ? 'recusado' : 'recusados'}`,
+  ].filter(Boolean);
+
+  return (
+    <View style={estilos.cartao}>
+      <Texto variante="pixel" style={{ fontSize: 11 }}>
+        PRODUTOR
+      </Texto>
+      <Texto variante="subtitulo" numberOfLines={1}>
+        {produtor.nome}
+      </Texto>
+      <Texto variante="apoio">{resumo.join(' · ')}</Texto>
+      <Botao
+        titulo="Meu catálogo"
+        onPress={() => router.push('/meu-catalogo')}
+        style={{ marginTop: 6 }}
+      />
+    </View>
+  );
+}
+
 const estilos = StyleSheet.create({
   conteudo: { paddingHorizontal: espaco.margemTela, paddingTop: 8, paddingBottom: 48, gap: 22 },
   cartao: {
@@ -162,6 +215,7 @@ const estilos = StyleSheet.create({
     padding: 16,
     gap: 10,
   },
+  link: { fontFamily: fontes.textoNegrito, fontSize: 14, textDecorationLine: 'underline' },
   excluir: {
     fontFamily: fontes.textoNegrito,
     fontSize: 14,

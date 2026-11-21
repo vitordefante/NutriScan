@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Texto } from '@/components/ui/texto';
+import { diaMes, formatarPreco } from '@/lib/preco';
 import { urlFotoProdutor } from '@/services/api-produtores';
 import { cores, espaco, fontes } from '@/theme/tokens';
 
@@ -77,7 +78,14 @@ export function CatalogoProdutor({ itens, categoria }: Props) {
                   {item.descricao}
                 </Texto>
               )}
-              {item.preco && <Texto style={estilos.preco}>{item.preco}</Texto>}
+              {item.preco && (
+                <View style={estilos.preco}>
+                  <Texto style={estilos.valor}>{formatarPreco(item.preco)}</Texto>
+                  {item.precoAtualizadoEm && (
+                    <Texto variante="legenda">atualizado em {diaMes(item.precoAtualizadoEm)}</Texto>
+                  )}
+                </View>
+              )}
             </View>
           </View>
         );
@@ -100,5 +108,6 @@ const estilos = StyleSheet.create({
     borderTopColor: cores.tinta,
     flexGrow: 1,
   },
-  preco: { fontFamily: fontes.textoNegrito, fontSize: 15, marginTop: 'auto', paddingTop: 2 },
+  preco: { marginTop: 'auto', paddingTop: 2 },
+  valor: { fontFamily: fontes.textoNegrito, fontSize: 15 },
 });

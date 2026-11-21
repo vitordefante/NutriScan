@@ -86,6 +86,14 @@ escuro para texto, porque as cores claras não têm contraste suficiente como le
   preço em negrito no pé do cartão (cartões da mesma linha têm a mesma altura). Item sem foto:
   ícone da categoria sobre `vazio`. Tocar na foto abre a tela cheia da galeria. O que não tem
   cartão vem abaixo, em texto: "**Também:** queijo · nata".
+- **Preço do catálogo:** "R$ 10,50 / litro" em negrito; quando o produtor mudou pelo app, a
+  data abaixo em legenda ("atualizado em 21/11").
+- **Área do produtor (Meu catálogo):** linha com foto quadrada de 56 px (borda tinta; sem foto:
+  "SEM FOTO" pixel em cinza), nome, preço e a marca da situação em pixel: **em análise** (fundo
+  `avisoClaro`), **recusado** (fundo `coralClaro`, texto vermelho da faixa péssimo). Publicado
+  não leva marca. Na edição, a situação vem numa caixa no topo (amarela ou coral, com o motivo).
+- **Seletor de unidade:** opções com borda em grade que quebra linha; a escolhida fica cheia
+  (tinta), como o filtro de categorias.
 - **Caixa de aviso:** fundo amarelo-claro (`avisoClaro`), borda tinta e ícone de alerta.
 - **Viewfinder do scanner:** cantos e linha de leitura brancos sobre a câmera.
 
