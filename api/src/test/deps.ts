@@ -1,9 +1,10 @@
-import type { HistoryItem, LogEntry, User } from '@nutriscan/shared';
+import type { HistoryItem, LogEntry, Producer, ProducerRequest, User } from '@nutriscan/shared';
 
 import type { AppDeps } from '../app.js';
 import type { RepositorioContas } from '../modules/contas/contas.repository.js';
 import { criarServicoContas } from '../modules/contas/contas.service.js';
 import type { RepositorioHistorico } from '../modules/historico/historico.repository.js';
+import type { RepositorioProdutores } from '../modules/produtores/produtores.repository.js';
 import type { RepositorioRegistros } from '../modules/registros/registros.repository.js';
 import { criarServicoRegistros } from '../modules/registros/registros.service.js';
 
@@ -82,6 +83,24 @@ export function registrosEmMemoria(): RepositorioRegistros {
   };
 }
 
+/** Produtores em memória; `pedidos` fica exposto para os testes conferirem o que foi gravado. */
+export function produtoresEmMemoria(
+  lista: Producer[] = [],
+  fotos: ReadonlyMap<string, Buffer> = new Map(),
+): RepositorioProdutores & { pedidos: ProducerRequest[] } {
+  const pedidos: ProducerRequest[] = [];
+  return {
+    pedidos,
+    foto: async (id) => fotos.get(id) ?? null,
+    listar: async () => [...lista].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+    buscar: async (id) => lista.find((p) => p.id === id) ?? null,
+    async criarPedido(pedido) {
+      pedidos.push(pedido);
+      return `20000000-0000-4000-8000-${String(pedidos.length).padStart(12, '0')}`;
+    },
+  };
+}
+
 /**
  * Dependências completas para `buildApp` nos testes: tudo em memória, e cada teste troca só o
  * que interessa a ele.
@@ -98,6 +117,7 @@ export function depsDeTeste(trocas: Partial<AppDeps> = {}): AppDeps {
     contas: criarServicoContas(contasEmMemoria()),
     historico: historicoEmMemoria(),
     registros: criarServicoRegistros({ produtos, registros: registrosEmMemoria() }),
+    produtores: produtoresEmMemoria(),
     jwtSecret: SEGREDO_TESTE,
     ...trocas,
   };

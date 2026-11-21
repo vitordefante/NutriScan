@@ -10,6 +10,7 @@ import { criarCacheBuscasPg } from './modules/alternativas/buscas.repository.js'
 import { criarRepositorioContasPg } from './modules/contas/contas.repository.js';
 import { criarServicoContas } from './modules/contas/contas.service.js';
 import { criarRepositorioHistoricoPg } from './modules/historico/historico.repository.js';
+import { criarRepositorioProdutoresPg } from './modules/produtores/produtores.repository.js';
 import { criarClienteObf, criarClienteOff } from './modules/produtos/open-food-facts.client.js';
 import { criarCacheProdutosPg } from './modules/produtos/produtos.repository.js';
 import { criarServicoProdutos } from './modules/produtos/produtos.service.js';
@@ -70,6 +71,7 @@ const app = buildApp(
       produtos,
       registros: criarRepositorioRegistrosPg(database.db),
     }),
+    produtores: criarRepositorioProdutoresPg(database.db),
     jwtSecret: env.JWT_SECRET,
   },
   {
