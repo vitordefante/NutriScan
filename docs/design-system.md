@@ -69,6 +69,24 @@ escuro para texto, porque as cores claras não têm contraste suficiente como le
   com a cor de preenchimento da faixa.
 - **Texto de ação destrutiva** (ex.: "Excluir minha conta"): vermelho de texto da faixa
   péssimo (`#C62F2F`) — o coral não tem contraste suficiente como letra.
+- **Ícone de categoria (produtores):** ícone pixel 12×12 num quadrado menta (`destaque`) com
+  borda tinta. No mapa vira o pino, com a sombra sólida de 3 px e, quando vários produtores
+  vendem no mesmo ponto (feira), um contador preto no canto. Pino escolhido: quadrado invertido
+  (face tinta com **borda branca**, como o botão primário, para a sombra continuar visível).
+- **Filtro de categorias:** linha que rola para o lado, com ícone + rótulo pixel; a escolhida
+  fica cheia (tinta), como no seletor segmentado.
+- **Cartão de produtor:** ícone da categoria procurada, nome, o que vende, distância e local; o
+  cultivo (agroecológico, orgânico certificado) em pixel verde. O convencional não aparece.
+- **Galeria de fotos (produtor):** primeira coisa do detalhe. Carrossel 4:3 com borda tinta,
+  contador pixel ("1/3") numa caixinha branca no canto, sem legenda visível (ela só descreve a
+  foto para o leitor de tela). Toque abre a tela cheia: fundo tinta, foto inteira (sem corte),
+  "FECHAR" pixel com borda branca, pinça para ampliar no iPhone.
+- **Catálogo do produtor:** grade de 2 colunas na seção "O que vende". Cartão com borda tinta,
+  foto quadrada (cover) separada do texto por uma linha tinta, nome, descrição curta (cinza) e
+  preço em negrito no pé do cartão (cartões da mesma linha têm a mesma altura). Item sem foto:
+  ícone da categoria sobre `vazio`. Tocar na foto abre a tela cheia da galeria. O que não tem
+  cartão vem abaixo, em texto: "**Também:** queijo · nata".
+- **Caixa de aviso:** fundo amarelo-claro (`avisoClaro`), borda tinta e ícone de alerta.
 - **Viewfinder do scanner:** cantos e linha de leitura brancos sobre a câmera.
 
 ## Em aberto

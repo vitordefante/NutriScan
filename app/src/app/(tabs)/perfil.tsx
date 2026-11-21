@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Aviso } from '@/components/ui/aviso';
 import { Botao } from '@/components/ui/botao';
 import { CabecalhoTela } from '@/components/ui/cabecalho-tela';
 import { CampoTexto } from '@/components/ui/campo-texto';
-import { IconePixel } from '@/components/ui/icone-pixel';
 import { Seletor } from '@/components/ui/seletor';
 import { Tela } from '@/components/ui/tela';
 import { Texto } from '@/components/ui/texto';
@@ -83,12 +83,7 @@ function FormularioConta() {
         />
       </View>
 
-      {f.aviso && (
-        <View style={estilos.aviso} accessibilityLiveRegion="polite">
-          <IconePixel nome="alerta" />
-          <Texto style={{ flex: 1, fontSize: 14, lineHeight: 20 }}>{f.aviso}</Texto>
-        </View>
-      )}
+      {f.aviso && <Aviso>{f.aviso}</Aviso>}
 
       <Botao
         titulo={f.enviando ? 'Aguarde…' : criar ? 'Criar conta' : 'Entrar'}
@@ -161,14 +156,6 @@ function Conectado({ email }: { email: string }) {
 
 const estilos = StyleSheet.create({
   conteudo: { paddingHorizontal: espaco.margemTela, paddingTop: 8, paddingBottom: 48, gap: 22 },
-  aviso: {
-    flexDirection: 'row',
-    gap: 12,
-    backgroundColor: cores.avisoClaro,
-    borderWidth: espaco.borda,
-    borderColor: cores.tinta,
-    padding: 14,
-  },
   cartao: {
     borderWidth: espaco.borda,
     borderColor: cores.tinta,

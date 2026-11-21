@@ -18,6 +18,8 @@ type Props = {
   onCompletarComFoto?: () => void;
   /** Seção de alternativas (carregada à parte, depois da análise). */
   alternativas?: ReactNode;
+  /** Produtores locais que vendem o que substitui o produto (some quando não há). */
+  produtores?: ReactNode;
   /** Ações logo abaixo da nota (ex.: "Registrar consumo"). */
   acoes?: ReactNode;
 };
@@ -41,6 +43,7 @@ export function ResultadoProduto({
   onPorQue,
   onCompletarComFoto,
   alternativas,
+  produtores,
   acoes,
 }: Props) {
   const { produto, analise } = dados;
@@ -110,6 +113,7 @@ export function ResultadoProduto({
       )}
 
       {alternativas}
+      {produtores}
 
       {/* Primeiro os fatos encontrados; o que faltou fica no fim, para quem rolar até aqui. */}
       {analise.status === 'parcial' && (

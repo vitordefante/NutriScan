@@ -3,12 +3,14 @@ import { useEffect } from 'react';
 
 import { SecaoAlternativas } from '@/components/resultado/alternativas';
 import { EstadoCarregando, EstadoErro } from '@/components/resultado/estados';
+import { SecaoProdutoresLocais } from '@/components/resultado/produtores-locais';
 import { RegistrarConsumo } from '@/components/resultado/registrar-consumo';
 import { ResultadoProduto } from '@/components/resultado/resultado-produto';
 import { CabecalhoTela } from '@/components/ui/cabecalho-tela';
 import { Tela } from '@/components/ui/tela';
 import { useAlternativas } from '@/hooks/use-alternativas';
 import { useProduto } from '@/hooks/use-produto';
+import { useProdutoresDoProduto } from '@/hooks/use-produtores';
 import { guardarScan, itemDoResultado } from '@/lib/historico-local';
 import { enviarPendentes } from '@/lib/sincronizacao';
 import { podeLerRotulo } from '@/services/leitor-rotulo';
@@ -35,6 +37,8 @@ export default function TelaResultado() {
     analise && analise.status !== 'dados_insuficientes' ? analise.nota : null,
     produto !== undefined,
   );
+
+  const produtores = useProdutoresDoProduto(barcode, produto !== undefined);
 
   // Sem cadastro (ou cadastro sem nome), a tela da foto também pede o nome do produto.
   const fotografar = podeLerRotulo
@@ -78,6 +82,25 @@ export default function TelaResultado() {
                 router.push({ pathname: '/produto/[barcode]', params: { barcode: outro } })
               }
               onTentarDeNovo={alternativas.tentarDeNovo}
+            />
+          }
+          produtores={
+            <SecaoProdutoresLocais
+              estado={produtores.estado}
+              onAbrir={(id) => router.push({ pathname: '/produtor/[id]', params: { id } })}
+              onVerNoMapa={() =>
+                router.navigate({
+                  pathname: '/mapa',
+                  params: {
+                    categoria:
+                      produtores.estado.status === 'pronto'
+                        ? (produtores.estado.dados.categoria ?? '')
+                        : '',
+                    // Muda a cada toque: o mapa reaplica o filtro mesmo com a mesma categoria.
+                    pedido: String(Date.now()),
+                  },
+                })
+              }
             />
           }
         />

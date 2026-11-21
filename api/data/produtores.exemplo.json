@@ -1,0 +1,60 @@
+{
+  "produtores": [
+    {
+      "id": "sitio-exemplo",
+      "nome": "Sítio Exemplo",
+      "responsavel": "Maria (exemplo)",
+      "descricao": "Verduras e ovos caipira, colhidos no dia da feira.",
+      "categorias": ["hortalicas", "ovos"],
+      "produtos": ["alface", "couve", "rúcula", "ovos caipira"],
+      "cultivo": "agroecologico",
+      "entrega": "Entrega no centro às sextas.",
+      "contato": { "whatsapp": "5547900000000", "instagram": "sitioexemplo" },
+      "locais": [
+        {
+          "tipo": "feira",
+          "nome": "Feira de exemplo",
+          "endereco": "Praça Exemplo, s/n",
+          "cidade": "Joinville",
+          "latitude": -26.30451,
+          "longitude": -48.84612,
+          "precisao": "exata",
+          "horario": "Sábado, 7h às 12h"
+        },
+        {
+          "tipo": "propriedade",
+          "cidade": "Joinville",
+          "latitude": -26.21234,
+          "longitude": -48.91234,
+          "precisao": "aproximada",
+          "horario": "Com agendamento pelo WhatsApp"
+        }
+      ],
+      "autorizacao": { "publicar": true, "data": "2026-11-18" },
+      "visitadoEm": "2026-11-18"
+    },
+    {
+      "id": "apiario-exemplo",
+      "nome": "Apiário Exemplo",
+      "categorias": ["mel"],
+      "produtos": ["mel de flores silvestres", "própolis"],
+      "cultivo": "organico_certificado",
+      "certificacao": "SisOrg — OPAC de exemplo",
+      "contato": { "whatsapp": "5547900000001" },
+      "locais": [
+        {
+          "tipo": "loja",
+          "nome": "Empório de exemplo",
+          "endereco": "Rua Exemplo, 100",
+          "cidade": "Joinville",
+          "latitude": -26.29876,
+          "longitude": -48.84987,
+          "precisao": "exata",
+          "horario": "Seg a sex, 9h às 18h"
+        }
+      ],
+      "autorizacao": { "publicar": true, "data": "2026-11-18" },
+      "visitadoEm": "2026-11-18"
+    }
+  ]
+}

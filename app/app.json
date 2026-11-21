@@ -53,7 +53,13 @@
         }
       ],
       "expo-sqlite",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O NutriScan usa sua localização para mostrar os produtores rurais mais perto de você. Ela fica no aparelho e não é enviada ao servidor."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

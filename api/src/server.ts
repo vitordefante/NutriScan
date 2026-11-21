@@ -10,6 +10,7 @@ import { criarCacheBuscasPg } from './modules/alternativas/buscas.repository.js'
 import { criarRepositorioContasPg } from './modules/contas/contas.repository.js';
 import { criarServicoContas } from './modules/contas/contas.service.js';
 import { criarRepositorioHistoricoPg } from './modules/historico/historico.repository.js';
+import { criarRepositorioProdutoresPg } from './modules/produtores/produtores.repository.js';
 import { criarClienteObf, criarClienteOff } from './modules/produtos/open-food-facts.client.js';
 import { criarCacheProdutosPg } from './modules/produtos/produtos.repository.js';
 import { criarServicoProdutos } from './modules/produtos/produtos.service.js';
@@ -70,6 +71,7 @@ const app = buildApp(
       produtos,
       registros: criarRepositorioRegistrosPg(database.db),
     }),
+    produtores: criarRepositorioProdutoresPg(database.db),
     jwtSecret: env.JWT_SECRET,
   },
   {
@@ -77,6 +79,12 @@ const app = buildApp(
       // O token de login nunca aparece nos logs.
       redact: ['req.headers.authorization'],
     },
+    // O IP real do cliente (limites por endereço) vem do X-Forwarded-For do proxy da nuvem.
+    // Confia só nos N saltos mais próximos (`true` pegaria o primeiro endereço do cabeçalho,
+    // que o próprio cliente pode inventar).
+    ...(env.TRUST_PROXY && {
+      trustProxy: (_endereco: string, salto: number) => salto < env.TRUST_PROXY!,
+    }),
   },
 );
 app.addHook('onClose', () => database.close());
