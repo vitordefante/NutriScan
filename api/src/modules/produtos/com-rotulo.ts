@@ -66,6 +66,7 @@ function dadosAlimento(nome: string, daBase: ProdutoOff | null, lido: RotuloLido
       nutrientes: { ...base.nutrientes, ...lido.nutrientes },
       // A tabela diz se os valores são por 100 g ou 100 ml — é o que decide se é bebida.
       quantidade: lido.unidade === 'ml' ? '100 ml' : '100 g',
+      ...(lido.unidade && { unidadeDaTabela: lido.unidade }),
       // A porção da foto vale; sem ela, fica a da base (é a mesma embalagem).
       ...((lido.porcao ?? base.porcao) !== undefined && { porcao: lido.porcao ?? base.porcao }),
     }),

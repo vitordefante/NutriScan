@@ -129,10 +129,7 @@ function porcaoDoOff(p: ProdutoOff): { porcao?: number } {
 }
 
 function paraNutrientes(n: Record<string, unknown>): Nutrientes {
-  const num = (chave: string): number | undefined => {
-    const v = typeof n[chave] === 'string' ? Number(n[chave]) : n[chave];
-    return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : undefined;
-  };
+  const num = (chave: string) => numero(n[chave]);
   const kj = num('energy-kj_100g') ?? num('energy_100g');
   const sal = num('salt_100g');
   const sodioG = num('sodium_100g') ?? (sal !== undefined ? sal / 2.5 : undefined);

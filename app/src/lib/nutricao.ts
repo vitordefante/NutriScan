@@ -23,10 +23,12 @@ export function rotuloDaBase(n: NutritionFacts, base: BaseNutricao): string {
 
 /**
  * De onde vêm as calorias: a fração (0–1) de cada macro, pela energia que ele dá. É a mesma em
- * qualquer base (porção ou 100 g). Null quando não há energia vinda dos macros (ex.: água).
+ * qualquer base (porção ou 100 g). Null quando falta algum dos três (contar o que falta como zero
+ * daria 100% ao que existe) ou não há energia vinda dos macros (ex.: água).
  */
 export function divisaoDaEnergia(macros: Macronutrients): Record<Macro, number> | null {
-  const kcal = ORDEM_MACROS.map((m) => (macros[m] ?? 0) * KCAL_POR_GRAMA[m]);
+  if (ORDEM_MACROS.some((m) => macros[m] === undefined)) return null;
+  const kcal = ORDEM_MACROS.map((m) => macros[m]! * KCAL_POR_GRAMA[m]);
   const total = kcal.reduce((a, b) => a + b, 0);
   if (total <= 0) return null;
   return {
@@ -36,12 +38,11 @@ export function divisaoDaEnergia(macros: Macronutrients): Record<Macro, number> 
   };
 }
 
-/** Energia (× fator): a do rótulo; sem ela, a soma pelos macros. */
+/** Energia (× fator): a do rótulo; sem ela, a soma pelos macros (só com os três conhecidos). */
 export function energia(macros: Macronutrients, fator = 1): number | null {
   if (macros.energiaKcal !== undefined) return macros.energiaKcal * fator;
-  const temMacro = ORDEM_MACROS.some((m) => macros[m] !== undefined);
-  if (!temMacro) return null;
-  return ORDEM_MACROS.reduce((s, m) => s + (macros[m] ?? 0) * KCAL_POR_GRAMA[m], 0) * fator;
+  if (ORDEM_MACROS.some((m) => macros[m] === undefined)) return null;
+  return ORDEM_MACROS.reduce((s, m) => s + macros[m]! * KCAL_POR_GRAMA[m], 0) * fator;
 }
 
 /**

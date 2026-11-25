@@ -235,6 +235,40 @@ describe('lerTabelaNutricional', () => {
     expect(lida).toBeNull();
   });
 
+  it('"Gordura total" no singular também é a gordura total', () => {
+    const lida = lerTabelaNutricional(
+      tabela(
+        ['', '100 g', '30 g', '%VD*'],
+        ['Valor energético (kcal)', '480', '144', '7'],
+        ['Carboidratos (g)', '60', '18', '6'],
+        ['Proteínas (g)', '8', '2,4', '5'],
+        ['Gordura total (g)', '20', '6', '9'],
+        ['Gordura saturada (g)', '9', '2,7', '14'],
+        ['Sódio (mg)', '310', '93', '5'],
+      ),
+    );
+    expect(lida?.nutrientes).toMatchObject({ gorduras: 20, gorduraSaturada: 9 });
+  });
+
+  it('valoresCoerentes: carboidratos e gorduras totais também precisam fechar', () => {
+    // Biscoito real: 60 g de carboidrato (30 de açúcar), 20 g de gordura (9 saturada), 480 kcal.
+    const biscoito = {
+      energiaKcal: 480,
+      carboidratos: 60,
+      acucares: 30,
+      proteinas: 8,
+      gorduras: 20,
+      gorduraSaturada: 9,
+    };
+    expect(valoresCoerentes(biscoito)).toBe(true);
+    // Carboidrato lido da coluna do kJ; menos carboidrato que açúcar; menos gordura que saturada.
+    expect(valoresCoerentes({ ...biscoito, carboidratos: 320 })).toBe(false);
+    expect(valoresCoerentes({ ...biscoito, carboidratos: 12 })).toBe(false);
+    expect(valoresCoerentes({ ...biscoito, gorduras: 2 })).toBe(false);
+    // Gordura total que dá mais calorias que o rótulo declara.
+    expect(valoresCoerentes({ ...biscoito, gorduras: 60, carboidratos: 30 })).toBe(false);
+  });
+
   it('valoresCoerentes: aceita alimentos reais, recusa o impossível', () => {
     // Maionese, whey e refrigerante (valores por 100 g/ml de rótulos reais).
     expect(

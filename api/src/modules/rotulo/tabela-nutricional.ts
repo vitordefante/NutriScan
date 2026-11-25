@@ -26,7 +26,7 @@ const LINHAS: [Campo, RegExp][] = [
   ['acucaresAdicionados', /acucares adicionados/],
   ['acucares', /acucares(?: totais)?\b/],
   ['gorduraSaturada', /gorduras? saturadas?/],
-  ['gorduras', /^gorduras? totais/],
+  ['gorduras', /^gorduras? (?:totais|total)\b/],
   ['sodioMg', /^sodio/],
   ['fibras', /fibras?(?: alimentar(?:es)?)?\b/],
   ['proteinas', /^proteinas?/],
@@ -202,17 +202,35 @@ function lerPorFileiras(linhas: readonly LabelLine[]): Lido[] {
  * tomados como base, ou o "100" do cabeçalho tomado como energia):
  * - em 100 g, proteínas + açúcares + gordura saturada + fibras não passam de 100 g;
  * - essas quantidades já somam calorias (4 kcal/g para proteína e açúcar, 9 para gordura) que
- *   não podem passar da energia declarada (com folga para arredondamentos do rótulo).
+ *   não podem passar da energia declarada (com folga para arredondamentos do rótulo);
+ * - carboidratos e gorduras totais: cada um até 100 g, com proteínas não passam de 100 g, e
+ *   não ficam abaixo da parte deles (açúcares; gordura saturada).
  */
 export function valoresCoerentes(n: Nutrientes): boolean {
   const g = (v: number | undefined) => v ?? 0;
   const acucar = n.acucares ?? n.acucaresAdicionados;
   const massa = g(n.proteinas) + g(acucar) + g(n.gorduraSaturada) + g(n.fibras);
   if (massa > 105) return false;
+  if (g(n.carboidratos) + g(n.proteinas) + g(n.gorduras) > 105) return false;
+  const folga = 0.5;
+  if (n.carboidratos !== undefined && acucar !== undefined && acucar > n.carboidratos + folga) {
+    return false;
+  }
+  if (
+    n.gorduras !== undefined &&
+    n.gorduraSaturada !== undefined &&
+    n.gorduraSaturada > n.gorduras + folga
+  ) {
+    return false;
+  }
   if (n.sodioMg !== undefined && n.sodioMg > 40_000) return false;
   if (n.energiaKcal === undefined) return true;
   if (n.energiaKcal > 950) return false;
-  const kcalMinima = 4 * g(n.proteinas) + 4 * g(acucar) + 9 * g(n.gorduraSaturada);
+  // Com os totais, a conta usa carboidratos e gorduras inteiros (a parte já está dentro deles).
+  const kcalMinima =
+    4 * g(n.proteinas) +
+    4 * Math.max(g(acucar), g(n.carboidratos)) +
+    9 * Math.max(g(n.gorduraSaturada), g(n.gorduras));
   return kcalMinima <= n.energiaKcal * 1.15 + 15;
 }
 

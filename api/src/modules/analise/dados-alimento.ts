@@ -27,6 +27,8 @@ export type DadosAlimento = {
   nutriScoreInformado?: LetraNutriScore;
   /** Valores por 100 g (ou 100 ml, em bebidas). */
   nutrientes: Nutrientes;
+  /** Base da tabela lida na foto do rótulo (100 g ou 100 ml), quando ela disse. */
+  unidadeDaTabela?: 'g' | 'ml';
   /** Porção do rótulo em g/ml (só para exibir; a nota usa os valores por 100). */
   porcao?: number;
   /** Vitaminas e minerais declarados, por 100 g/ml (só para exibir). */

@@ -28,6 +28,8 @@ describe('nutricaoConsumida', () => {
 
   it('com quantidade, multiplica por ela; sem porção no rótulo, o padrão é 100 g', () => {
     expect(nutricaoConsumida(FEIJAO, 150).macros.carboidratos).toBe(90);
+    // 1½ porção de 25 g: a quantidade guardada é 37,5 g, não 38.
+    expect(nutricaoConsumida({ ...FEIJAO, porcao: 25 }, 37.5).quantidade).toBe(37.5);
     const semPorcao = { ...FEIJAO, porcao: undefined } as NutritionFacts;
     delete (semPorcao as { porcao?: number }).porcao;
     expect(nutricaoConsumida(semPorcao)).toMatchObject({ quantidade: 100, micros: { ferro: 7 } });
@@ -99,6 +101,26 @@ describe('resumirNutricao', () => {
     expect(resumo?.micros).toEqual([
       expect.objectContaining({ id: 'ferro', quantidade: 6.2, estimado: true }),
     ]);
+  });
+
+  it('registro sem a energia no rótulo entra nas calorias do dia pelos macros', () => {
+    const comKcal: LogNutrition = {
+      quantidade: 100,
+      unidade: 'g',
+      macros: { energiaKcal: 200, carboidratos: 30, proteinas: 5, gorduras: 5 },
+      micros: {},
+      estimados: {},
+    };
+    const semKcal: LogNutrition = {
+      ...comKcal,
+      macros: { carboidratos: 50, proteinas: 10, gorduras: 0 },
+    };
+    const resumo = resumirNutricao([
+      consumo('2026-11-14T12:00:00Z', comKcal),
+      consumo('2026-11-14T13:00:00Z', semKcal),
+    ]);
+    // 200 + (50 × 4 + 10 × 4) = 440 kcal.
+    expect(resumo?.porDia.energiaKcal).toBe(440);
   });
 
   it('nenhum registro com tabela: null', () => {

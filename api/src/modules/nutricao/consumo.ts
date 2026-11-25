@@ -24,7 +24,8 @@ export function nutricaoConsumida(n: NutritionFacts, quantidade?: number): LogNu
       Object.entries(o).map(([k, v]) => [k, arredondar((v as number) * fator)]),
     ) as T;
   return {
-    quantidade: arredondar(q),
+    // Uma casa: 1½ porção de 25 g são 37,5 g (arredondar() daria 38 e "1,5 porções · 38 g").
+    quantidade: Math.round(q * 10) / 10,
     unidade: n.unidade,
     ...(n.porcao !== undefined && { porcao: n.porcao }),
     macros: vezes(n.por100),
@@ -35,6 +36,14 @@ export function nutricaoConsumida(n: NutritionFacts, quantidade?: number): LogNu
 
 function paraMapa(lista: readonly { id: MicronutrientId; quantidade: number }[]): QuantidadesMicro {
   return Object.fromEntries(lista.map((m) => [m.id, m.quantidade]));
+}
+
+/** kcal pelos macros (Atwater: 4/4/9), só com os três conhecidos. */
+function kcalDosMacros({ carboidratos, proteinas, gorduras }: Macronutrients): number | undefined {
+  if (carboidratos === undefined || proteinas === undefined || gorduras === undefined) {
+    return undefined;
+  }
+  return 4 * carboidratos + 4 * proteinas + 9 * gorduras;
 }
 
 /** Fuso dos dias do resumo: o app é feito para o Brasil (o servidor roda em UTC). */
@@ -55,7 +64,13 @@ export function resumirNutricao(registros: readonly LogEntry[]): DailyNutrition 
 
   const macros: Record<string, number> = {};
   for (const r of comTabela) {
-    for (const [k, v] of Object.entries(r.macros)) macros[k] = (macros[k] ?? 0) + v;
+    for (const [k, v] of Object.entries(r.macros)) {
+      if (k !== 'energiaKcal') macros[k] = (macros[k] ?? 0) + v;
+    }
+    // Sem a energia no rótulo, a dos macros: senão os gramas do registro entram no dia e as
+    // calorias dele não.
+    const kcal = r.macros.energiaKcal ?? kcalDosMacros(r.macros);
+    if (kcal !== undefined) macros.energiaKcal = (macros.energiaKcal ?? 0) + kcal;
   }
 
   const micros = new Map<MicronutrientId, { total: number; estimado: boolean }>();

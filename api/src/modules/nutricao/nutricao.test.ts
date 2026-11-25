@@ -72,6 +72,14 @@ describe('montarNutricao', () => {
     expect(n?.micronutrientes.map((m) => m.id)).toEqual(['vitamina_d', 'calcio']);
   });
 
+  it('rótulo lido na foto: a unidade é a da tabela, não o palpite pelo nome', () => {
+    // "Açaí cremoso" parece comida pelo nome, mas a tabela da foto é por 100 ml.
+    const n = montarNutricao(
+      alimento({ nome: 'Açaí cremoso', quantidade: '100 g', unidadeDaTabela: 'ml', porcao: 200 }),
+    );
+    expect(n?.unidade).toBe('ml');
+  });
+
   it('aveia: micronutrientes típicos pela TACO, só os que passam de 15% do VDR', () => {
     const n = montarNutricao(alimento({ categorias: ['en:cereals', 'en:oats', 'en:rolled-oats'] }));
     expect(n?.tipicos?.alimento).toBe('Aveia, flocos, crua');
@@ -130,6 +138,11 @@ describe('alimentoTacoDe', () => {
       'en:plain-yogurts',
     ];
     expect(alimentoTacoDe(iogurte)?.nome).toBe('Iogurte, natural');
+    // "Sem açúcar" não é "adoçado" (o termo vale no começo de uma palavra da tag).
+    expect(alimentoTacoDe(['en:natural-yogurts', 'en:unsweetened-yogurts'])?.nome).toBe(
+      'Iogurte, natural',
+    );
+    expect(alimentoTacoDe(['en:natural-yogurts', 'en:sweetened-yogurts'])).toBeUndefined();
     // Sobremesa láctea que não é iogurte natural segue de fora.
     expect(alimentoTacoDe(['en:dairies', 'en:desserts', 'en:yogurts'])).toBeUndefined();
   });

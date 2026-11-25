@@ -42,7 +42,8 @@ export function montarNutricao(dados: DadosAlimento): NutritionFacts | undefined
   const declarados = dados.micronutrientes ?? {};
   const tipicos = tipicosDaCategoria(dados.categorias, dados.porcao, declarados);
   return {
-    unidade: ehBebida(dados) ? 'ml' : 'g',
+    // A tabela lida na foto diz a base (100 g ou 100 ml); sem ela, o palpite pela embalagem.
+    unidade: dados.unidadeDaTabela ?? (ehBebida(dados) ? 'ml' : 'g'),
     por100,
     ...(dados.porcao !== undefined && { porcao: dados.porcao }),
     micronutrientes: paraLista(declarados),
@@ -53,9 +54,10 @@ export function montarNutricao(dados: DadosAlimento): NutritionFacts | undefined
 /**
  * Categorias que tiram o produto da estimativa, qualquer que seja a regra (ex.: castanha coberta
  * de chocolate também é "en:cashew-nuts"): a composição dele já não é a do alimento simples.
+ * Cada termo vale no começo de uma palavra da tag: "en:unsweetened-yogurts" não é "sweetened".
  */
 const NAO_E_ALIMENTO_SIMPLES =
-  /chocolate|confectioner|candies|candied|sweetened|cereal-bars|biscuits|cakes|desserts|ready-meals/;
+  /(?<![a-z])(?:chocolate|confectioner|candies|candied|sweetened|cereal-bars|biscuits|cakes|desserts|ready-meals)/;
 /**
  * O OFF põe o iogurte natural também em "en:desserts" (sobremesas lácteas fermentadas): com
  * "en:plain-yogurts" ele continua sendo alimento simples.
