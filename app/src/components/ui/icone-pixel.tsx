@@ -42,6 +42,47 @@ const ICONES = {
     h: 10,
     d: 'M6 0h3v1h-3zM5 1h3v1h-3zM4 2h3v1h-3zM3 3h3v1h-3zM2 4h7v1h-7zM5 5h3v1h-3zM4 6h3v1h-3zM3 7h2v1h-2zM2 8h2v1h-2zM1 9h1v1h-1z',
   },
+  // Contato e seções do produtor; tipos de produto (quadrado sem foto).
+  whatsapp: {
+    w: 12,
+    h: 12,
+    d: 'M3 0h6v1h-6zM1 1h2v1h-2zM9 1h2v1h-2zM1 2h1v1h-1zM10 2h1v1h-1zM0 3h1v1h-1zM3 3h2v1h-2zM11 3h1v1h-1zM0 4h1v1h-1zM3 4h2v1h-2zM11 4h1v1h-1zM0 5h1v1h-1zM4 5h1v1h-1zM11 5h1v1h-1zM0 6h1v1h-1zM4 6h2v1h-2zM8 6h2v1h-2zM11 6h1v1h-1zM0 7h1v1h-1zM5 7h4v1h-4zM11 7h1v1h-1zM0 8h1v1h-1zM11 8h1v1h-1zM0 9h1v1h-1zM10 9h1v1h-1zM0 10h2v1h-2zM3 10h2v1h-2zM8 10h2v1h-2zM0 11h1v1h-1zM4 11h4v1h-4z',
+  },
+  instagram: {
+    w: 12,
+    h: 12,
+    d: 'M1 0h10v1h-10zM0 1h1v1h-1zM11 1h1v1h-1zM0 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM0 3h1v1h-1zM4 3h4v1h-4zM11 3h1v1h-1zM0 4h1v1h-1zM3 4h1v1h-1zM8 4h1v1h-1zM11 4h1v1h-1zM0 5h1v1h-1zM3 5h1v1h-1zM8 5h1v1h-1zM11 5h1v1h-1zM0 6h1v1h-1zM3 6h1v1h-1zM8 6h1v1h-1zM11 6h1v1h-1zM0 7h1v1h-1zM3 7h1v1h-1zM8 7h1v1h-1zM11 7h1v1h-1zM0 8h1v1h-1zM4 8h4v1h-4zM11 8h1v1h-1zM0 9h1v1h-1zM11 9h1v1h-1zM0 10h1v1h-1zM11 10h1v1h-1zM1 11h10v1h-10z',
+  },
+  produtor: {
+    w: 12,
+    h: 12,
+    d: 'M4 0h4v1h-4zM3 1h6v1h-6zM0 2h12v1h-12zM2 3h1v1h-1zM9 3h1v1h-1zM2 4h1v1h-1zM4 4h1v1h-1zM7 4h1v1h-1zM9 4h1v1h-1zM2 5h1v1h-1zM9 5h1v1h-1zM3 6h1v1h-1zM5 6h2v1h-2zM8 6h1v1h-1zM4 7h1v1h-1zM7 7h1v1h-1zM2 8h8v1h-8zM1 9h1v1h-1zM4 9h1v1h-1zM7 9h1v1h-1zM10 9h1v1h-1zM0 10h1v1h-1zM4 10h4v1h-4zM11 10h1v1h-1zM0 11h1v1h-1zM4 11h1v1h-1zM7 11h1v1h-1zM11 11h1v1h-1z',
+  },
+  local: {
+    w: 10,
+    h: 11,
+    d: 'M2 0h6v1h-6zM1 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM4 2h2v1h-2zM9 2h1v1h-1zM0 3h1v1h-1zM3 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM0 4h1v1h-1zM3 4h1v1h-1zM6 4h1v1h-1zM9 4h1v1h-1zM0 5h1v1h-1zM4 5h2v1h-2zM9 5h1v1h-1zM1 6h1v1h-1zM8 6h1v1h-1zM1 7h1v1h-1zM8 7h1v1h-1zM2 8h1v1h-1zM7 8h1v1h-1zM3 9h1v1h-1zM6 9h1v1h-1zM4 10h2v1h-2z',
+  },
+  entrega: {
+    w: 14,
+    h: 10,
+    d: 'M0 0h9v1h-9zM0 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM8 2h4v1h-4zM0 3h1v1h-1zM8 3h1v1h-1zM11 3h2v1h-2zM0 4h1v1h-1zM8 4h1v1h-1zM12 4h2v1h-2zM0 5h1v1h-1zM8 5h1v1h-1zM13 5h1v1h-1zM0 6h14v1h-14zM0 7h1v1h-1zM2 7h2v1h-2zM8 7h1v1h-1zM10 7h2v1h-2zM13 7h1v1h-1zM1 8h1v1h-1zM4 8h1v1h-1zM9 8h1v1h-1zM12 8h1v1h-1zM2 9h2v1h-2zM10 9h2v1h-2z',
+  },
+  bebida: {
+    w: 8,
+    h: 12,
+    d: 'M3 0h2v1h-2zM3 1h2v1h-2zM2 2h4v1h-4zM2 3h1v1h-1zM5 3h1v1h-1zM1 4h1v1h-1zM6 4h1v1h-1zM0 5h1v1h-1zM7 5h1v1h-1zM0 6h8v1h-8zM0 7h1v1h-1zM2 7h4v1h-4zM7 7h1v1h-1zM0 8h8v1h-8zM0 9h1v1h-1zM7 9h1v1h-1zM0 10h1v1h-1zM7 10h1v1h-1zM0 11h8v1h-8z',
+  },
+  doce: {
+    w: 12,
+    h: 7,
+    d: 'M0 0h2v1h-2zM10 0h2v1h-2zM0 1h1v1h-1zM2 1h1v1h-1zM4 1h4v1h-4zM9 1h1v1h-1zM11 1h1v1h-1zM0 2h1v1h-1zM3 2h1v1h-1zM8 2h1v1h-1zM11 2h1v1h-1zM0 3h1v1h-1zM3 3h1v1h-1zM5 3h2v1h-2zM8 3h1v1h-1zM11 3h1v1h-1zM0 4h1v1h-1zM3 4h1v1h-1zM8 4h1v1h-1zM11 4h1v1h-1zM0 5h1v1h-1zM2 5h1v1h-1zM4 5h4v1h-4zM9 5h1v1h-1zM11 5h1v1h-1zM0 6h2v1h-2zM10 6h2v1h-2z',
+  },
+  talheres: {
+    w: 10,
+    h: 12,
+    d: 'M0 0h1v1h-1zM2 0h1v1h-1zM4 0h1v1h-1zM8 0h1v1h-1zM0 1h1v1h-1zM2 1h1v1h-1zM4 1h1v1h-1zM8 1h2v1h-2zM0 2h1v1h-1zM2 2h1v1h-1zM4 2h1v1h-1zM8 2h2v1h-2zM0 3h5v1h-5zM8 3h2v1h-2zM1 4h3v1h-3zM8 4h2v1h-2zM2 5h1v1h-1zM8 5h2v1h-2zM2 6h1v1h-1zM8 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM2 8h1v1h-1zM8 8h1v1h-1zM2 9h1v1h-1zM8 9h1v1h-1zM2 10h1v1h-1zM8 10h1v1h-1zM2 11h1v1h-1zM8 11h1v1h-1z',
+  },
   // Categorias de produtores (mapa).
   hortalicas: {
     w: 12,

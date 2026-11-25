@@ -10,6 +10,8 @@ export type TabelaLida = {
   unidade: 'g' | 'ml';
   /** Como os valores por 100 foram obtidos. */
   origem: 'coluna_100' | 'convertido_da_porcao';
+  /** Porção declarada ("Porção de 30 g"), na mesma unidade, quando lida. */
+  porcao?: number;
 };
 
 type Campo = keyof Omit<Nutrientes, 'frutasLegumesPct' | 'acucares'> | 'acucares';
@@ -20,9 +22,11 @@ type Campo = keyof Omit<Nutrientes, 'frutasLegumesPct' | 'acucares'> | 'acucares
  */
 const LINHAS: [Campo, RegExp][] = [
   ['energiaKcal', /valor energetico|^energia/],
+  ['carboidratos', /^carboidratos?/],
   ['acucaresAdicionados', /acucares adicionados/],
   ['acucares', /acucares(?: totais)?\b/],
   ['gorduraSaturada', /gorduras? saturadas?/],
+  ['gorduras', /^gorduras? totais/],
   ['sodioMg', /^sodio/],
   ['fibras', /fibras?(?: alimentar(?:es)?)?\b/],
   ['proteinas', /^proteinas?/],
@@ -60,7 +64,12 @@ export function lerTabelaNutricional(linhas: readonly LabelLine[]): TabelaLida |
 
   if (Object.keys(nutrientes).length < MINIMO_NUTRIENTES) return null;
   if (!valoresCoerentes(nutrientes)) return null;
-  return { nutrientes, unidade, origem: cem ? 'coluna_100' : 'convertido_da_porcao' };
+  return {
+    nutrientes,
+    unidade,
+    origem: cem ? 'coluna_100' : 'convertido_da_porcao',
+    ...(porcao && porcao.unidade === unidade && { porcao: porcao.quantidade }),
+  };
 }
 
 type Lido = { campo: Campo; valor: number; rotulo: string };

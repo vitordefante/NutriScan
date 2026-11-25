@@ -11,6 +11,7 @@ import {
   jsonb,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uuid,
@@ -47,6 +48,8 @@ export const rotulosLidos = pgTable('rotulos_lidos', {
   /** Nutrientes por 100 g ou 100 ml (ver `unidade`). */
   nutrientes: jsonb('nutrientes'),
   unidade: text('unidade'),
+  /** Porção declarada na tabela, em g/ml (só para exibir). */
+  porcao: real('porcao'),
   criadoEm: timestamp('criado_em', { withTimezone: true }).notNull(),
   atualizadoEm: timestamp('atualizado_em', { withTimezone: true }).notNull(),
 });
@@ -120,6 +123,8 @@ export const registros = pgTable(
     nova: integer('nova'),
     altoEm: jsonb('alto_em').notNull(),
     alertas: jsonb('alertas').notNull(),
+    /** Alimentos com tabela: quanto foi consumido e o que deu (LogNutrition). */
+    nutricao: jsonb('nutricao'),
     registradoEm: timestamp('registrado_em', { withTimezone: true }).notNull(),
   },
   (t) => [index('registros_usuario_data').on(t.usuarioId, t.registradoEm)],

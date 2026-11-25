@@ -1,0 +1,1 @@
+ALTER TABLE "rotulos_lidos" ADD COLUMN "porcao" real;

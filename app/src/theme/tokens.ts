@@ -61,3 +61,13 @@ export const coresNutriScore: Record<NutriScoreLetter, string> = {
   D: '#F08C2E',
   E: '#D93F3F',
 };
+
+/**
+ * Macronutrientes no anel de energia. Cores neutras de propósito: nenhum macro é "bom" ou "ruim"
+ * (não usam o verde/vermelho das faixas da nota).
+ */
+export const coresMacros = {
+  carboidratos: '#F5C542',
+  proteinas: '#FF6B4A',
+  gorduras: '#5E5E5E',
+} as const;

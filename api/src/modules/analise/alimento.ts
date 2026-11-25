@@ -42,7 +42,7 @@ const POS_PARA_PREPARO = [
  * 3. por fim, a categoria "en:beverages", exceto pós para preparo.
  * Atenção: a tag "en:plant-based-foods-and-beverages" NÃO indica bebida.
  */
-function ehBebida(dados: DadosAlimento): boolean {
+export function ehBebida(dados: DadosAlimento): boolean {
   if (dados.categorias.some((c) => CATEGORIAS_NAO_BEBIDA.test(c))) return false;
   if (NOMES_NAO_BEBIDA.test(normalizar(dados.nome))) return false;
 

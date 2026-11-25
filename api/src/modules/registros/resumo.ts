@@ -1,13 +1,15 @@
 import type { ExposureSummary, FrontLabelNutrient, LogEntry } from '@nutriscan/shared';
 
 import { faixaDaNota } from '../analise/nota.js';
+import { resumirNutricao } from '../nutricao/consumo.js';
 
 /** Quantos alertas de cada tipo o resumo lista. */
 export const MAIS_FREQUENTES = 5;
 
 /**
  * Resumo do que o usuário consumiu/usou no período (os registros já filtrados pelo período):
- * nota média, quantos ultraprocessados, "alto em" e alertas mais frequentes. Tudo vem da análise
+ * nota média, quantos ultraprocessados, "alto em", alertas mais frequentes e a média diária de
+ * macros, vitaminas e minerais. Tudo vem da análise
  * guardada em cada registro, então o resumo usa os mesmos critérios da nota.
  */
 export function resumir(registros: readonly LogEntry[], dias: number): ExposureSummary {
@@ -30,6 +32,7 @@ export function resumir(registros: readonly LogEntry[], dias: number): ExposureS
     })),
     aditivos: maisFrequentes(alimentos),
     ingredientesAtencao: maisFrequentes(cosmeticos),
+    nutricao: resumirNutricao(alimentos),
   };
 }
 

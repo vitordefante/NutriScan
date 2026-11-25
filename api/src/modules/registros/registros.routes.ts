@@ -2,12 +2,18 @@ import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
 import { erro, paramsBarcode } from '../../http/respostas.js';
+import { MAXIMO_CONSUMO } from '../nutricao/consumo.js';
 import { FonteIndisponivelError } from '../produtos/open-food-facts.client.js';
 import type { ServicoRegistros } from './registros.service.js';
 
 export type RegistrosDeps = {
   registros: ServicoRegistros;
 };
+
+/** Quanto foi consumido (g ou ml); sem isso, uma porção do rótulo. */
+const corpoRegistro = paramsBarcode.extend({
+  quantidade: z.number().positive().max(MAXIMO_CONSUMO).optional(),
+});
 
 /** Período em dias (padrão: 7; até 1 ano). */
 const periodoSchema = z.object({ dias: z.coerce.number().int().min(1).max(365).default(7) });
@@ -17,14 +23,20 @@ export const registrosRoutes: FastifyPluginAsync<RegistrosDeps> = async (app, { 
 
   /** Registra um consumo (alimento) ou uso (cosmético) agora. */
   app.post('/registros', async (request, reply) => {
-    const corpo = paramsBarcode.safeParse(request.body);
+    const corpo = corpoRegistro.safeParse(request.body);
     if (!corpo.success) {
+      const naQuantidade = corpo.error.issues.some((i) => i.path[0] === 'quantidade');
       return reply
         .code(400)
-        .send(erro('codigo_invalido', 'O código de barras deve ter de 8 a 14 dígitos.'));
+        .send(
+          naQuantidade
+            ? erro('dados_invalidos', `A quantidade deve ser de 0 a ${MAXIMO_CONSUMO} g ou ml.`)
+            : erro('codigo_invalido', 'O código de barras deve ter de 8 a 14 dígitos.'),
+        );
     }
     try {
-      const registro = await registros.registrar(request.user.sub, corpo.data.barcode);
+      const { barcode, quantidade } = corpo.data;
+      const registro = await registros.registrar(request.user.sub, barcode, quantidade);
       if (!registro) {
         return reply
           .code(404)

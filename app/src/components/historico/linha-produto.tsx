@@ -1,13 +1,16 @@
-import type { ScoreBand } from '@nutriscan/shared';
-import { Image } from 'expo-image';
+import type { ProductKind, ScoreBand } from '@nutriscan/shared';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { FotoProduto } from '@/components/ui/foto-produto';
 import { Texto } from '@/components/ui/texto';
+import { iconeDoProduto } from '@/lib/icone-produto';
 import { cores, espaco, faixas, fontes } from '@/theme/tokens';
 
 type Props = {
   nome: string;
+  /** O histórico não guarda a categoria: sem foto, o ícone é o do tipo. */
+  tipo: ProductKind;
   imagemUrl?: string;
   nota: number | null;
   faixa: ScoreBand | null;
@@ -19,7 +22,16 @@ type Props = {
 };
 
 /** Linha de uma lista de produtos (histórico, log): foto, nome, detalhe e a nota. */
-export function LinhaProduto({ nome, imagemUrl, nota, faixa, detalhe, onPress, acao }: Props) {
+export function LinhaProduto({
+  nome,
+  tipo,
+  imagemUrl,
+  nota,
+  faixa,
+  detalhe,
+  onPress,
+  acao,
+}: Props) {
   const cor = faixa ? faixas[faixa] : null;
   return (
     <View style={estilos.linha}>
@@ -29,20 +41,12 @@ export function LinhaProduto({ nome, imagemUrl, nota, faixa, detalhe, onPress, a
         accessibilityLabel={`${nome}, ${nota === null ? 'sem nota' : `nota ${nota}`}. ${detalhe}. Abrir análise.`}
         style={({ pressed }) => [estilos.toque, pressed && { backgroundColor: cores.vazio }]}
       >
-        <View style={estilos.foto}>
-          {imagemUrl ? (
-            <Image source={imagemUrl} style={StyleSheet.absoluteFill} contentFit="cover" />
-          ) : (
-            <Texto variante="pixel" cor={cores.cinza} style={estilos.semFoto}>
-              SEM{'\n'}FOTO
-            </Texto>
-          )}
-        </View>
+        <FotoProduto url={imagemUrl} icone={iconeDoProduto(tipo)} style={estilos.foto} />
         <View style={estilos.textos}>
           <Texto variante="subtitulo" style={estilos.nome} numberOfLines={2}>
             {nome}
           </Texto>
-          <Texto variante="legenda" numberOfLines={1}>
+          <Texto variante="legenda" numberOfLines={2}>
             {detalhe}
           </Texto>
         </View>
@@ -79,16 +83,7 @@ const estilos = StyleSheet.create({
     borderColor: cores.tinta,
     padding: 10,
   },
-  foto: {
-    width: 44,
-    height: 44,
-    borderWidth: espaco.borda,
-    borderColor: cores.tinta,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  semFoto: { fontSize: 7, textAlign: 'center' },
+  foto: { width: 44, height: 44, borderWidth: espaco.borda, borderColor: cores.tinta },
   textos: { flex: 1, gap: 2 },
   nome: { fontSize: 15, lineHeight: 19 },
   nota: {

@@ -1,0 +1,1 @@
+ALTER TABLE "registros" ADD COLUMN "nutricao" jsonb;

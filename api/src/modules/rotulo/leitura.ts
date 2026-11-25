@@ -12,6 +12,8 @@ export type RotuloLido = {
   /** Por 100 g ou 100 ml (ver `unidade`). */
   nutrientes?: Nutrientes;
   unidade?: 'g' | 'ml';
+  /** Porção declarada na tabela (g/ml). */
+  porcao?: number;
 };
 
 export type FotoRotulo = 'ingredientes' | 'tabela';
@@ -46,7 +48,11 @@ export function lerEnvio(envio: LabelSubmission): ResultadoLeitura {
       tipo: envio.tipo,
       ...(nome && { nome }),
       ...(ingredientes && { ingredientes }),
-      ...(tabela && { nutrientes: tabela.nutrientes, unidade: tabela.unidade }),
+      ...(tabela && {
+        nutrientes: tabela.nutrientes,
+        unidade: tabela.unidade,
+        ...(tabela.porcao && { porcao: tabela.porcao }),
+      }),
     },
   };
 }
@@ -57,5 +63,8 @@ export function lerEnvio(envio: LabelSubmission): ResultadoLeitura {
  */
 export function combinarLeituras(anterior: RotuloLido | null, nova: RotuloLido): RotuloLido {
   if (!anterior || anterior.tipo !== nova.tipo) return nova;
-  return { ...anterior, ...nova };
+  const combinada = { ...anterior, ...nova };
+  // A porção é da tabela: uma tabela nova sem a linha da porção não herda a da antiga.
+  if (nova.nutrientes && nova.porcao === undefined) delete combinada.porcao;
+  return combinada;
 }

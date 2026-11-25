@@ -3,6 +3,7 @@ import type { Product, ProductResult } from '@nutriscan/shared';
 import type { DadosAlimento } from '../analise/dados-alimento.js';
 import { analisarAlimento } from '../analise/nota.js';
 import { analisarCosmetico, type DadosCosmetico } from '../analise-cosmetico/nota.js';
+import { montarNutricao } from '../nutricao/nutricao.js';
 import type { RotuloLido } from '../rotulo/leitura.js';
 import type { ResultadoFontes } from './produtos.service.js';
 import {
@@ -33,10 +34,11 @@ export function montarComRotulo(
     ...(lido.ingredientes && { ingredientes: lido.ingredientes }),
   };
 
-  const analise =
-    lido.tipo === 'cosmetico'
-      ? analisarCosmetico(dadosCosmetico(produto.nome, daBase, lido))
-      : analisarAlimento(dadosAlimento(produto.nome, daBase, lido));
+  const alimento = lido.tipo === 'alimento' ? dadosAlimento(produto.nome, daBase, lido) : null;
+  const analise = alimento
+    ? analisarAlimento(alimento)
+    : analisarCosmetico(dadosCosmetico(produto.nome, daBase, lido));
+  const nutricao = alimento ? montarNutricao(alimento) : undefined;
 
   // Com cadastro na base aberta, ela continua sendo a fonte (nome, marca, foto — e a atribuição
   // que a licença dela pede); a leitura da foto entra como complemento.
@@ -46,6 +48,7 @@ export function montarComRotulo(
     desatualizado,
     fonte: daBase ? base!.fonte : 'foto',
     rotuloPorFoto: true,
+    ...(nutricao && { nutricao }),
   };
 }
 
@@ -63,6 +66,8 @@ function dadosAlimento(nome: string, daBase: ProdutoOff | null, lido: RotuloLido
       nutrientes: { ...base.nutrientes, ...lido.nutrientes },
       // A tabela diz se os valores são por 100 g ou 100 ml — é o que decide se é bebida.
       quantidade: lido.unidade === 'ml' ? '100 ml' : '100 g',
+      // A porção da foto vale; sem ela, fica a da base (é a mesma embalagem).
+      ...((lido.porcao ?? base.porcao) !== undefined && { porcao: lido.porcao ?? base.porcao }),
     }),
   };
 }

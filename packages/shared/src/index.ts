@@ -130,6 +130,113 @@ export type ProductResult = {
   fonte: ProductSource;
   /** A análise usa a leitura de fotos do rótulo enviadas no app (sozinha ou completando a base). */
   rotuloPorFoto: boolean;
+  /** Alimentos com tabela nutricional: macros e micronutrientes (informativo, fora da nota). */
+  nutricao?: NutritionFacts;
+};
+
+/** Macronutrientes por 100 g ou 100 ml. */
+export type Macronutrients = {
+  energiaKcal?: number;
+  /** Carboidratos totais (g). */
+  carboidratos?: number;
+  /** Açúcares totais (g). */
+  acucares?: number;
+  fibras?: number;
+  proteinas?: number;
+  /** Gorduras totais (g). */
+  gorduras?: number;
+  gordurasSaturadas?: number;
+  sodioMg?: number;
+};
+
+export type MicronutrientId =
+  | 'vitamina_a'
+  | 'vitamina_d'
+  | 'vitamina_e'
+  | 'vitamina_k'
+  | 'vitamina_c'
+  | 'tiamina'
+  | 'riboflavina'
+  | 'niacina'
+  | 'vitamina_b6'
+  | 'folato'
+  | 'vitamina_b12'
+  | 'biotina'
+  | 'acido_pantotenico'
+  | 'calcio'
+  | 'ferro'
+  | 'magnesio'
+  | 'zinco'
+  | 'potassio'
+  | 'fosforo'
+  | 'selenio'
+  | 'cobre'
+  | 'manganes'
+  | 'iodo'
+  | 'cromo'
+  | 'molibdenio';
+
+/** Uma vitamina ou mineral, por 100 g ou 100 ml. */
+export type Micronutrient = {
+  id: MicronutrientId;
+  /** Ex.: "Vitamina B1 (tiamina)". */
+  nome: string;
+  quantidade: number;
+  unidade: 'mg' | 'µg';
+  /** Valor diário de referência (VDR) para adultos, na mesma unidade (ANVISA, IN 75/2020). */
+  vdr: number;
+};
+
+/**
+ * Nutrição de um alimento, para informar (não entra na nota). Os valores são por 100 g/ml; o app
+ * calcula a porção. Micronutrientes declarados são os do rótulo; os "típicos" são uma estimativa
+ * pela categoria do alimento (TACO), não medida no produto.
+ */
+export type NutritionFacts = {
+  unidade: 'g' | 'ml';
+  por100: Macronutrients;
+  /** Porção do rótulo, em g ou ml (a mesma `unidade`), quando conhecida. */
+  porcao?: number;
+  /** Declarados no rótulo, do maior %VD para o menor. */
+  micronutrientes: Micronutrient[];
+  /** Estimativa pela TACO para este tipo de alimento: só os que passam de 15% do VDR em 100 g. */
+  tipicos?: {
+    /** O alimento da TACO usado como referência (ex.: "Aveia, flocos, crua"). */
+    alimento: string;
+    itens: Micronutrient[];
+  };
+};
+
+/**
+ * Nutrição de um consumo registrado: as quantidades do que foi consumido (não por 100 g), já
+ * calculadas no momento do registro.
+ */
+export type LogNutrition = {
+  /** Quanto foi consumido, em g ou ml. */
+  quantidade: number;
+  unidade: 'g' | 'ml';
+  /** Porção do rótulo no momento do registro (para mostrar "2 porções"), quando conhecida. */
+  porcao?: number;
+  macros: Macronutrients;
+  /** Declarados no rótulo, na unidade do catálogo (mg ou µg). */
+  micros: Partial<Record<MicronutrientId, number>>;
+  /** Estimados pela TACO para o tipo de alimento (os "típicos" da tela), na mesma unidade. */
+  estimados: Partial<Record<MicronutrientId, number>>;
+};
+
+/** Média diária da nutrição registrada no período. */
+export type DailyNutrition = {
+  /** Registros de alimento com tabela nutricional. */
+  registros: number;
+  /** Em quantos dias diferentes (horário de Brasília) caem esses registros: o divisor da média. */
+  diasComRegistro: number;
+  /** Média por dia com registro. */
+  porDia: Macronutrients;
+  /**
+   * Vitaminas e minerais, média por dia com registro, do maior %VD para o menor. `estimado`:
+   * parte do valor vem da estimativa pela TACO, não do rótulo.
+   */
+  micros: (Micronutrient & { estimado: boolean })[];
 };
 
 export type ProductSource = 'open_food_facts' | 'open_beauty_facts' | 'foto';
@@ -440,6 +547,8 @@ export type LogEntry = {
   altoEm: FrontLabelNutrient[];
   /** Títulos dos alertas (aditivos; em cosméticos, ingredientes de atenção). */
   alertas: string[];
+  /** Alimentos com tabela nutricional: quanto foi consumido e o que isso dá. */
+  nutricao?: LogNutrition;
   /** Data/hora ISO 8601 do consumo/uso. */
   registradoEm: string;
 };
@@ -465,6 +574,8 @@ export type ExposureSummary = {
   /** Alertas mais frequentes (até 5 de cada tipo), do mais frequente para o menos. */
   aditivos: { titulo: string; vezes: number }[];
   ingredientesAtencao: { titulo: string; vezes: number }[];
+  /** Macros, vitaminas e minerais dos alimentos registrados; null se nenhum tem tabela. */
+  nutricao: DailyNutrition | null;
 };
 
 /** Resposta de GET /registros: o resumo do período e os registros (os mais recentes primeiro). */

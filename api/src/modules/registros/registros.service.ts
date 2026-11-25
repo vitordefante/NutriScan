@@ -1,5 +1,6 @@
 import type { LogEntry, LogPeriod, ProductResult } from '@nutriscan/shared';
 
+import { nutricaoConsumida } from '../nutricao/consumo.js';
 import type { ServicoProdutos } from '../produtos/produtos.service.js';
 import type { NovoRegistro, RepositorioRegistros } from './registros.repository.js';
 import { resumir } from './resumo.js';
@@ -9,9 +10,10 @@ const DIA_MS = 24 * 60 * 60 * 1000;
 export type ServicoRegistros = {
   /**
    * Registra o consumo/uso do produto agora, com a análise atual dele; null se o produto não
-   * existe. Lança FonteIndisponivelError se a base estiver fora do ar e o produto fora do cache.
+   * existe. `quantidade` (g/ml) só vale para alimentos com tabela; sem ela, uma porção. Lança
+   * FonteIndisponivelError se a base estiver fora do ar e o produto fora do cache.
    */
-  registrar: (usuarioId: string, barcode: string) => Promise<LogEntry | null>;
+  registrar: (usuarioId: string, barcode: string, quantidade?: number) => Promise<LogEntry | null>;
   /** Registros dos últimos `dias` dias e o resumo deles. */
   periodo: (usuarioId: string, dias: number) => Promise<LogPeriod>;
   excluir: (usuarioId: string, id: string) => Promise<boolean>;
@@ -29,11 +31,11 @@ export function criarServicoRegistros({
   const desde = (dias: number) => new Date(agora().getTime() - dias * DIA_MS);
 
   return {
-    async registrar(usuarioId, barcode) {
+    async registrar(usuarioId, barcode, quantidade) {
       // A análise vem do servidor (a mesma da tela de resultado), não do app.
       const resultado = await produtos.consultar(barcode);
       if (!resultado) return null;
-      return registros.criar(usuarioId, paraRegistro(resultado, agora()));
+      return registros.criar(usuarioId, paraRegistro(resultado, agora(), quantidade));
     },
 
     async periodo(usuarioId, dias) {
@@ -46,7 +48,11 @@ export function criarServicoRegistros({
 }
 
 /** O que o log guarda da análise no momento do registro. */
-export function paraRegistro({ produto, analise }: ProductResult, quando: Date): NovoRegistro {
+export function paraRegistro(
+  { produto, analise, nutricao }: ProductResult,
+  quando: Date,
+  quantidade?: number,
+): NovoRegistro {
   const comNota = analise.status !== 'dados_insuficientes';
   return {
     barcode: produto.barcode,
@@ -59,6 +65,8 @@ export function paraRegistro({ produto, analise }: ProductResult, quando: Date):
     nova: comNota ? (analise.destaques.nova?.grupo ?? null) : null,
     altoEm: comNota ? analise.destaques.lupa.map((l) => l.nutriente) : [],
     alertas: analise.alertas.map((a) => a.titulo),
+    ...(produto.tipo === 'alimento' &&
+      nutricao && { nutricao: nutricaoConsumida(nutricao, quantidade) }),
     registradoEm: quando.toISOString(),
   };
 }

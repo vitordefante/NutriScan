@@ -129,8 +129,11 @@ describe('lerTabelaNutricional', () => {
     expect(lida).toEqual({
       unidade: 'g',
       origem: 'coluna_100',
+      porcao: 30,
       nutrientes: {
         energiaKcal: 480,
+        carboidratos: 68,
+        gorduras: 20,
         acucares: 32,
         acucaresAdicionados: 30,
         proteinas: 5.8,
@@ -172,7 +175,15 @@ describe('lerTabelaNutricional', () => {
     expect(lida).toEqual({
       unidade: 'g',
       origem: 'convertido_da_porcao',
-      nutrientes: { energiaKcal: 500, proteinas: 6, gorduraSaturada: 10, sodioMg: 880 },
+      porcao: 25,
+      nutrientes: {
+        energiaKcal: 500,
+        carboidratos: 64,
+        gorduras: 24,
+        proteinas: 6,
+        gorduraSaturada: 10,
+        sodioMg: 880,
+      },
     });
   });
 
@@ -268,6 +279,8 @@ describe('saída real do Apple Vision', () => {
   it('tabela: cada nome com o valor da coluna de 100 g', () => {
     expect(lerTabelaNutricional(linhas)?.nutrientes).toEqual({
       energiaKcal: 480,
+      carboidratos: 68,
+      gorduras: 20,
       acucares: 32,
       acucaresAdicionados: 30,
       proteinas: 5.8,
@@ -285,8 +298,11 @@ describe('fotos reais de tabelas (Apple Vision)', () => {
     expect(lerTabelaNutricional(linhasDe(iphoneMaionese))).toEqual({
       unidade: 'g',
       origem: 'coluna_100',
+      porcao: 12,
       nutrientes: {
         energiaKcal: 304,
+        carboidratos: 6.7,
+        gorduras: 30,
         acucares: 2.5,
         acucaresAdicionados: 2.5,
         proteinas: 0.6,
@@ -303,8 +319,11 @@ describe('fotos reais de tabelas (Apple Vision)', () => {
     expect(lerTabelaNutricional(linhasDe(iphoneWhey))).toEqual({
       unidade: 'g',
       origem: 'convertido_da_porcao',
+      porcao: 30,
       nutrientes: {
         energiaKcal: 413.3,
+        carboidratos: 11.3,
+        gorduras: 6.7,
         acucares: 5.7,
         proteinas: 76.7,
         gorduraSaturada: 2.7,

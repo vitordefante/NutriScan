@@ -215,10 +215,6 @@ export default function TelaMapa() {
               variante="secundario"
               onPress={() => router.push('/quero-aparecer')}
             />
-            <Texto variante="legenda">
-              Produtores visitados pelo autor do app ou que pediram para aparecer e foram
-              conferidos. Sua localização só é usada no aparelho, para calcular as distâncias.
-            </Texto>
           </View>
         }
       />
