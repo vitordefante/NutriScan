@@ -440,6 +440,11 @@ export type ItemProposalInput = {
   preco?: ProducerPrice;
   /** Id devolvido por POST /produtor/fotos (ou a foto que o item já tem). */
   fotoId?: string;
+  /**
+   * Correção de um item novo já enviado: o id desse envio, que é trocado pelo novo na mesma
+   * operação (some se já tiver sido analisado: 404 proposta_nao_encontrada).
+   */
+  substitui?: string;
 };
 
 /** Um lugar onde o produtor vende (um pino no mapa). */

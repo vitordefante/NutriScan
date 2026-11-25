@@ -11,7 +11,7 @@ import { CampoTexto } from '@/components/ui/campo-texto';
 import { Tela } from '@/components/ui/tela';
 import { Texto } from '@/components/ui/texto';
 import { type ModoItem, useFormularioItem } from '@/hooks/use-formulario-item';
-import { useMeuCatalogo } from '@/hooks/use-meu-catalogo';
+import { type EstadoMeuCatalogo, useMeuCatalogo } from '@/hooks/use-meu-catalogo';
 import { cores, espaco, faixas, fontes } from '@/theme/tokens';
 
 /**
@@ -20,7 +20,7 @@ import { cores, espaco, faixas, fontes } from '@/theme/tokens';
  */
 export default function TelaItem() {
   const { id, proposta } = useLocalSearchParams<{ id?: string; proposta?: string }>();
-  const { estado } = useMeuCatalogo();
+  const { estado, recarregar } = useMeuCatalogo();
 
   let modo: ModoItem | null = null;
   let chave = 'novo';
@@ -51,15 +51,25 @@ export default function TelaItem() {
         // é buscada de novo por trás.
         <Formulario key={chave} modo={modo} token={estado.token} />
       ) : (
-        <Texto variante="apoio" style={{ padding: espaco.margemTela }}>
-          {estado.status === 'pronto' || estado.status === 'erro'
-            ? 'Esse item não está mais no catálogo.'
-            : 'Carregando…'}
-        </Texto>
+        <View style={estilos.estado}>
+          <Texto variante="apoio">{MENSAGEM_DO_ESTADO[estado.status]}</Texto>
+          {estado.status === 'erro' && (
+            <Botao titulo="Tentar de novo" variante="secundario" onPress={recarregar} />
+          )}
+        </View>
       )}
     </Tela>
   );
 }
+
+/** O que a tela diz quando não há formulário para mostrar. */
+const MENSAGEM_DO_ESTADO: Record<EstadoMeuCatalogo['status'], string> = {
+  pronto: 'Esse item não está mais no catálogo.',
+  carregando: 'Carregando…',
+  erro: 'Não deu para carregar o catálogo agora. Confira a conexão.',
+  sem_conta: 'Entre na sua conta (aba Perfil) para cuidar do catálogo.',
+  nao_e_produtor: 'Esta conta não está ligada a um produtor.',
+};
 
 function Formulario({ modo, token }: { modo: ModoItem; token: string }) {
   const f = useFormularioItem(token, modo);
@@ -150,7 +160,7 @@ function Formulario({ modo, token }: { modo: ModoItem; token: string }) {
                 onPress={() => void f.salvarPreco(f.preco)}
                 desabilitado={!f.preco || !f.precoMudou || f.ocupado !== null}
               />
-              {publicado.preco && (
+              {f.temPrecoSalvo && (
                 <Pressable
                   onPress={() => void f.salvarPreco(null)}
                   accessibilityRole="button"
@@ -263,6 +273,7 @@ function CamposPreco({
 }
 
 const estilos = StyleSheet.create({
+  estado: { padding: espaco.margemTela, gap: 16 },
   conteudo: { padding: espaco.margemTela, paddingTop: 8, gap: 22, paddingBottom: 48 },
   linhaFoto: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   situacao: {

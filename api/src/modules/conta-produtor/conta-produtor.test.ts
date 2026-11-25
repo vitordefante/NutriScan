@@ -285,6 +285,38 @@ describe('catálogo pelo app', () => {
     expect(r.json().erro).toBe('limite_itens');
   });
 
+  it('corrigir um item novo troca o envio (mesmo com o catálogo cheio)', async () => {
+    const { app, repo, headers } = await produtorPronto();
+    for (let i = 2; i <= 29; i++) {
+      repo.estado.itens.push(
+        item(`40000000-0000-4000-8000-${String(i).padStart(12, '0')}`, 'fazenda', { ordem: i }),
+      );
+    }
+    const propor = (payload: object) =>
+      app.inject({ method: 'POST', url: '/produtor/catalogo/propostas', headers, payload });
+    const { id } = (await propor({ nome: 'Nata' })).json() as { id: string }; // 30 de 30
+
+    const correcao = await propor({ nome: 'Nata fresca', substitui: id });
+    expect(correcao.statusCode).toBe(201);
+    expect(repo.estado.propostas.map((p) => p.nome)).toEqual(['Nata fresca']);
+  });
+
+  it('corrigir um envio que já foi analisado: 404 e nada é gravado', async () => {
+    const { app, repo, headers } = await produtorPronto();
+    const propor = (payload: object) =>
+      app.inject({ method: 'POST', url: '/produtor/catalogo/propostas', headers, payload });
+    const { id } = (await propor({ nome: 'Nata' })).json() as { id: string };
+    repo.estado.propostas = []; // o autor aprovou (ou recusou e apagou) nesse meio-tempo
+
+    const r = await propor({ nome: 'Nata fresca', substitui: id });
+    expect(r.statusCode).toBe(404);
+    expect(r.json()).toMatchObject({
+      erro: 'proposta_nao_encontrada',
+      mensagem: 'Esse envio já foi analisado ou removido.',
+    });
+    expect(repo.estado.propostas).toEqual([]);
+  });
+
   it('remover item e cancelar envio', async () => {
     const { app, repo, headers } = await produtorPronto();
     const { id } = (
@@ -369,6 +401,37 @@ describe('fotos dos itens', () => {
       payload: { nome: 'Ovos', fotoId: foto.id },
     });
     expect(repo.estado.propostas[0]?.foto).toEqual({ id: foto.id, largura: 800, altura: 800 });
+  });
+
+  it('foto pública de outro produtor (ou importada) não vale num item', async () => {
+    const { app, repo, headers } = await produtorPronto();
+    const bytes = Buffer.from('x');
+    repo.estado.fotos.set('a'.repeat(32), {
+      id: 'a'.repeat(32),
+      bytes,
+      publica: true,
+      enviadaPor: 'sitio',
+      largura: 800,
+      altura: 800,
+    });
+    repo.estado.fotos.set('b'.repeat(32), {
+      id: 'b'.repeat(32),
+      bytes,
+      publica: true,
+      enviadaPor: null,
+      largura: 0,
+      altura: 0,
+    });
+    for (const fotoId of ['a'.repeat(32), 'b'.repeat(32)]) {
+      const r = await app.inject({
+        method: 'POST',
+        url: '/produtor/catalogo/propostas',
+        headers,
+        payload: { nome: 'Leite', fotoId },
+      });
+      expect(r.json().erro).toBe('foto_invalida');
+    }
+    expect(repo.estado.propostas).toEqual([]);
   });
 
   it('o que não é imagem é recusado', async () => {
