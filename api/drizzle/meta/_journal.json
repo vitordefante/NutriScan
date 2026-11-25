@@ -43,6 +43,13 @@
       "when": 1795100717710,
       "tag": "0005_fotos_produtor",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795284937012,
+      "tag": "0006_conta_produtor",
+      "breakpoints": true
     }
   ]
 }

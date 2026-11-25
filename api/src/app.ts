@@ -7,6 +7,10 @@ import {
   type AlternativasDeps,
   alternativasRoutes,
 } from './modules/alternativas/alternativas.routes.js';
+import {
+  type ContaProdutorDeps,
+  contaProdutorRoutes,
+} from './modules/conta-produtor/conta-produtor.routes.js';
 import { type ContasDeps, contasRoutes } from './modules/contas/contas.routes.js';
 import { type HealthDeps, healthRoutes } from './modules/health/health.routes.js';
 import { type HistoricoDeps, historicoRoutes } from './modules/historico/historico.routes.js';
@@ -24,7 +28,8 @@ export type AppDeps = HealthDeps &
   ContasDeps &
   HistoricoDeps &
   RegistrosDeps &
-  ProdutoresDeps & {
+  ProdutoresDeps &
+  ContaProdutorDeps & {
     /** Segredo que assina os tokens de login. */
     jwtSecret: string;
   };
@@ -58,6 +63,7 @@ export function buildApp(deps: AppDeps, options: FastifyServerOptions = {}) {
   app.register(historicoRoutes, deps);
   app.register(registrosRoutes, deps);
   app.register(produtoresRoutes, deps);
+  app.register(contaProdutorRoutes, deps);
 
   return app;
 }

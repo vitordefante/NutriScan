@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { Texto } from '@/components/ui/texto';
+import { formatarPreco } from '@/lib/preco';
 import { urlFotoProdutor } from '@/services/api-produtores';
 import { cores, espaco, fontes } from '@/theme/tokens';
 
@@ -77,7 +78,7 @@ export function CatalogoProdutor({ itens, categoria }: Props) {
                   {item.descricao}
                 </Texto>
               )}
-              {item.preco && <Texto style={estilos.preco}>{item.preco}</Texto>}
+              {item.preco && <Texto style={estilos.preco}>{formatarPreco(item.preco)}</Texto>}
             </View>
           </View>
         );

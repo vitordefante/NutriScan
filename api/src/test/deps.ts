@@ -1,6 +1,12 @@
 import type { HistoryItem, LogEntry, Producer, ProducerRequest, User } from '@nutriscan/shared';
 
 import type { AppDeps } from '../app.js';
+import type {
+  ProdutorDaConta,
+  RepositorioContaProdutor,
+} from '../modules/conta-produtor/conta-produtor.repository.js';
+import { criarServicoContaProdutor } from '../modules/conta-produtor/conta-produtor.service.js';
+import type { FotoGuardada, LinhaItem, LinhaProposta } from '../modules/produtores/catalogo.js';
 import type { RepositorioContas } from '../modules/contas/contas.repository.js';
 import { criarServicoContas } from '../modules/contas/contas.service.js';
 import type { RepositorioHistorico } from '../modules/historico/historico.repository.js';
@@ -101,6 +107,100 @@ export function produtoresEmMemoria(
   };
 }
 
+/** Estado da conta de produtor em memória (os testes montam e conferem por aqui). */
+export type EstadoContaProdutor = {
+  produtores: ProdutorDaConta[];
+  /** usuarioId → produtorId */
+  contas: Map<string, string>;
+  /** hash do código → convite */
+  convites: Map<string, { produtorId: string; expiraEm: Date }>;
+  itens: LinhaItem[];
+  propostas: LinhaProposta[];
+  fotos: Map<string, FotoGuardada & { bytes: Buffer; publica: boolean; enviadaPor: string | null }>;
+};
+
+/** Conta de produtor em memória, com as mesmas regras do repositório do Postgres. */
+export function contaProdutorEmMemoria(
+  e: EstadoContaProdutor = {
+    produtores: [],
+    contas: new Map(),
+    convites: new Map(),
+    itens: [],
+    propostas: [],
+    fotos: new Map(),
+  },
+): RepositorioContaProdutor & { estado: EstadoContaProdutor } {
+  let proximo = 1;
+  const novoId = () => `30000000-0000-4000-8000-${String(proximo++).padStart(12, '0')}`;
+  const produtorDaConta = async (usuarioId: string) => {
+    const id = e.contas.get(usuarioId);
+    return e.produtores.find((p) => p.id === id) ?? null;
+  };
+  return {
+    estado: e,
+    produtorDaConta,
+    async vincular(usuarioId, codigoHash, agora) {
+      const convite = e.convites.get(codigoHash);
+      if (!convite || convite.expiraEm <= agora) return 'convite_invalido';
+      const daConta = e.contas.get(usuarioId);
+      if (daConta) {
+        return daConta === convite.produtorId ? 'produtor_ja_vinculado' : 'conta_ja_vinculada';
+      }
+      if ([...e.contas.values()].includes(convite.produtorId)) return 'produtor_ja_vinculado';
+      e.convites.delete(codigoHash);
+      e.contas.set(usuarioId, convite.produtorId);
+      return (await produtorDaConta(usuarioId))!;
+    },
+    itens: async (produtorId) =>
+      e.itens.filter((i) => i.produtorId === produtorId).sort((a, b) => a.ordem - b.ordem),
+    propostas: async (produtorId) => e.propostas.filter((p) => p.produtorId === produtorId),
+    async salvarFoto(produtorId, { id, bytes, largura, altura }) {
+      if (!e.fotos.has(id)) {
+        e.fotos.set(id, { id, bytes, largura, altura, publica: false, enviadaPor: produtorId });
+      }
+    },
+    async foto(produtorId, id) {
+      const f = e.fotos.get(id);
+      if (!f || !(f.publica || f.enviadaPor === produtorId)) return null;
+      const { enviadaPor, ...resto } = f;
+      return { ...resto, propria: enviadaPor === produtorId };
+    },
+    async propor(proposta, substitui) {
+      if (substitui) {
+        const antes = e.propostas.length;
+        e.propostas = e.propostas.filter(
+          (p) => !(p.id === substitui && p.produtorId === proposta.produtorId && !p.itemId),
+        );
+        if (e.propostas.length === antes) return null;
+      }
+      if (proposta.itemId) e.propostas = e.propostas.filter((p) => p.itemId !== proposta.itemId);
+      const id = novoId();
+      e.propostas.push({ ...proposta, id, situacao: 'em_analise', motivo: null });
+      return id;
+    },
+    async mudarPreco(produtorId, itemId, preco, agora) {
+      const item = e.itens.find((i) => i.id === itemId && i.produtorId === produtorId);
+      if (!item) return false;
+      item.precoCentavos = preco?.centavos ?? null;
+      item.unidade = preco?.unidade ?? null;
+      item.precoAtualizadoEm = preco ? agora : null;
+      return true;
+    },
+    async removerItem(produtorId, itemId) {
+      const antes = e.itens.length;
+      e.itens = e.itens.filter((i) => !(i.id === itemId && i.produtorId === produtorId));
+      if (e.itens.length === antes) return false;
+      e.propostas = e.propostas.filter((p) => p.itemId !== itemId);
+      return true;
+    },
+    async removerProposta(produtorId, id) {
+      const antes = e.propostas.length;
+      e.propostas = e.propostas.filter((p) => !(p.id === id && p.produtorId === produtorId));
+      return e.propostas.length < antes;
+    },
+  };
+}
+
 /**
  * Dependências completas para `buildApp` nos testes: tudo em memória, e cada teste troca só o
  * que interessa a ele.
@@ -118,6 +218,7 @@ export function depsDeTeste(trocas: Partial<AppDeps> = {}): AppDeps {
     historico: historicoEmMemoria(),
     registros: criarServicoRegistros({ produtos, registros: registrosEmMemoria() }),
     produtores: produtoresEmMemoria(),
+    contaProdutor: criarServicoContaProdutor(contaProdutorEmMemoria()),
     jwtSecret: SEGREDO_TESTE,
     ...trocas,
   };

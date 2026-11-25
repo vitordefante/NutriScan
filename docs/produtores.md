@@ -168,7 +168,8 @@ bloco do produtor, na ordem de exibição (a primeira é a capa da galeria):
 
 Os itens que o produtor vende, com foto, descrição e preço, viram cartões na seção "O que vende"
 do detalhe (grade de 2 colunas; tocar na foto abre em tela cheia). É opcional: sem catálogo, a
-seção mostra a lista `produtos` em texto.
+seção mostra a lista `produtos` em texto. Para o **produtor sem conta no app**, o catálogo vem
+do arquivo; quem tem conta cuida dele pelo app (ver [Conta de produtor](#conta-de-produtor)).
 
 ```json
 "produtos": ["queijo colonial", "nata"],
@@ -176,21 +177,69 @@ seção mostra a lista `produtos` em texto.
   {
     "nome": "Leite orgânico",
     "descricao": "Pasteurizado, garrafa de vidro de 1 L (retornável).",
-    "preco": "R$ 9 o litro",
+    "preco": { "valor": 9.5, "unidade": "litro" },
     "foto": "sitio-boa-vista/leite.jpg"
   },
-  { "nome": "Kefir", "preco": "R$ 14 o pacote de 500 ml" }
+  { "nome": "Kefir", "preco": { "valor": 14, "unidade": "pacote" } }
 ]
 ```
 
-- `nome` (até 60 caracteres) é o único campo obrigatório; `descricao` até 120, `preco` até 40, em
-  texto livre, como o produtor falou. Até 30 itens.
+- `nome` (até 60 caracteres) é o único campo obrigatório; `descricao` até 120. Até 30 itens.
+- **Preço padronizado:** valor em reais (até R$ 99.999,99) por uma unidade da lista: `unidade`,
+  `kg`, `litro`, `duzia`, `bandeja`, `pacote`, `pote`, `garrafa`, `maco`, `caixa`. O app mostra
+  "R$ 9,50 / litro".
 - Com catálogo, `produtos` pode ficar de fora ou listar só o que não tem cartão (aparece abaixo
   como "Também: …"). Os nomes do catálogo entram sozinhos na lista curta do cartão do mapa.
 - As fotos dos itens seguem as regras das fotos acima (mesma pasta, sem metadados, exigem
   `"fotos": true` na autorização). Item sem foto mostra o ícone da categoria.
-- Preço muda: o rodapé do detalhe já avisa para confirmar pelo contato. Quando o produtor mandar
-  preço novo, atualize o arquivo e importe de novo.
+- O catálogo fica no banco. A importação **troca** o catálogo de quem tem `"catalogo"` no
+  arquivo e não tem conta; sem a chave `"catalogo"`, o que está no banco fica como está. Para
+  esvaziar, use `"catalogo": []`.
+
+## Conta de produtor
+
+O produtor cuida do próprio catálogo pelo app (Perfil → Meu catálogo). Produtor não tem um
+login à parte: é uma conta comum do app, ligada ao produtor do mapa por um código de convite.
+
+### Ligar a conta
+
+1. O produtor precisa estar no mapa (importado).
+2. `npm run produtores:contas -- convite <id-do-produtor>` — gera um código (ex.: `K7M2-QX9P`)
+   e a mensagem pronta para o WhatsApp. Vale 7 dias e uma vez só; um código novo anula o
+   anterior. O banco guarda só o hash do código.
+3. No app, o produtor entra (ou cria a conta) no Perfil → "Sou produtor e tenho um código".
+4. `npm run produtores:contas` lista as contas ligadas; `-- desligar <id>` desfaz a ligação
+   (o catálogo continua no mapa e volta a ser seu, pelo arquivo). Se o produtor excluir a
+   conta, acontece o mesmo.
+
+Uma conta liga a um produtor só, e um produtor tem uma conta só.
+
+### O que vale na hora e o que passa por você
+
+| Pelo app                                 | Quando aparece no mapa                            |
+| ---------------------------------------- | ------------------------------------------------- |
+| Mudar ou tirar o preço de um item        | Na hora                                           |
+| Tirar um item do catálogo                | Na hora                                           |
+| Item novo                                | Depois da sua aprovação                           |
+| Mudar nome, descrição ou foto de um item | Depois da sua aprovação (até lá, fica o anterior) |
+
+O preço é só número + unidade da lista: não há texto livre publicado sem conferência. Fotos
+enviadas pelo app passam pelo mesmo tratamento (reduzidas, sem GPS) e **não são públicas** até a
+aprovação: só o próprio produtor as vê.
+
+### Aprovar os itens
+
+```bash
+npm run produtores:itens                              # o que está em análise
+npm run produtores:itens -- aprovar <id>              # publica
+npm run produtores:itens -- recusar <id> "motivo"     # o produtor vê o motivo no app
+```
+
+A lista mostra o produtor, se é item novo ou mudança (com o antes e o depois) e o preço; as
+fotos em análise são salvas em `api/data/revisao/` (fora do Git) para você abrir. O que
+conferir: a foto mostra o produto (sem rostos de terceiros, sem placa de carro), o nome e a
+descrição descrevem o item, e nada de propaganda enganosa ("cura", "detox") ou contato fora
+do campo de contato.
 
 ## Pedidos do formulário
 

@@ -7,6 +7,8 @@ import { loadEnv } from './config/env.js';
 import { createDb } from './db/client.js';
 import { criarServicoAlternativas } from './modules/alternativas/alternativas.service.js';
 import { criarCacheBuscasPg } from './modules/alternativas/buscas.repository.js';
+import { criarRepositorioContaProdutorPg } from './modules/conta-produtor/conta-produtor.repository.js';
+import { criarServicoContaProdutor } from './modules/conta-produtor/conta-produtor.service.js';
 import { criarRepositorioContasPg } from './modules/contas/contas.repository.js';
 import { criarServicoContas } from './modules/contas/contas.service.js';
 import { criarRepositorioHistoricoPg } from './modules/historico/historico.repository.js';
@@ -72,6 +74,7 @@ const app = buildApp(
       registros: criarRepositorioRegistrosPg(database.db),
     }),
     produtores: criarRepositorioProdutoresPg(database.db),
+    contaProdutor: criarServicoContaProdutor(criarRepositorioContaProdutorPg(database.db)),
     jwtSecret: env.JWT_SECRET,
   },
   {
