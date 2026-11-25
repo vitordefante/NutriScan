@@ -1,9 +1,10 @@
 import type { Product } from '@nutriscan/shared';
-import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 
 import { Etiqueta } from '@/components/ui/etiqueta';
+import { FotoProduto } from '@/components/ui/foto-produto';
 import { Texto } from '@/components/ui/texto';
+import { iconeDoProduto } from '@/lib/icone-produto';
 import { cores, espaco } from '@/theme/tokens';
 
 const TIPO: Record<Product['tipo'], string> = { alimento: 'Alimento', cosmetico: 'Cosmético' };
@@ -18,20 +19,13 @@ export function CabecalhoProduto({ produto }: { produto: Product }) {
         {produto.subtipo && <Etiqueta texto={produto.subtipo} />}
       </View>
       <View style={estilos.linha}>
-        <View style={estilos.foto}>
-          {produto.imagemUrl ? (
-            <Image
-              source={produto.imagemUrl}
-              style={StyleSheet.absoluteFill}
-              contentFit="cover"
-              accessibilityLabel={`Foto de ${produto.nome}`}
-            />
-          ) : (
-            <Texto variante="pixel" cor={cores.cinza} style={estilos.semFoto}>
-              SEM{'\n'}FOTO
-            </Texto>
-          )}
-        </View>
+        <FotoProduto
+          url={produto.imagemUrl}
+          icone={iconeDoProduto(produto.tipo, produto.categorias)}
+          escala={3}
+          rotuloAcessivel={`Foto de ${produto.nome}`}
+          style={estilos.foto}
+        />
         <View style={estilos.textos}>
           <Texto variante="titulo" numberOfLines={3}>
             {produto.nome}
@@ -53,12 +47,7 @@ const estilos = StyleSheet.create({
     height: 84,
     borderWidth: espaco.borda,
     borderColor: cores.tinta,
-    backgroundColor: cores.papel,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
   },
-  semFoto: { fontSize: 9, textAlign: 'center' },
   textos: { flex: 1, gap: 6 },
   etiquetas: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });

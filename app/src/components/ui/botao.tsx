@@ -11,6 +11,8 @@ type Props = {
   onPress: () => void;
   variante?: 'primario' | 'secundario';
   icone?: NomeIconePixel;
+  /** Ícone depois do texto (ex.: o da rede social em "Chamar no WhatsApp"). */
+  iconeDireita?: NomeIconePixel;
   desabilitado?: boolean;
   style?: StyleProp<ViewStyle>;
 };
@@ -24,6 +26,7 @@ export function Botao({
   onPress,
   variante = 'primario',
   icone,
+  iconeDireita,
   desabilitado,
   style,
 }: Props) {
@@ -51,6 +54,7 @@ export function Botao({
       >
         {icone && <IconePixel nome={icone} cor={corTexto} />}
         <Texto style={[estilos.titulo, { color: corTexto }]}>{titulo}</Texto>
+        {iconeDireita && <IconePixel nome={iconeDireita} cor={corTexto} />}
       </View>
     </ComSombra>
   );

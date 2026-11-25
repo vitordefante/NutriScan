@@ -10,6 +10,8 @@ export type TabelaLida = {
   unidade: 'g' | 'ml';
   /** Como os valores por 100 foram obtidos. */
   origem: 'coluna_100' | 'convertido_da_porcao';
+  /** Porção declarada ("Porção de 30 g"), na mesma unidade, quando lida. */
+  porcao?: number;
 };
 
 type Campo = keyof Omit<Nutrientes, 'frutasLegumesPct' | 'acucares'> | 'acucares';
@@ -20,9 +22,11 @@ type Campo = keyof Omit<Nutrientes, 'frutasLegumesPct' | 'acucares'> | 'acucares
  */
 const LINHAS: [Campo, RegExp][] = [
   ['energiaKcal', /valor energetico|^energia/],
+  ['carboidratos', /^carboidratos?/],
   ['acucaresAdicionados', /acucares adicionados/],
   ['acucares', /acucares(?: totais)?\b/],
   ['gorduraSaturada', /gorduras? saturadas?/],
+  ['gorduras', /^gorduras? (?:totais|total)\b/],
   ['sodioMg', /^sodio/],
   ['fibras', /fibras?(?: alimentar(?:es)?)?\b/],
   ['proteinas', /^proteinas?/],
@@ -60,7 +64,12 @@ export function lerTabelaNutricional(linhas: readonly LabelLine[]): TabelaLida |
 
   if (Object.keys(nutrientes).length < MINIMO_NUTRIENTES) return null;
   if (!valoresCoerentes(nutrientes)) return null;
-  return { nutrientes, unidade, origem: cem ? 'coluna_100' : 'convertido_da_porcao' };
+  return {
+    nutrientes,
+    unidade,
+    origem: cem ? 'coluna_100' : 'convertido_da_porcao',
+    ...(porcao && porcao.unidade === unidade && { porcao: porcao.quantidade }),
+  };
 }
 
 type Lido = { campo: Campo; valor: number; rotulo: string };
@@ -193,17 +202,35 @@ function lerPorFileiras(linhas: readonly LabelLine[]): Lido[] {
  * tomados como base, ou o "100" do cabeçalho tomado como energia):
  * - em 100 g, proteínas + açúcares + gordura saturada + fibras não passam de 100 g;
  * - essas quantidades já somam calorias (4 kcal/g para proteína e açúcar, 9 para gordura) que
- *   não podem passar da energia declarada (com folga para arredondamentos do rótulo).
+ *   não podem passar da energia declarada (com folga para arredondamentos do rótulo);
+ * - carboidratos e gorduras totais: cada um até 100 g, com proteínas não passam de 100 g, e
+ *   não ficam abaixo da parte deles (açúcares; gordura saturada).
  */
 export function valoresCoerentes(n: Nutrientes): boolean {
   const g = (v: number | undefined) => v ?? 0;
   const acucar = n.acucares ?? n.acucaresAdicionados;
   const massa = g(n.proteinas) + g(acucar) + g(n.gorduraSaturada) + g(n.fibras);
   if (massa > 105) return false;
+  if (g(n.carboidratos) + g(n.proteinas) + g(n.gorduras) > 105) return false;
+  const folga = 0.5;
+  if (n.carboidratos !== undefined && acucar !== undefined && acucar > n.carboidratos + folga) {
+    return false;
+  }
+  if (
+    n.gorduras !== undefined &&
+    n.gorduraSaturada !== undefined &&
+    n.gorduraSaturada > n.gorduras + folga
+  ) {
+    return false;
+  }
   if (n.sodioMg !== undefined && n.sodioMg > 40_000) return false;
   if (n.energiaKcal === undefined) return true;
   if (n.energiaKcal > 950) return false;
-  const kcalMinima = 4 * g(n.proteinas) + 4 * g(acucar) + 9 * g(n.gorduraSaturada);
+  // Com os totais, a conta usa carboidratos e gorduras inteiros (a parte já está dentro deles).
+  const kcalMinima =
+    4 * g(n.proteinas) +
+    4 * Math.max(g(acucar), g(n.carboidratos)) +
+    9 * Math.max(g(n.gorduraSaturada), g(n.gorduras));
   return kcalMinima <= n.energiaKcal * 1.15 + 15;
 }
 

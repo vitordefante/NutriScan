@@ -8,6 +8,7 @@ import type {
   Nutrientes,
 } from '../analise/dados-alimento.js';
 import type { DadosCosmetico } from '../analise-cosmetico/nota.js';
+import { arredondar, microsDoOff, numero } from '../nutricao/micronutrientes.js';
 import { subtipoDasCategorias } from './subtipo.js';
 
 /**
@@ -104,19 +105,38 @@ export function paraDadosAlimento(p: ProdutoOff): DadosAlimento {
       'ABCDE'.includes(letra) &&
       letra.length === 1 && { nutriScoreInformado: letra as LetraNutriScore }),
     nutrientes: paraNutrientes(p.nutriments ?? {}),
+    ...porcaoDoOff(p),
+    micronutrientes: microsDoOff(p.nutriments ?? {}),
   };
 }
 
+/**
+ * Porção em g/ml. O OFF quase nunca traz `serving_quantity` nos produtos brasileiros, mas guarda
+ * os valores "por porção" do rótulo: a porção sai da razão entre o valor da porção e o de 100 g.
+ */
+function porcaoDoOff(p: ProdutoOff): { porcao?: number } {
+  const direta = p.serving_quantity;
+  if (direta !== undefined && direta >= 1 && direta <= 1000) return { porcao: arredondar(direta) };
+  const n = p.nutriments ?? {};
+  for (const chave of ['energy-kcal', 'carbohydrates', 'proteins', 'fat', 'sugars', 'sodium']) {
+    const porcao = numero(n[`${chave}_serving`]);
+    const cem = numero(n[`${chave}_100g`]);
+    if (!porcao || !cem) continue;
+    const g = (porcao / cem) * 100;
+    if (g >= 1 && g <= 1000) return { porcao: arredondar(g) };
+  }
+  return {};
+}
+
 function paraNutrientes(n: Record<string, unknown>): Nutrientes {
-  const num = (chave: string): number | undefined => {
-    const v = typeof n[chave] === 'string' ? Number(n[chave]) : n[chave];
-    return typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : undefined;
-  };
+  const num = (chave: string) => numero(n[chave]);
   const kj = num('energy-kj_100g') ?? num('energy_100g');
   const sal = num('salt_100g');
   const sodioG = num('sodium_100g') ?? (sal !== undefined ? sal / 2.5 : undefined);
   const campos: Nutrientes = {
     energiaKcal: num('energy-kcal_100g') ?? (kj !== undefined ? kj / 4.184 : undefined),
+    carboidratos: num('carbohydrates_100g'),
+    gorduras: num('fat_100g'),
     acucares: num('sugars_100g'),
     acucaresAdicionados: num('added-sugars_100g'),
     gorduraSaturada: num('saturated-fat_100g'),

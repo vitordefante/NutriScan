@@ -2,6 +2,7 @@ import type { ProductResult } from '@nutriscan/shared';
 
 import { analisarAlimento } from '../analise/nota.js';
 import { analisarCosmetico } from '../analise-cosmetico/nota.js';
+import { montarNutricao } from '../nutricao/nutricao.js';
 import type { RotuloLido } from '../rotulo/leitura.js';
 import { montarComRotulo } from './com-rotulo.js';
 import { paraDadosAlimento, paraDadosCosmetico, paraProduto } from './open-food-facts.mapper.js';
@@ -27,11 +28,14 @@ export function montarResultado(
       rotuloPorFoto: false,
     };
   }
+  const alimento = paraDadosAlimento(dados);
+  const nutricao = montarNutricao(alimento);
   return {
     produto: paraProduto(dados, 'alimento'),
-    analise: analisarAlimento(paraDadosAlimento(dados)),
+    analise: analisarAlimento(alimento),
     desatualizado,
     fonte,
     rotuloPorFoto: false,
+    ...(nutricao && { nutricao }),
   };
 }

@@ -1,14 +1,16 @@
 import type { ProductResult } from '@nutriscan/shared';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Texto } from '@/components/ui/texto';
+import type { BaseNutricao } from '@/lib/nutricao';
 import { resumoDosAlertasCosmetico, resumoDosDestaques } from '@/lib/resumo-analise';
 import { espaco } from '@/theme/tokens';
 
 import { CabecalhoProduto } from './cabecalho-produto';
 import { CartaoNota } from './cartao-nota';
 import { AvisoFaltando } from './estados';
+import { SecaoMacros, SecaoMicros } from './nutricao';
 import { CartaoAlerta, CartaoNova, EscalaNutriScore, LupaAnvisa, Secao } from './secoes';
 
 type Props = {
@@ -46,7 +48,11 @@ export function ResultadoProduto({
   produtores,
   acoes,
 }: Props) {
-  const { produto, analise } = dados;
+  const { produto, analise, nutricao } = dados;
+  // Porção quando o rótulo informa; a escolha vale para os macros e para as vitaminas.
+  const [base, setBase] = useState<BaseNutricao>('porcao');
+  const macros = nutricao && <SecaoMacros nutricao={nutricao} base={base} onBase={setBase} />;
+  const micros = nutricao && <SecaoMicros nutricao={nutricao} base={base} />;
   // Cosméticos não têm NOVA, Nutri-Score nem lupa: a nota vem só dos ingredientes de atenção,
   // que chegam como alertas (do nível alto para o baixo).
   const cosmetico = produto.tipo === 'cosmetico';
@@ -70,6 +76,8 @@ export function ResultadoProduto({
             onCompletarComFoto={onCompletarComFoto}
           />
           {acoes}
+          {macros}
+          {micros}
         </>
       ) : (
         <>
@@ -81,6 +89,7 @@ export function ResultadoProduto({
             onPorQue={onPorQue}
           />
           {acoes}
+          {macros}
 
           {analise.destaques.lupa.length > 0 && (
             <Secao titulo="Rótulo frontal · ANVISA">
@@ -97,6 +106,7 @@ export function ResultadoProduto({
               <EscalaNutriScore letra={analise.destaques.nutriScore.letra} />
             </Secao>
           )}
+          {micros}
         </>
       )}
 

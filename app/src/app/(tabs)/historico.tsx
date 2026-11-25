@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { LinhaProduto, quando } from '@/components/historico/linha-produto';
+import { NutricaoConsumo } from '@/components/historico/nutricao-consumo';
 import { ResumoConsumo } from '@/components/historico/resumo-consumo';
 import { Botao } from '@/components/ui/botao';
 import { CabecalhoTela } from '@/components/ui/cabecalho-tela';
@@ -12,6 +13,7 @@ import { Tela } from '@/components/ui/tela';
 import { Texto } from '@/components/ui/texto';
 import { useLogConsumo } from '@/hooks/use-log-consumo';
 import { useHistoricoLocal } from '@/lib/historico-local';
+import { descreverConsumo, energia, formatarNumero } from '@/lib/nutricao';
 import { useSessao } from '@/lib/sessao';
 import { sincronizarHistorico } from '@/lib/sincronizacao';
 import { cores, espaco, fontes } from '@/theme/tokens';
@@ -65,6 +67,7 @@ function Escaneados() {
             <LinhaProduto
               key={i.barcode}
               nome={i.nome}
+              tipo={i.tipo}
               {...(i.imagemUrl && { imagemUrl: i.imagemUrl })}
               nota={i.nota}
               faixa={i.faixa}
@@ -92,8 +95,8 @@ function Consumo() {
       <View style={{ gap: 16 }}>
         <Texto variante="apoio">
           Registre o que você consome (botão na tela do produto) e veja aqui o resumo da semana:
-          nota média, quantos ultraprocessados, “alto em” e aditivos mais frequentes. Precisa de uma
-          conta.
+          nota média, quantos ultraprocessados, “alto em”, aditivos mais frequentes e a média diária
+          de calorias, macros e vitaminas. Precisa de uma conta.
         </Texto>
         <Botao titulo="Entrar ou criar conta" onPress={() => router.navigate('/perfil')} />
       </View>
@@ -126,6 +129,7 @@ function Consumo() {
         ) : (
           <>
             <ResumoConsumo resumo={estado.resumo} />
+            {estado.resumo.nutricao && <NutricaoConsumo nutricao={estado.resumo.nutricao} />}
             <Texto variante="secao">REGISTROS</Texto>
             <View style={{ gap: 10 }}>
               {estado.registros.map((r) => (
@@ -161,10 +165,11 @@ function LinhaRegistro({
   return (
     <LinhaProduto
       nome={r.nome}
+      tipo={r.tipo}
       {...(r.imagemUrl && { imagemUrl: r.imagemUrl })}
       nota={r.nota}
       faixa={r.faixa}
-      detalhe={`${r.tipo === 'cosmetico' ? 'Uso' : 'Consumo'} · ${quando(r.registradoEm)}`}
+      detalhe={detalheDoRegistro(r)}
       onPress={() => abrir(r.barcode)}
       acao={
         <Pressable
@@ -181,6 +186,20 @@ function LinhaRegistro({
       }
     />
   );
+}
+
+/** "1 porção · 30 g · 114 kcal · hoje, 12:30"; sem tabela, "Consumo · hoje, 12:30". */
+function detalheDoRegistro(r: LogEntry): string {
+  const n = r.nutricao;
+  if (!n) return `${r.tipo === 'cosmetico' ? 'Uso' : 'Consumo'} · ${quando(r.registradoEm)}`;
+  const kcal = energia(n.macros);
+  return [
+    descreverConsumo(n.quantidade, n.unidade, n.porcao),
+    kcal !== null && `${formatarNumero(Math.round(kcal))}\u00A0kcal`,
+    quando(r.registradoEm),
+  ]
+    .filter(Boolean)
+    .join('\u00A0· '); // o "·" fica no fim da linha, nunca no começo da seguinte
 }
 
 const estilos = StyleSheet.create({

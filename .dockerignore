@@ -1,0 +1,9 @@
+# Só o necessário para a imagem da API (ver Dockerfile)
+**/node_modules
+**/dist
+.git
+.expo
+app
+api/.env*
+api/data
+**/*.test.ts

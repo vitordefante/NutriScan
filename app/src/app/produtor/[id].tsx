@@ -95,6 +95,7 @@ function Detalhe({ produtor: p }: { produtor: Producer }) {
         {p.contato.whatsapp && (
           <Botao
             titulo="Chamar no WhatsApp"
+            iconeDireita="whatsapp"
             onPress={() => void Linking.openURL(linkWhatsApp(p.contato.whatsapp!, p.nome))}
           />
         )}
@@ -102,6 +103,7 @@ function Detalhe({ produtor: p }: { produtor: Producer }) {
           <Botao
             titulo={`Instagram @${p.contato.instagram}`}
             variante="secundario"
+            iconeDireita="instagram"
             onPress={() => void Linking.openURL(`https://instagram.com/${p.contato.instagram}`)}
           />
         )}
@@ -123,7 +125,7 @@ function Detalhe({ produtor: p }: { produtor: Producer }) {
         )}
       </Secao>
 
-      <Secao titulo="Onde comprar">
+      <Secao titulo="Onde comprar" icone="local">
         <View style={{ gap: 10 }}>
           {p.locais.map((l, i) => (
             <CartaoLocal
@@ -137,7 +139,7 @@ function Detalhe({ produtor: p }: { produtor: Producer }) {
       </Secao>
 
       {p.entrega && (
-        <Secao titulo="Entrega">
+        <Secao titulo="Entrega" icone="entrega">
           <Texto>{p.entrega}</Texto>
         </Secao>
       )}

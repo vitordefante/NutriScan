@@ -40,7 +40,7 @@ export function SecaoProdutoresLocais({ estado, onAbrir, onVerNoMapa }: Props) {
   const linhas = ordenarPorDistancia(produtores, posicao).slice(0, NA_TELA);
 
   return (
-    <Secao titulo="Direto do produtor">
+    <Secao titulo="Direto do produtor" icone="produtor">
       <Texto variante="apoio">
         {NOME_CATEGORIA[categoria]} de produtores da região
         {posicao ? ', do mais perto ao mais longe:' : ':'}

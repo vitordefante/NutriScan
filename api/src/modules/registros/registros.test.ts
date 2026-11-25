@@ -27,6 +27,27 @@ const COLA: ProdutoOff = {
 
 const resultadoCola = montarResultado({ fonte: 'open_food_facts', dados: COLA }, false)!;
 
+/** Alimento com tabela completa e porção (30 g), para os registros com nutrição. */
+const AVEIA: ProdutoOff = {
+  code: '7891000000011',
+  product_name: 'Aveia em flocos',
+  categories_tags: ['en:oat-flakes'],
+  ingredients_text_pt: 'Aveia em flocos',
+  serving_quantity: 30,
+  nutriments: {
+    'energy-kcal_100g': 380,
+    carbohydrates_100g: 60,
+    sugars_100g: 1,
+    proteins_100g: 14,
+    fat_100g: 8,
+    'saturated-fat_100g': 1.5,
+    fiber_100g: 10,
+    sodium_100g: 0.005,
+    iron_100g: 0.0044,
+  },
+};
+const resultadoAveia = montarResultado({ fonte: 'open_food_facts', dados: AVEIA }, false)!;
+
 function montar(consultar: ServicoProdutos['consultar'] = async () => resultadoCola) {
   const produtos: ServicoProdutos = {
     consultar,
@@ -82,6 +103,51 @@ describe('log de exposição (registros)', () => {
       altoEm: ['acucar_adicionado'],
       alertas: analise.alertas.map((a) => a.titulo),
     });
+  });
+
+  it('alimento com tabela: guarda quanto foi consumido (padrão: uma porção) e o que deu', async () => {
+    const app = montar(async () => resultadoAveia);
+    const auth = await entrar(app);
+    const registrar = (payload: object) =>
+      app.inject({ method: 'POST', url: '/registros', headers: auth, payload });
+
+    const porcao = (await registrar({ barcode: AVEIA.code })).json<LogEntry>();
+    expect(porcao.nutricao).toMatchObject({
+      quantidade: 30,
+      unidade: 'g',
+      porcao: 30,
+      macros: { energiaKcal: 114, carboidratos: 18, proteinas: 4.2, gorduras: 2.4 },
+      micros: { ferro: 1.3 },
+    });
+
+    const tigela = (await registrar({ barcode: AVEIA.code, quantidade: 60 })).json<LogEntry>();
+    expect(tigela.nutricao).toMatchObject({ quantidade: 60, macros: { carboidratos: 36 } });
+
+    // Média do dia: 30 g + 60 g de aveia.
+    const periodo = await app.inject({ method: 'GET', url: '/registros', headers: auth });
+    expect(periodo.json<LogPeriod>().resumo.nutricao).toMatchObject({
+      registros: 2,
+      diasComRegistro: 1,
+      porDia: { carboidratos: 54 },
+    });
+
+    for (const quantidade of [0, -5, 6000, '30']) {
+      const r = await registrar({ barcode: AVEIA.code, quantidade });
+      expect(r.statusCode).toBe(400);
+      expect(r.json()).toMatchObject({ erro: 'dados_invalidos' });
+    }
+  });
+
+  it('produto sem tabela (cola sem macros): registra sem nutrição', async () => {
+    const app = montar();
+    const r = await app.inject({
+      method: 'POST',
+      url: '/registros',
+      headers: await entrar(app),
+      payload: { barcode: COLA.code, quantidade: 350 },
+    });
+    expect(r.statusCode).toBe(201);
+    expect(r.json<LogEntry>()).not.toHaveProperty('nutricao');
   });
 
   it('produto que não existe: 404; base fora do ar: 503; código inválido: 400', async () => {
@@ -210,6 +276,7 @@ describe('resumir', () => {
         { titulo: 'Sorbatos', vezes: 1 },
       ],
       ingredientesAtencao: [{ titulo: 'Parabenos', vezes: 1 }],
+      nutricao: null, // nenhum registro com tabela (média diária em nutricao/consumo.test.ts)
     } satisfies ExposureSummary);
   });
 

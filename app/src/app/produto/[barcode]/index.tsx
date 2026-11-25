@@ -12,6 +12,7 @@ import { useAlternativas } from '@/hooks/use-alternativas';
 import { useProduto } from '@/hooks/use-produto';
 import { useProdutoresDoProduto } from '@/hooks/use-produtores';
 import { guardarScan, itemDoResultado } from '@/lib/historico-local';
+import { iconeDoProduto } from '@/lib/icone-produto';
 import { enviarPendentes } from '@/lib/sincronizacao';
 import { podeLerRotulo } from '@/services/leitor-rotulo';
 
@@ -73,11 +74,18 @@ export default function TelaResultado() {
             router.push({ pathname: '/produto/[barcode]/por-que', params: { barcode } })
           }
           onCompletarComFoto={fotografar}
-          acoes={<RegistrarConsumo barcode={barcode} tipo={estado.dados.produto.tipo} />}
+          acoes={
+            <RegistrarConsumo
+              barcode={barcode}
+              tipo={estado.dados.produto.tipo}
+              nome={estado.dados.produto.nome}
+              {...(estado.dados.nutricao && { nutricao: estado.dados.nutricao })}
+            />
+          }
           alternativas={
             <SecaoAlternativas
               estado={alternativas.estado}
-              tipo={estado.dados.produto.tipo}
+              icone={iconeDoProduto(estado.dados.produto.tipo, estado.dados.produto.categorias)}
               onAbrir={(outro) =>
                 router.push({ pathname: '/produto/[barcode]', params: { barcode: outro } })
               }

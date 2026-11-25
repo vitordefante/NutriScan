@@ -27,9 +27,13 @@ export function baixarHistorico(token: string): Promise<HistoryItem[]> {
   return chamarApi('/historico', { token });
 }
 
-/** POST /registros — registra o consumo/uso agora. */
-export function registrar(token: string, barcode: string): Promise<LogEntry> {
-  return chamarApi('/registros', { metodo: 'POST', corpo: { barcode }, token });
+/** POST /registros — registra o consumo/uso agora (`quantidade` em g/ml; sem ela, uma porção). */
+export function registrar(token: string, barcode: string, quantidade?: number): Promise<LogEntry> {
+  return chamarApi('/registros', {
+    metodo: 'POST',
+    corpo: { barcode, ...(quantidade !== undefined && { quantidade }) },
+    token,
+  });
 }
 
 /** GET /registros — o resumo e os registros dos últimos `dias` dias. */

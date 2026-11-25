@@ -50,6 +50,20 @@
       "when": 1795284937012,
       "tag": "0006_conta_produtor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795552368322,
+      "tag": "0007_porcao_rotulo",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795557058834,
+      "tag": "0008_nutricao_registro",
+      "breakpoints": true
     }
   ]
 }

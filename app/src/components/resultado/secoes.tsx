@@ -2,17 +2,35 @@ import type { Alert, AnalysisHighlights, NutriScoreLetter } from '@nutriscan/sha
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { IconePixel } from '@/components/ui/icone-pixel';
+import { IconePixel, type NomeIconePixel } from '@/components/ui/icone-pixel';
 import { Texto } from '@/components/ui/texto';
 import { cores, coresNova, coresNutriScore, espaco, fontes } from '@/theme/tokens';
 
-/** Seção da tela de resultado: título pixel em caixa alta + conteúdo. */
-export function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
+/** Seção da tela de resultado: título pixel em caixa alta (com ícone, se houver) + conteúdo. */
+export function Secao({
+  titulo,
+  icone,
+  children,
+}: {
+  titulo: string;
+  icone?: NomeIconePixel;
+  children: ReactNode;
+}) {
+  const texto = (
+    <Texto variante="secao" accessibilityRole="header">
+      {titulo.toLocaleUpperCase('pt-BR')}
+    </Texto>
+  );
   return (
     <View style={estilos.secao}>
-      <Texto variante="secao" accessibilityRole="header">
-        {titulo.toLocaleUpperCase('pt-BR')}
-      </Texto>
+      {icone ? (
+        <View style={estilos.tituloComIcone}>
+          <IconePixel nome={icone} />
+          {texto}
+        </View>
+      ) : (
+        texto
+      )}
       {children}
     </View>
   );
@@ -142,6 +160,7 @@ export function CartaoAlerta({ alerta }: { alerta: Alert }) {
 
 const estilos = StyleSheet.create({
   secao: { gap: 12 },
+  tituloComIcone: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   cartao: {
     borderWidth: espaco.borda,
     borderColor: cores.tinta,

@@ -1,5 +1,7 @@
 import type { NovaGroup, NutriScoreLetter } from '@nutriscan/shared';
 
+import type { QuantidadesMicro } from '../nutricao/micronutrientes.js';
+
 /**
  * Entrada do motor de nota: os dados de um alimento já normalizados.
  *
@@ -25,6 +27,12 @@ export type DadosAlimento = {
   nutriScoreInformado?: LetraNutriScore;
   /** Valores por 100 g (ou 100 ml, em bebidas). */
   nutrientes: Nutrientes;
+  /** Base da tabela lida na foto do rótulo (100 g ou 100 ml), quando ela disse. */
+  unidadeDaTabela?: 'g' | 'ml';
+  /** Porção do rótulo em g/ml (só para exibir; a nota usa os valores por 100). */
+  porcao?: number;
+  /** Vitaminas e minerais declarados, por 100 g/ml (só para exibir). */
+  micronutrientes?: QuantidadesMicro;
 };
 
 /** Os mesmos tipos do contrato com o app (@nutriscan/shared), com nomes em português aqui. */
@@ -33,6 +41,10 @@ export type LetraNutriScore = NutriScoreLetter;
 
 export type Nutrientes = {
   energiaKcal?: number;
+  /** Carboidratos totais, em gramas (só para exibir). */
+  carboidratos?: number;
+  /** Gorduras totais, em gramas (só para exibir). */
+  gorduras?: number;
   /** Açúcares totais, em gramas. */
   acucares?: number;
   /** Açúcares adicionados, em gramas (raramente preenchido no OFF). */

@@ -47,6 +47,7 @@ export function criarRepositorioRotulosPg(db: Database['db']): RepositorioRotulo
         ingredientes: lido.ingredientes ?? null,
         nutrientes: lido.nutrientes ?? null,
         unidade: lido.unidade ?? null,
+        porcao: lido.porcao ?? null,
         atualizadoEm: agora,
       };
       await db
@@ -66,5 +67,6 @@ function paraRotulo(linha: typeof rotulosLidos.$inferSelect): RotuloLido | null 
     ...(linha.ingredientes && { ingredientes: linha.ingredientes }),
     ...(nutrientes.success && { nutrientes: nutrientes.data }),
     ...((linha.unidade === 'g' || linha.unidade === 'ml') && { unidade: linha.unidade }),
+    ...(linha.porcao !== null && linha.porcao > 0 && { porcao: linha.porcao }),
   };
 }

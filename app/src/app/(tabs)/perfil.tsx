@@ -10,6 +10,7 @@ import { Etiqueta } from '@/components/ui/etiqueta';
 import { Seletor } from '@/components/ui/seletor';
 import { Tela } from '@/components/ui/tela';
 import { Texto } from '@/components/ui/texto';
+import { VersaoApp } from '@/components/versao-app';
 import { type ModoConta, useFormularioConta } from '@/hooks/use-formulario-conta';
 import { type EstadoMeuCatalogo, useMeuCatalogo } from '@/hooks/use-meu-catalogo';
 import { excluirMinhaConta, sair, useSessao } from '@/lib/sessao';
@@ -37,6 +38,7 @@ export default function TelaPerfil() {
           ) : sessao.status === 'anonimo' ? (
             <FormularioConta />
           ) : null}
+          <VersaoApp />
         </ScrollView>
       </KeyboardAvoidingView>
     </Tela>

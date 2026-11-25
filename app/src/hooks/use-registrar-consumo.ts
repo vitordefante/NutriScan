@@ -11,15 +11,18 @@ export type EstadoRegistro =
   | { status: 'feito'; registro: LogEntry }
   | { status: 'erro'; mensagem: string };
 
-/** Botão "Registrar consumo/uso": grava agora, com a análise atual do produto (feita na API). */
+/**
+ * Botão "Registrar consumo/uso": grava agora, com a análise atual do produto (feita na API) e,
+ * em alimentos com tabela, a quantidade consumida.
+ */
 export function useRegistrarConsumo(barcode: string) {
   const [estado, setEstado] = useState<EstadoRegistro>({ status: 'pronto' });
 
-  async function registrarAgora() {
+  async function registrarAgora(quantidade?: number) {
     if (estado.status === 'enviando') return;
     setEstado({ status: 'enviando' });
     try {
-      const registro = await comConta((token) => registrar(token, barcode));
+      const registro = await comConta((token) => registrar(token, barcode, quantidade));
       setEstado({ status: 'feito', registro });
     } catch (err) {
       setEstado({
