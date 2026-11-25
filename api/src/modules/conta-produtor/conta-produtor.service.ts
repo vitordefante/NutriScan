@@ -27,7 +27,13 @@ export type ServicoContaProdutor = {
   propor: (
     produtorId: string,
     entrada: ItemProposalInput,
-  ) => Promise<{ id: string } | 'item_nao_encontrado' | 'limite_itens' | 'foto_invalida'>;
+  ) => Promise<
+    | { id: string }
+    | 'item_nao_encontrado'
+    | 'proposta_nao_encontrada'
+    | 'limite_itens'
+    | 'foto_invalida'
+  >;
   mudarPreco: (produtorId: string, itemId: string, preco: ProducerPrice | null) => Promise<boolean>;
   removerItem: (produtorId: string, itemId: string) => Promise<boolean>;
   removerProposta: (produtorId: string, id: string) => Promise<boolean>;
@@ -86,9 +92,13 @@ export function criarServicoContaProdutor(
       const item = entrada.itemId ? itens.find((i) => i.id === entrada.itemId) : undefined;
       if (entrada.itemId && !item) return 'item_nao_encontrado';
 
+      // Corrigir um item novo não aumenta o catálogo: o envio corrigido sai da conta.
+      const substitui = item ? undefined : entrada.substitui;
       if (!item) {
         const propostas = await repo.propostas(produtorId);
-        const novosEmAnalise = propostas.filter((p) => !p.itemId && p.situacao === 'em_analise');
+        const novosEmAnalise = propostas.filter(
+          (p) => !p.itemId && p.situacao === 'em_analise' && p.id !== substitui,
+        );
         if (itens.length + novosEmAnalise.length >= MAXIMO_ITENS) return 'limite_itens';
       }
 
@@ -97,24 +107,29 @@ export function criarServicoContaProdutor(
         if (item?.foto?.id === entrada.fotoId) {
           foto = item.foto;
         } else {
+          // Só uma foto que este produtor enviou (não a galeria de outro, nem as importadas,
+          // que não guardam o tamanho).
           const f = await repo.foto(produtorId, entrada.fotoId);
-          if (!f) return 'foto_invalida';
+          if (!f?.propria) return 'foto_invalida';
           foto = { id: f.id, largura: f.largura, altura: f.altura };
         }
       }
 
-      const id = await repo.propor({
-        produtorId,
-        itemId: item?.id ?? null,
-        nome: entrada.nome,
-        descricao: entrada.descricao ?? null,
-        // O preço de um item publicado muda direto (mudarPreco); a proposta só leva o do novo.
-        precoCentavos: item ? null : (entrada.preco?.centavos ?? null),
-        unidade: item ? null : (entrada.preco?.unidade ?? null),
-        foto,
-        enviadaEm: agora(),
-      });
-      return { id };
+      const id = await repo.propor(
+        {
+          produtorId,
+          itemId: item?.id ?? null,
+          nome: entrada.nome,
+          descricao: entrada.descricao ?? null,
+          // O preço de um item publicado muda direto (mudarPreco); a proposta só leva o do novo.
+          precoCentavos: item ? null : (entrada.preco?.centavos ?? null),
+          unidade: item ? null : (entrada.preco?.unidade ?? null),
+          foto,
+          enviadaEm: agora(),
+        },
+        substitui,
+      );
+      return id === null ? 'proposta_nao_encontrada' : { id };
     },
 
     mudarPreco: (produtorId, itemId, preco) => repo.mudarPreco(produtorId, itemId, preco, agora()),

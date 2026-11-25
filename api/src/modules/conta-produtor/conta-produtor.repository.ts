@@ -1,4 +1,4 @@
-import { and, asc, eq, max, or } from 'drizzle-orm';
+import { and, asc, eq, isNull, max, or } from 'drizzle-orm';
 
 import type { Database } from '../../db/client.js';
 import { ehUuid } from '../../db/conversoes.js';
@@ -31,13 +31,20 @@ export type RepositorioContaProdutor = {
   propostas: (produtorId: string) => Promise<LinhaProposta[]>;
   /** Grava uma foto enviada pelo app, ainda não pública. */
   salvarFoto: (produtorId: string, foto: FotoPreparada, agora: Date) => Promise<void>;
-  /** Uma foto pública ou enviada por este produtor (as de outro, não publicadas, não). */
+  /**
+   * Uma foto pública ou enviada por este produtor (as de outro, não publicadas, não).
+   * `propria`: foi este produtor que enviou.
+   */
   foto: (
     produtorId: string,
     id: string,
-  ) => Promise<(FotoGuardada & { bytes: Buffer; publica: boolean }) | null>;
-  /** Grava a proposta; a mudança de um item substitui a anterior desse item. Devolve o id. */
-  propor: (proposta: NovaProposta) => Promise<string>;
+  ) => Promise<(FotoGuardada & { bytes: Buffer; publica: boolean; propria: boolean }) | null>;
+  /**
+   * Grava a proposta; a mudança de um item substitui a anterior desse item. Com `substitui`
+   * (correção de um item novo), apaga esse envio na mesma transação; se ele já não existe
+   * (analisado ou removido), não grava nada e devolve null. Devolve o id.
+   */
+  propor: (proposta: NovaProposta, substitui?: string) => Promise<string | null>;
   /** false se o item não existe ou é de outro produtor. */
   mudarPreco: (
     produtorId: string,
@@ -173,13 +180,28 @@ export function criarRepositorioContaProdutorPg(
         id: f.id,
         bytes: f.bytes,
         publica: f.publica,
+        propria: f.enviadaPor === produtorId,
         largura: f.largura ?? 0,
         altura: f.altura ?? 0,
       };
     },
 
-    async propor(proposta) {
+    async propor(proposta, substitui) {
       return db.transaction(async (tx) => {
+        if (substitui) {
+          // Trava contra a aprovação: se o autor aprovou antes, a linha já não está aqui.
+          const apagada = await tx
+            .delete(propostasItem)
+            .where(
+              and(
+                eq(propostasItem.id, substitui),
+                eq(propostasItem.produtorId, proposta.produtorId),
+                isNull(propostasItem.itemId),
+              ),
+            )
+            .returning({ id: propostasItem.id });
+          if (apagada.length === 0) return null;
+        }
         if (proposta.itemId) {
           await tx.delete(propostasItem).where(eq(propostasItem.itemId, proposta.itemId));
         }

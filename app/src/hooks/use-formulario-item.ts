@@ -23,6 +23,7 @@ const MENSAGEM_DA_API = new Set([
   'foto_invalida',
   'muitas_tentativas',
   'item_nao_encontrado',
+  'proposta_nao_encontrada',
 ]);
 const mensagem = (err: unknown) =>
   err instanceof ErroApi && MENSAGEM_DA_API.has(err.tipo)
@@ -58,9 +59,11 @@ export function useFormularioItem(token: string, modo: ModoItem) {
   const podeEnviar =
     nome.trim() !== '' && (modo.tipo === 'item' || precoValido) && mudou && ocupado === null;
 
+  // O preço salvo (muda na hora): o do item ao abrir a tela, depois o último salvo aqui.
+  const [precoSalvo, setPrecoSalvo] = useState<ProducerPrice | null>(publicado?.preco ?? null);
   const precoMudou =
     publicado !== null &&
-    (preco?.centavos !== publicado.preco?.centavos || preco?.unidade !== publicado.preco?.unidade);
+    (preco?.centavos !== precoSalvo?.centavos || preco?.unidade !== precoSalvo?.unidade);
 
   async function trocarFoto(origem: 'camera' | 'galeria') {
     setAviso(null);
@@ -91,17 +94,16 @@ export function useFormularioItem(token: string, modo: ModoItem) {
     setAviso(null);
     setOcupado('enviando');
     try {
+      // Correção de um item novo já enviado: a API troca o envio antigo pelo novo de uma vez
+      // (se o autor já tiver analisado o antigo, recusa e nada é gravado).
       await api.propor(token, {
         ...(publicado && { itemId: publicado.id }),
+        ...(modo.tipo === 'novo' && modo.proposta && { substitui: modo.proposta.id }),
         nome: nome.trim(),
         ...(descricao.trim() && { descricao: descricao.trim() }),
         ...(!publicado && preco && { preco }),
         ...(foto && { fotoId: foto.id }),
       });
-      // Correção de um item novo já enviado: o envio antigo dá lugar ao novo.
-      if (modo.tipo === 'novo' && modo.proposta) {
-        await api.cancelarProposta(token, modo.proposta.id).catch(() => {});
-      }
       return true;
     } catch (err) {
       setAviso(mensagem(err));
@@ -118,6 +120,7 @@ export function useFormularioItem(token: string, modo: ModoItem) {
     setOcupado('preco');
     try {
       await api.mudarPreco(token, publicado.id, novo);
+      setPrecoSalvo(novo);
       if (!novo) {
         setValor('');
         setUnidade(null);
@@ -184,6 +187,7 @@ export function useFormularioItem(token: string, modo: ModoItem) {
     preco,
     precoValido,
     precoMudou,
+    temPrecoSalvo: precoSalvo !== null,
     podeEnviar,
     ocupado,
     aviso,

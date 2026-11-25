@@ -162,10 +162,17 @@ export function contaProdutorEmMemoria(
     async foto(produtorId, id) {
       const f = e.fotos.get(id);
       if (!f || !(f.publica || f.enviadaPor === produtorId)) return null;
-      const { enviadaPor: _, ...resto } = f;
-      return resto;
+      const { enviadaPor, ...resto } = f;
+      return { ...resto, propria: enviadaPor === produtorId };
     },
-    async propor(proposta) {
+    async propor(proposta, substitui) {
+      if (substitui) {
+        const antes = e.propostas.length;
+        e.propostas = e.propostas.filter(
+          (p) => !(p.id === substitui && p.produtorId === proposta.produtorId && !p.itemId),
+        );
+        if (e.propostas.length === antes) return null;
+      }
       if (proposta.itemId) e.propostas = e.propostas.filter((p) => p.itemId !== proposta.itemId);
       const id = novoId();
       e.propostas.push({ ...proposta, id, situacao: 'em_analise', motivo: null });

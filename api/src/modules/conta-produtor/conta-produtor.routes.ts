@@ -25,7 +25,9 @@ const propostaSchema = z.object({
   descricao: descricaoItem.optional(),
   preco: precoSchema.optional(),
   fotoId: z.string().refine(ehIdDeFoto).optional(),
+  substitui: z.uuid().optional(),
 }) satisfies z.ZodType<ItemProposalInput, unknown>;
+const ENVIO_JA_ANALISADO = 'Esse envio já foi analisado ou removido.';
 const precoCorpoSchema = z.object({ preco: precoSchema.nullable() });
 
 const MENSAGENS_VINCULO = {
@@ -134,6 +136,9 @@ export const contaProdutorRoutes: FastifyPluginAsync<ContaProdutorDeps> = async 
       if (r === 'item_nao_encontrado') {
         return reply.code(404).send(erro(r, 'Esse item não está mais no catálogo.'));
       }
+      if (r === 'proposta_nao_encontrada') {
+        return reply.code(404).send(erro(r, ENVIO_JA_ANALISADO));
+      }
       if (r === 'limite_itens') {
         return reply
           .code(409)
@@ -151,9 +156,7 @@ export const contaProdutorRoutes: FastifyPluginAsync<ContaProdutorDeps> = async 
     if (!produtor) return reply;
     const { id } = request.params as { id: string };
     if (!(await servico.removerProposta(produtor.id, id))) {
-      return reply
-        .code(404)
-        .send(erro('proposta_nao_encontrada', 'Esse envio já foi analisado ou removido.'));
+      return reply.code(404).send(erro('proposta_nao_encontrada', ENVIO_JA_ANALISADO));
     }
     return reply.code(204).send();
   });
